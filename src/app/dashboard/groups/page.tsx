@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -39,13 +40,15 @@ export default function GroupsPage() {
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
   // Real-time messages for the selected group
+  // Filter by memberIds to satisfy security rules for 'list' operations
   const messagesQuery = useMemoFirebase(() => {
-    if (!selectedGroupId || !db) return null;
+    if (!selectedGroupId || !db || !user) return null;
     return query(
       collection(db, "studyGroups", selectedGroupId, "messages"),
+      where("memberIds", "array-contains", user.uid),
       orderBy("timestamp", "asc")
     );
-  }, [selectedGroupId, db]);
+  }, [selectedGroupId, db, user]);
 
   const { data: messages } = useCollection(messagesQuery);
 
