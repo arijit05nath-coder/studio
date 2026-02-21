@@ -2,8 +2,8 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase"
-import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal } from "lucide-react"
+import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
+import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal, LogOut, Trash2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -14,8 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
-import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, updateDoc, arrayUnion, getDocs } from "firebase/firestore"
+import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, updateDoc, arrayUnion, arrayRemove, getDocs } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useToast } from "@/hooks/use-toast"
 
@@ -153,7 +154,7 @@ export default function GroupsPage() {
       name: newGroup.name,
       description: newGroup.description || "No description provided.",
       memberIds: [user.uid],
-      teacherId: userRole === 'Teacher' ? user.uid : null,
+      teacherId: user.uid,
       dateCreated: new Date().toISOString(),
       timestamp: serverTimestamp()
     }, { merge: true });
@@ -189,6 +190,28 @@ export default function GroupsPage() {
     }
   }
 
+  const handleLeaveGroup = () => {
+    if (!user || !db || !selectedGroupId) return;
+    
+    const groupRef = doc(db, "studyGroups", selectedGroupId);
+    updateDocumentNonBlocking(groupRef, {
+      memberIds: arrayRemove(user.uid)
+    });
+    
+    setSelectedGroupId(null);
+    toast({ title: "Left group", description: "You are no longer a member of this group." });
+  }
+
+  const handleDeleteGroup = () => {
+    if (!user || !db || !selectedGroupId) return;
+    
+    const groupRef = doc(db, "studyGroups", selectedGroupId);
+    deleteDocumentNonBlocking(groupRef);
+    
+    setSelectedGroupId(null);
+    toast({ title: "Group deleted", description: "The study group has been permanently removed." });
+  }
+
   const copyGroupId = () => {
     if (selectedGroupId) {
       navigator.clipboard.writeText(selectedGroupId);
@@ -197,6 +220,8 @@ export default function GroupsPage() {
       toast({ title: "ID copied to clipboard" });
     }
   }
+
+  const isCreator = selectedGroup?.teacherId === user?.uid;
 
   return (
     <div className="space-y-8">
@@ -337,6 +362,55 @@ export default function GroupsPage() {
                     <Button variant="outline" size="icon" className="rounded-full" onClick={copyGroupId}>
                       {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
+                    
+                    {isCreator ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="icon" className="rounded-full text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="h-5 w-5 text-destructive" />
+                              Delete Study Group?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. All messages and rankings for this group will be permanently deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteGroup} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Delete Group
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="icon" className="rounded-full">
+                            <LogOut className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Leave Study Group?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              You will no longer be able to see messages or rankings for this group. You can rejoin later using the Group ID.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleLeaveGroup} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Leave Group
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 </CardHeader>
               </Card>
