@@ -33,6 +33,37 @@ export default function DashboardLayout({
   }, [user, db]);
   const { data: profile } = useDoc(profileRef);
 
+  const getThemeClass = () => {
+    if (!profile?.theme) return "";
+    if (profile.theme === 'dark') return "dark";
+    if (profile.theme === 'midnight') return "theme-midnight";
+    if (profile.theme === 'forest') return "theme-forest";
+    if (profile.theme === 'sunrise') return "theme-sunrise";
+    return "";
+  }
+
+  // Apply theme class to body to ensure Portals (Dropdowns, Dialogs) are themed correctly
+  useEffect(() => {
+    const themeClass = getThemeClass();
+    const body = document.body;
+    
+    // List of all possible theme classes to manage
+    const themeClasses = ['dark', 'theme-midnight', 'theme-forest', 'theme-sunrise'];
+    
+    // Clean up previous theme classes
+    body.classList.remove(...themeClasses);
+    
+    // Apply new theme class
+    if (themeClass) {
+      body.classList.add(themeClass);
+    }
+    
+    // Optional: cleanup on unmount if needed, though layout persists
+    return () => {
+      body.classList.remove(...themeClasses);
+    };
+  }, [profile?.theme]);
+
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/")
@@ -48,15 +79,6 @@ export default function DashboardLayout({
       fetchRole();
     }
   }, [user, isUserLoading, db, router]);
-
-  const getThemeClass = () => {
-    if (!profile?.theme) return "";
-    if (profile.theme === 'dark') return "dark";
-    if (profile.theme === 'midnight') return "theme-midnight";
-    if (profile.theme === 'forest') return "theme-forest";
-    if (profile.theme === 'sunrise') return "theme-sunrise";
-    return "";
-  }
 
   if (isUserLoading || profileLoading) {
     return (
