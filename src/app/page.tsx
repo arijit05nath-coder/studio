@@ -270,7 +270,7 @@ export default function LandingPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-4">
-          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="text-accent-foreground font-bold">
+          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="text-accent font-bold">
             {isSignUp ? t('login') : t('signup')}
           </Button>
         </CardFooter>
