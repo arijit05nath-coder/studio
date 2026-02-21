@@ -3,20 +3,24 @@
 
 import { useState, useEffect } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase"
-import { collection, query, orderBy, doc, getDoc, where, deleteDoc } from "firebase/firestore"
-import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Edit, Video, UploadCloud, Globe, Trash2, LayoutGrid, List } from "lucide-react"
+import { collection, query, orderBy, doc, getDoc, deleteDoc } from "firebase/firestore"
+import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Video, UploadCloud, Globe, Trash2, LayoutGrid, List, Save, Settings2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 export default function CurriculumPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const { toast } = useToast()
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
   
@@ -24,14 +28,13 @@ export default function CurriculumPage() {
   const [newCourseName, setNewCourseName] = useState("")
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editCourseName, setEditCourseName] = useState("")
-  const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null)
 
-  // Resource State
-  const [isUploadResourceOpen, setIsUploadResourceOpen] = useState(false)
-  const [newResource, setNewResource] = useState({ title: "", url: "", type: "PDF", subjectId: "" })
-  const [isUploading, setIsUploading] = useState(false)
+  // Unified Management State
+  const [editCourseName, setEditCourseName] = useState("")
+  const [editCourseDescription, setEditCourseDescription] = useState("")
+  const [newResource, setNewResource] = useState({ title: "", url: "", type: "PDF" })
+  const [isSavingCourse, setIsSavingCourse] = useState(false)
+  const [isAddingResource, setIsAddingResource] = useState(false)
 
   useEffect(() => {
     const checkRole = async () => {
@@ -42,6 +45,13 @@ export default function CurriculumPage() {
     };
     checkRole();
   }, [user, db]);
+
+  useEffect(() => {
+    if (selectedSubject) {
+      setEditCourseName(selectedSubject.name || "")
+      setEditCourseDescription(selectedSubject.description || "")
+    }
+  }, [selectedSubject])
 
   // Queries
   const subjectsQuery = useMemoFirebase(() => {
@@ -67,40 +77,51 @@ export default function CurriculumPage() {
   // Actions
   const handleAddCourse = () => {
     if (!db || !newCourseName.trim()) return;
-    addDocumentNonBlocking(collection(db, "subjects"), { name: newCourseName.trim() });
+    addDocumentNonBlocking(collection(db, "subjects"), { 
+      name: newCourseName.trim(),
+      description: "" 
+    });
     setNewCourseName("");
     setIsCreateCourseOpen(false);
+    toast({ title: "Course created successfully" });
   }
 
-  const handleUpdateCourse = () => {
-    if (!db || !editCourseName.trim() || !editingSubjectId) return;
-    updateDocumentNonBlocking(doc(db, "subjects", editingSubjectId), { name: editCourseName.trim() });
-    setIsEditDialogOpen(false);
-    setEditingSubjectId(null);
+  const handleUpdateCourseDetails = () => {
+    if (!db || !selectedSubject || !editCourseName.trim()) return;
+    setIsSavingCourse(true);
+    updateDocumentNonBlocking(doc(db, "subjects", selectedSubject.id), {
+      name: editCourseName.trim(),
+      description: editCourseDescription.trim()
+    });
+    setTimeout(() => {
+      setIsSavingCourse(false);
+      toast({ title: "Course details updated" });
+    }, 500);
   }
 
-  const handleAddResource = () => {
-    if (!db || !user || !newResource.title || !newResource.url || !newResource.subjectId) return;
-    setIsUploading(true);
+  const handleAddResourceToCourse = () => {
+    if (!db || !user || !selectedSubject || !newResource.title || !newResource.url) return;
+    setIsAddingResource(true);
     addDocumentNonBlocking(collection(db, "materials"), {
       title: newResource.title,
       linkUrl: newResource.url,
       type: newResource.type,
-      subjectId: newResource.subjectId,
+      subjectId: selectedSubject.id,
       teacherId: user.uid,
       author: user.email?.split('@')[0] || "Teacher",
       uploadDate: new Date().toISOString()
     });
     setTimeout(() => {
-      setNewResource({ title: "", url: "", type: "PDF", subjectId: "" });
-      setIsUploading(false);
-      setIsUploadResourceOpen(false);
+      setNewResource({ title: "", url: "", type: "PDF" });
+      setIsAddingResource(false);
+      toast({ title: "Resource added successfully" });
     }, 500);
   }
 
   const handleDeleteMaterial = (id: string) => {
     if (!db) return;
     deleteDoc(doc(db, "materials", id));
+    toast({ title: "Resource removed" });
   }
 
   return (
@@ -112,79 +133,28 @@ export default function CurriculumPage() {
         </div>
 
         {isTeacher && (
-          <div className="flex gap-2">
-            <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="rounded-full gap-2 shadow-sm">
-                  <Plus className="h-4 w-4" />
-                  New Course
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Course</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label>Course Name</Label>
-                    <Input placeholder="e.g., Organic Chemistry" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} />
-                  </div>
+          <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
+                <Plus className="h-4 w-4" />
+                New Course
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Course</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label>Course Name</Label>
+                  <Input placeholder="e.g., Organic Chemistry" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} />
                 </div>
-                <DialogFooter>
-                  <Button onClick={handleAddCourse} disabled={!newCourseName.trim()} className="bg-accent text-accent-foreground">Create Course</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={isUploadResourceOpen} onOpenChange={setIsUploadResourceOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
-                  <UploadCloud className="h-4 w-4" />
-                  Upload Resource
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Upload Material</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label>Title</Label>
-                    <Input placeholder="e.g., Midterm Study Guide" value={newResource.title} onChange={(e) => setNewResource({...newResource, title: e.target.value})} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Subject / Course</Label>
-                    <Select value={newResource.subjectId} onValueChange={(v) => setNewResource({...newResource, subjectId: v})}>
-                      <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
-                      <SelectContent>
-                        {subjects?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Type</Label>
-                    <Select value={newResource.type} onValueChange={(v) => setNewResource({...newResource, type: v})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PDF">PDF Document</SelectItem>
-                        <SelectItem value="Note">Study Note</SelectItem>
-                        <SelectItem value="Video">Video Resource</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>File URL / Link</Label>
-                    <Input placeholder="https://..." value={newResource.url} onChange={(e) => setNewResource({...newResource, url: e.target.value})} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleAddResource} disabled={!newResource.title || !newResource.url || !newResource.subjectId || isUploading} className="bg-accent text-accent-foreground">
-                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Resource"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddCourse} disabled={!newCourseName.trim()} className="bg-accent text-accent-foreground">Create Course</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
@@ -220,27 +190,26 @@ export default function CurriculumPage() {
                       <div className="p-2 bg-card rounded-lg shadow-sm">
                         <Book className="h-5 w-5 text-accent" />
                       </div>
-                      <Badge variant="secondary" className="bg-card/50">Core</Badge>
+                      <Badge variant="secondary" className="bg-card/50">Curriculum</Badge>
                     </div>
-                    {isTeacher && (
-                      <Button 
-                        variant="ghost" size="icon" className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => { setEditingSubjectId(subject.id); setEditCourseName(subject.name); setIsEditDialogOpen(true); }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    )}
                   </CardHeader>
                   <CardContent className="pt-6">
                     <CardTitle className="text-xl mb-2">{subject.name}</CardTitle>
-                    <CardDescription className="line-clamp-2">Comprehensive curriculum and curated resources for {subject.name}.</CardDescription>
+                    <CardDescription className="line-clamp-2">
+                      {subject.description || `Comprehensive curriculum for ${subject.name}.`}
+                    </CardDescription>
                     <div className="mt-6 flex items-center justify-between">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <GraduationCap className="h-3 w-3" />
                         <span>Curriculum 2024</span>
                       </div>
-                      <Button variant="ghost" size="sm" className="gap-1 text-accent group-hover:translate-x-1 transition-transform" onClick={() => setSelectedSubject(subject)}>
-                        View Details <ChevronRight className="h-4 w-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-1 text-accent group-hover:translate-x-1 transition-transform font-bold" 
+                        onClick={() => setSelectedSubject(subject)}
+                      >
+                        {isTeacher ? <><Settings2 className="h-4 w-4" /> Manage</> : <>View Details <ChevronRight className="h-4 w-4" /></>}
                       </Button>
                     </div>
                   </CardContent>
@@ -288,48 +257,140 @@ export default function CurriculumPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Course Detail Dialog */}
+      {/* Unified Course Management / Detail Dialog */}
       <Dialog open={!!selectedSubject} onOpenChange={(o) => !o && setSelectedSubject(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
-              <Book className="h-6 w-6 text-accent" /> {selectedSubject?.name}
+              <Book className="h-6 w-6 text-accent" /> 
+              {isTeacher ? "Manage Course" : selectedSubject?.name}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Course Resources</h4>
+
+          <div className="space-y-8 py-4">
+            {isTeacher ? (
+              <div className="space-y-6 border-b pb-8">
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label className="font-bold">Course Name</Label>
+                    <Input 
+                      placeholder="e.g., Organic Chemistry" 
+                      value={editCourseName} 
+                      onChange={(e) => setEditCourseName(e.target.value)} 
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label className="font-bold">Course Description</Label>
+                    <Textarea 
+                      placeholder="Enter a brief overview of what this course covers..." 
+                      value={editCourseDescription} 
+                      onChange={(e) => setEditCourseDescription(e.target.value)} 
+                      className="rounded-xl min-h-[100px]"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleUpdateCourseDetails} 
+                    disabled={isSavingCourse || !editCourseName.trim()} 
+                    className="bg-accent text-accent-foreground rounded-xl w-fit gap-2"
+                  >
+                    {isSavingCourse ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Save Course Details
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-muted-foreground italic leading-relaxed">
+                  {selectedSubject?.description || "No description available for this course."}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Course Resources</h4>
+                <Badge variant="outline">{allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length || 0} items</Badge>
+              </div>
+              
               <div className="grid gap-3">
                 {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
-                  <div key={m.id} className="flex items-center justify-between p-3 rounded-xl border bg-muted/30">
+                  <div key={m.id} className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 group hover:border-accent/40 transition-colors">
                     <div className="flex items-center gap-3">
                       {m.type === 'Video' ? <Video className="h-4 w-4 text-accent" /> : <FileText className="h-4 w-4 text-accent" />}
                       <span className="text-sm font-medium">{m.title}</span>
                     </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <a href={m.linkUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0 rounded-full">
+                        <a href={m.linkUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
+                      </Button>
+                      {isTeacher && (
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(m.id)} className="h-8 w-8 p-0 rounded-full text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
-                {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0 && <p className="text-sm italic text-muted-foreground">No resources linked to this course yet.</p>}
+                {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0 && (
+                  <div className="text-center py-6 border-2 border-dashed rounded-2xl opacity-50">
+                    <p className="text-sm italic">No resources linked to this course yet.</p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Edit Course Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader><DialogTitle>Edit Course</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label>Course Name</Label>
-              <Input value={editCourseName} onChange={(e) => setEditCourseName(e.target.value)} />
-            </div>
+            {isTeacher && (
+              <div className="pt-6 border-t space-y-4">
+                <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Plus className="h-4 w-4" /> Add New Resource
+                </h4>
+                <div className="grid gap-4 bg-muted/20 p-6 rounded-2xl border">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label className="text-xs">Resource Title</Label>
+                      <Input 
+                        placeholder="e.g., Midterm Study Guide" 
+                        value={newResource.title} 
+                        onChange={(e) => setNewResource({...newResource, title: e.target.value})} 
+                        className="rounded-xl h-9"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-xs">Resource Type</Label>
+                      <Select value={newResource.type} onValueChange={(v) => setNewResource({...newResource, type: v})}>
+                        <SelectTrigger className="rounded-xl h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PDF">PDF Document</SelectItem>
+                          <SelectItem value="Note">Study Note</SelectItem>
+                          <SelectItem value="Video">Video Resource</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label className="text-xs">File URL / Link</Label>
+                    <Input 
+                      placeholder="https://..." 
+                      value={newResource.url} 
+                      onChange={(e) => setNewResource({...newResource, url: e.target.value})} 
+                      className="rounded-xl h-9"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleAddResourceToCourse} 
+                    disabled={!newResource.title || !newResource.url || isAddingResource} 
+                    className="bg-accent text-accent-foreground rounded-xl w-full md:w-fit gap-2"
+                  >
+                    {isAddingResource ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+                    Add Resource
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button onClick={handleUpdateCourse} disabled={!editCourseName.trim()} className="bg-accent text-accent-foreground">Save Changes</Button>
+            <Button variant="outline" onClick={() => setSelectedSubject(null)} className="rounded-xl">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
