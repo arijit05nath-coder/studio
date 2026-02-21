@@ -156,7 +156,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href={role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student"}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#E6E6FA] text-[#6A5ACD] border border-[#A0D6B4]">
                   <Sparkles className="size-4 fill-current" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
