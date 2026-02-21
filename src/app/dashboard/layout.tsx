@@ -7,7 +7,7 @@ import { useUser, useFirestore } from "@/firebase"
 import { DashboardNav } from "@/components/dashboard-nav"
 import { doc, getDoc } from "firebase/firestore"
 import { Loader2, Menu, Sparkles } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 
 export default function DashboardLayout({
@@ -65,6 +65,9 @@ export default function DashboardLayout({
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Navigation Menu</SheetTitle>
+            </SheetHeader>
             <DashboardNav role={role as any} />
           </SheetContent>
         </Sheet>

@@ -2,23 +2,44 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, X } from "lucide-react"
+import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore"
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function FocusPage() {
+  const { user } = useUser()
+  const db = useFirestore()
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isActive, setIsActive] = useState(false)
   const [isStrict, setIsStrict] = useState(false)
   const [sessionType, setSessionType] = useState<'work' | 'break'>('work')
+  const [interruptionCount, setInterruptionCount] = useState(0)
+  const startTimeRef = useRef<Date | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Real-time session history
+  const sessionsQuery = useMemoFirebase(() => {
+    if (!user || !db) return null;
+    return query(
+      collection(db, "userProfiles", user.uid, "focusSessions"),
+      orderBy("startTime", "desc"),
+      limit(10)
+    );
+  }, [user, db]);
+
+  const { data: sessions, isLoading: sessionsLoading } = useCollection(sessionsQuery);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
+      if (!startTimeRef.current) startTimeRef.current = new Date();
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1)
       }, 1000)
@@ -33,13 +54,35 @@ export default function FocusPage() {
     }
   }, [isActive, timeLeft])
 
+  const saveSession = (status: 'Completed' | 'Interrupted' | 'Abandoned') => {
+    if (!user || !db || !startTimeRef.current) return;
+
+    const actualDuration = Math.floor((new Date().getTime() - startTimeRef.current.getTime()) / 60000);
+    const plannedDuration = sessionType === 'work' ? 25 : 5;
+
+    addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "focusSessions"), {
+      studentId: user.uid,
+      type: sessionType === 'work' ? 'Pomodoro' : 'Break',
+      plannedDurationMinutes: plannedDuration,
+      actualDurationMinutes: actualDuration,
+      startTime: startTimeRef.current.toISOString(),
+      endTime: new Date().toISOString(),
+      status,
+      interruptionCount,
+      strictModeUsed: isStrict,
+      dateCreated: serverTimestamp()
+    });
+
+    startTimeRef.current = null;
+    setInterruptionCount(0);
+  }
+
   const handleSessionComplete = () => {
+    saveSession('Completed');
     if (sessionType === 'work') {
-      alert("Great job! Time for a break.")
       setSessionType('break')
       setTimeLeft(5 * 60)
     } else {
-      alert("Break's over! Let's focus.")
       setSessionType('work')
       setTimeLeft(25 * 60)
     }
@@ -52,9 +95,14 @@ export default function FocusPage() {
   }
 
   const toggleTimer = () => setIsActive(!isActive)
+  
   const resetTimer = () => {
+    if (isActive) {
+      saveSession('Abandoned');
+    }
     setIsActive(false)
     setTimeLeft(sessionType === 'work' ? 25 * 60 : 5 * 60)
+    startTimeRef.current = null;
   }
 
   const progress = (timeLeft / (sessionType === 'work' ? 25 * 60 : 5 * 60)) * 100
@@ -67,7 +115,7 @@ export default function FocusPage() {
           <ShieldAlert className="h-16 w-16 text-destructive mb-6 animate-pulse fill-destructive/20" />
           <h2 className="text-4xl font-bold mb-4">Strict Focus Mode Active</h2>
           <p className="text-xl text-muted-foreground mb-12 max-w-md">
-            All other navigation is locked. Stay focused on your task until the timer finishes.
+            Stay focused on your task. Navigating away will be logged as an interruption.
           </p>
           <div className="text-8xl font-mono font-bold text-accent-foreground mb-12 tracking-tighter">
             {formatTime(timeLeft)}
@@ -77,10 +125,12 @@ export default function FocusPage() {
             size="lg" 
             className="rounded-full px-12"
             onClick={() => {
-                const confirmed = confirm("Are you sure you want to end your focus session early? This will be logged as an interruption.")
+                const confirmed = confirm("End session early? This will be logged as an interruption.")
                 if (confirmed) {
-                    setIsActive(false)
-                    setIsStrict(false)
+                    setInterruptionCount(prev => prev + 1);
+                    saveSession('Interrupted');
+                    setIsActive(false);
+                    setIsStrict(false);
                 }
             }}
           >
@@ -91,13 +141,13 @@ export default function FocusPage() {
 
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Focus Mode</h1>
-        <p className="text-muted-foreground">Boost your productivity with timed focus sessions.</p>
+        <p className="text-muted-foreground">Boost your productivity with real-time tracking.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-none shadow-xl bg-white overflow-hidden">
           <CardHeader className={cn(
-            "text-center pb-8",
+            "text-center pb-8 transition-colors",
             sessionType === 'work' ? "bg-primary/20" : "bg-accent/20"
           )}>
             <div className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-2">
@@ -138,7 +188,7 @@ export default function FocusPage() {
                 Strict Mode
               </CardTitle>
               <CardDescription>
-                Locks the UI to prevent distractions. Interruption logs will be generated if closed early.
+                Locks the UI during sessions to prevent distractions.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -159,20 +209,27 @@ export default function FocusPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { time: "10:30 AM", duration: "25m", label: "Math focus", status: "Completed" },
-                  { time: "09:15 AM", duration: "15m", label: "Biology prep", status: "Interrupted" },
-                ].map((log, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm border-b pb-2 last:border-0">
-                    <div>
-                      <p className="font-medium">{log.label}</p>
-                      <p className="text-xs text-muted-foreground">{log.time} • {log.duration}</p>
-                    </div>
-                    <Badge variant={log.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
-                      {log.status}
-                    </Badge>
+                {sessionsLoading ? (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-accent" />
                   </div>
-                ))}
+                ) : sessions && sessions.length > 0 ? (
+                  sessions.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between text-sm border-b pb-2 last:border-0">
+                      <div>
+                        <p className="font-medium">{log.type}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {log.actualDurationMinutes}m
+                        </p>
+                      </div>
+                      <Badge variant={log.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
+                        {log.status}
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center">No recent sessions found.</p>
+                )}
               </div>
             </CardContent>
           </Card>
