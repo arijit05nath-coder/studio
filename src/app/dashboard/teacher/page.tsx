@@ -1,16 +1,18 @@
+
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Users, BookOpen, AlertCircle, TrendingUp, Search, Loader2 } from "lucide-react"
+import { Users, BookOpen, Search, Loader2, Book } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, where } from "firebase/firestore"
+import { collection, query, where, orderBy } from "firebase/firestore"
+import { useState } from "react"
 
 export default function TeacherDashboard() {
   const db = useFirestore()
+  const [searchTerm, setSearchTerm] = useState("")
 
   const studentsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -19,27 +21,42 @@ export default function TeacherDashboard() {
 
   const materialsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return collection(db, "materials");
+    return query(collection(db, "materials"), orderBy("uploadDate", "desc"));
+  }, [db]);
+
+  const subjectsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "subjects"), orderBy("name", "asc"));
   }, [db]);
 
   const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery);
   const { data: materials, isLoading: materialsLoading } = useCollection(materialsQuery);
+  const { data: subjects, isLoading: subjectsLoading } = useCollection(subjectsQuery);
+
+  const filteredStudents = students?.filter(s => 
+    `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.email.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   const stats = [
     { 
       title: "Active Students", 
       value: studentsLoading ? "..." : (students?.length || 0).toString(), 
       icon: Users, 
-      color: "text-blue-500" 
+      color: "text-blue-600" 
     },
     { 
-      title: "Resources", 
-      value: materialsLoading ? "..." : `${materials?.length || 0} Shared`, 
+      title: "Shared Resources", 
+      value: materialsLoading ? "..." : (materials?.length || 0).toString(), 
       icon: BookOpen, 
-      color: "text-purple-500" 
+      color: "text-indigo-600" 
     },
-    { title: "Avg. Focus Score", value: "78%", icon: TrendingUp, color: "text-accent-foreground" },
-    { title: "At Risk", value: "3 Students", icon: AlertCircle, color: "text-destructive" },
+    { 
+      title: "Total Courses", 
+      value: subjectsLoading ? "..." : (subjects?.length || 0).toString(), 
+      icon: Book, 
+      color: "text-emerald-600" 
+    },
   ]
 
   return (
@@ -49,12 +66,12 @@ export default function TeacherDashboard() {
         <p className="text-muted-foreground">Monitor class activity and student performance in real-time.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.title} className="border-none shadow-sm bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color} fill-current`} />
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -71,40 +88,45 @@ export default function TeacherDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>Student Roster</CardTitle>
-                <CardDescription>View all enrolled students and their basic info.</CardDescription>
+                <CardDescription>View all enrolled students and their contact info.</CardDescription>
               </div>
               <div className="relative w-64">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search students..." className="pl-8 h-8" />
+                <Input 
+                  placeholder="Search students..." 
+                  className="pl-8 h-9 rounded-full bg-muted/30 border-none"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
+            <div className="space-y-4">
               {studentsLoading ? (
                 <div className="flex justify-center p-8">
                   <Loader2 className="h-8 w-8 animate-spin text-accent" />
                 </div>
-              ) : students && students.length > 0 ? (
-                students.map((student) => (
-                  <div key={student.id} className="flex items-center justify-between group border-b pb-4 last:border-0">
+              ) : filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                  <div key={student.id} className="flex items-center justify-between group border-b border-muted/50 pb-4 last:border-0">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-10 w-10 border border-muted">
                         <AvatarImage src={`https://picsum.photos/seed/${student.id}/40/40`} />
-                        <AvatarFallback>{student.firstName[0]}</AvatarFallback>
+                        <AvatarFallback className="bg-primary/20 text-primary-foreground font-bold">{student.firstName[0]}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold">{student.firstName} {student.lastName}</span>
                         <span className="text-xs text-muted-foreground">{student.email}</span>
                       </div>
                     </div>
-                    <Badge variant="outline">
-                      Active
+                    <Badge variant="secondary" className="bg-primary/10 text-primary-foreground border-none">
+                      Student
                     </Badge>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-10 text-muted-foreground">No students found.</div>
+                <div className="text-center py-10 text-muted-foreground italic">No students found.</div>
               )}
             </div>
           </CardContent>
@@ -113,7 +135,7 @@ export default function TeacherDashboard() {
         <Card className="border-none shadow-sm bg-white">
           <CardHeader>
             <CardTitle>Recent Shared Resources</CardTitle>
-            <CardDescription>Latest materials uploaded by teachers</CardDescription>
+            <CardDescription>Latest materials uploaded across all courses</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -122,17 +144,17 @@ export default function TeacherDashboard() {
                   <Loader2 className="h-6 w-6 animate-spin text-accent" />
                 </div>
               ) : materials && materials.length > 0 ? (
-                materials.slice(0, 5).map((material) => (
-                  <div key={material.id} className="flex flex-col border-b pb-2 last:border-0">
-                    <span className="font-bold text-sm">{material.title}</span>
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <span>{material.type}</span>
+                materials.slice(0, 6).map((material) => (
+                  <div key={material.id} className="flex flex-col border-b border-muted/30 pb-3 last:border-0 last:pb-0">
+                    <span className="font-semibold text-sm truncate">{material.title}</span>
+                    <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-1">
+                      <Badge variant="outline" className="text-[9px] py-0 h-4">{material.type}</Badge>
                       <span>{material.uploadDate ? new Date(material.uploadDate).toLocaleDateString() : 'N/A'}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-4 text-muted-foreground text-sm">No materials shared yet.</div>
+                <div className="text-center py-4 text-muted-foreground text-sm italic">No materials shared yet.</div>
               )}
             </div>
           </CardContent>
