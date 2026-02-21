@@ -1,117 +1,90 @@
+
 'use server';
 /**
- * @fileOverview A Genkit flow for generating personalized study recommendations for students.
+ * @fileOverview A Genkit flow for generating personalized study plans based on student self-assessment.
  *
- * - personalizedStudyRecommendations - A function that provides study recommendations.
- * - PersonalizedStudyRecommendationsInput - The input type for the function.
- * - PersonalizedStudyRecommendationsOutput - The return type for the function.
+ * - personalizedStudyPlan - A function that provides a personalized study roadmap.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-const PersonalizedStudyRecommendationsInputSchema = z.object({
+const PersonalizedStudyPlanInputSchema = z.object({
   userId: z.string().describe('The ID of the student.'),
-  completedSessions: z.array(
-    z.object({
-      sessionId: z.string().describe('Unique ID for the study session.'),
-      topic: z.string().describe('The topic covered in the study session.'),
-      durationMinutes: z.number().describe('Duration of the session in minutes.'),
-      focusScore: z.number().min(1).max(5).describe('Focus level during the session (1-5).'),
-      notesTaken: z.boolean().describe('Whether notes were taken during the session.'),
-      quizScore: z.number().nullable().describe('Score on a quiz taken after the session, if any.'),
-    })
-  ).describe('A list of completed study sessions.'),
-  performanceSummary: z.object({
-    overallGrade: z.string().describe('Overall academic performance grade.'),
-    weakTopics: z.array(z.string()).describe('Topics where the student has shown weakness.'),
-    strongTopics: z.array(z.string()).describe('Topics where the student has performed well.'),
-    recentQuizScores: z.array(z.object({ topic: z.string(), score: z.number() })).describe('Recent quiz scores for various topics.'),
-  }).describe('A summary of the student\'s academic performance.'),
-  userPreferences: z.object({
-    learningStyle: z.string().nullable().describe('The student\'s preferred learning style (e.g., visual, auditory).'),
-    preferredStudyTimes: z.string().nullable().describe('Preferred times of day for studying.'),
-    goals: z.string().nullable().describe('The student\'s academic goals.'),
-  }).describe('Student\'s personal study preferences and goals.').optional(),
+  subjects: z.array(z.string()).describe('Subjects selected by the student.'),
+  topics: z.string().describe('Specific topics the student is struggling with.'),
+  ratings: z.object({
+    conceptClarity: z.number().describe('Self-rated clarity of concepts (1-5).'),
+    problemSolving: z.number().describe('Self-rated confidence in problem solving (1-5).'),
+    examReadiness: z.number().describe('Self-rated readiness for exams (1-5).'),
+  }),
+  learningStyle: z.string().describe('The student\'s preferred learning style.'),
+  studyTime: z.object({
+    hoursPerDay: z.number().describe('Available study hours per day.'),
+    preferredTime: z.string().describe('Preferred time of day for studying.'),
+  }),
+  deadlines: z.string().optional().describe('Upcoming academic deadlines.'),
+  focusMetrics: z.object({
+    avgSessionDuration: z.number().optional().describe('Actual average focus session duration in minutes.'),
+    totalSessions: z.number().optional().describe('Total number of focus sessions completed.'),
+  }).optional(),
 });
 
-export type PersonalizedStudyRecommendationsInput = z.infer<typeof PersonalizedStudyRecommendationsInputSchema>;
+export type PersonalizedStudyPlanInput = z.infer<typeof PersonalizedStudyPlanInputSchema>;
 
-const PersonalizedStudyRecommendationsOutputSchema = z.object({
-  personalizedRecommendations: z.array(
-    z.object({
-      topic: z.string().describe('The specific topic recommended for study.'),
-      reasoning: z.string().describe('The reason why this topic is recommended based on performance data.'),
-      suggestedApproach: z.string().describe('Specific study methods or resources suggested for this topic.'),
-      priorityLevel: z.enum(['High', 'Medium', 'Low']).describe('The priority level for this recommendation.'),
-      nextSteps: z.array(z.string()).describe('Actionable steps the student can take.'),
-    })
-  ).describe('A list of personalized study recommendations.'),
+const PersonalizedStudyPlanOutputSchema = z.object({
+  priorityTopics: z.array(z.string()).describe('Top topics to focus on based on low confidence.'),
+  strategy: z.string().describe('Personalized study strategy tailored to learning style.'),
+  weeklyPlan: z.string().describe('A structured weekly plan in Markdown format.'),
+  actionableSteps: z.array(z.string()).describe('Specific, actionable tasks for the student.'),
 });
 
-export type PersonalizedStudyRecommendationsOutput = z.infer<typeof PersonalizedStudyRecommendationsOutputSchema>;
+export type PersonalizedStudyPlanOutput = z.infer<typeof PersonalizedStudyPlanOutputSchema>;
 
-export async function personalizedStudyRecommendations(input: PersonalizedStudyRecommendationsInput): Promise<PersonalizedStudyRecommendationsOutput> {
-  return personalizedStudyRecommendationsFlow(input);
+export async function generatePersonalizedStudyPlan(input: PersonalizedStudyPlanInput): Promise<PersonalizedStudyPlanOutput> {
+  return personalizedStudyPlanFlow(input);
 }
 
-const personalizedStudyRecommendationsPrompt = ai.definePrompt({
-  name: 'personalizedStudyRecommendationsPrompt',
-  input: { schema: PersonalizedStudyRecommendationsInputSchema },
-  output: { schema: PersonalizedStudyRecommendationsOutputSchema },
-  prompt: `You are an AI-powered study coach for a student using the FocusFlow app. Your goal is to analyze the student's past study sessions and performance data to provide personalized, actionable recommendations for optimizing their learning.
+const personalizedStudyPlanPrompt = ai.definePrompt({
+  name: 'personalizedStudyPlanPrompt',
+  input: { schema: PersonalizedStudyPlanInputSchema },
+  output: { schema: PersonalizedStudyPlanOutputSchema },
+  prompt: `You are an expert AI Study Coach. Create a highly personalized, realistic study plan for a student based ONLY on their self-assessment and focus data.
 
-Here is the student's data:
+**Student Profile:**
+- Subjects: {{#each subjects}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+- Weak Topics: {{{topics}}}
+- Confidence Ratings (1-5):
+  - Concept Clarity: {{{ratings.conceptClarity}}}
+  - Problem Solving: {{{ratings.problemSolving}}}
+  - Exam Readiness: {{{ratings.examReadiness}}}
+- Learning Style: {{{learningStyle}}}
+- Availability: {{{studyTime.hoursPerDay}}} hours/day during {{{studyTime.preferredTime}}}
+{{#if deadlines}}- Deadlines: {{{deadlines}}}{{/if}}
 
-**Completed Study Sessions:**
-{{#if completedSessions}}
-{{#each completedSessions}}
-- Session ID: {{{sessionId}}}
-  Topic: {{{topic}}}
-  Duration: {{{durationMinutes}}} minutes
-  Focus Score: {{{focusScore}}} (1-5)
-  Notes Taken: {{{notesTaken}}}
-  Quiz Score: {{{quizScore}}}
-{{/each}}
-{{else}}
-No completed sessions data available.
+{{#if focusMetrics}}
+**Real Focus Data:**
+- Average Focus Duration: {{{focusMetrics.avgSessionDuration}}} minutes
+- Total Sessions: {{{focusMetrics.totalSessions}}}
 {{/if}}
 
-**Performance Summary:**
-{{#if performanceSummary}}
-  Overall Grade: {{{performanceSummary.overallGrade}}}
-  Weak Topics: {{#each performanceSummary.weakTopics}}- {{{this}}}
-{{/each}}
-  Strong Topics: {{#each performanceSummary.strongTopics}}- {{{this}}}
-{{/each}}
-  Recent Quiz Scores:
-  {{#each performanceSummary.recentQuizScores}}
-    - Topic: {{{topic}}}, Score: {{{score}}}
-  {{/each}}
-{{else}}
-No performance summary data available.
-{{/if}}
+**Instructions:**
+1. Identify **Priority Topics** based on the lowest confidence ratings.
+2. Formulate a **Study Strategy** that matches their learning style (Visual, Practice-based, etc.).
+3. Create a **Weekly Plan** in Markdown. If focus metrics are available, adapt session lengths to match their average focus duration.
+4. Provide **Actionable Steps** that include specific tasks and Focus Mode suggestions.
 
-**Student Preferences:**
-{{#if userPreferences}}
-  Learning Style: {{{userPreferences.learningStyle}}}
-  Preferred Study Times: {{{userPreferences.preferredStudyTimes}}}
-  Goals: {{{userPreferences.goals}}}
-{{else}}
-No user preferences available.
-{{/if}}
-
-Based on this information, provide up to 3 personalized study recommendations. For each recommendation, identify the 'topic', explain the 'reasoning' behind your choice, suggest a 'suggestedApproach' considering their learning style and goals, assign a 'priorityLevel' (High, Medium, or Low), and list concrete 'nextSteps' they can take. Ensure your recommendations are specific and directly address potential areas for improvement or reinforcement.`,
+Do NOT fabricate any quiz scores or performance data. Use the provided information to create an encouraging and actionable roadmap.`,
 });
 
-const personalizedStudyRecommendationsFlow = ai.defineFlow(
+const personalizedStudyPlanFlow = ai.defineFlow(
   {
-    name: 'personalizedStudyRecommendationsFlow',
-    inputSchema: PersonalizedStudyRecommendationsInputSchema,
-    outputSchema: PersonalizedStudyRecommendationsOutputSchema,
+    name: 'personalizedStudyPlanFlow',
+    inputSchema: PersonalizedStudyPlanInputSchema,
+    outputSchema: PersonalizedStudyPlanOutputSchema,
   },
   async (input) => {
-    const { output } = await personalizedStudyRecommendationsPrompt(input);
+    const { output } = await personalizedStudyPlanPrompt(input);
     return output!;
   }
 );

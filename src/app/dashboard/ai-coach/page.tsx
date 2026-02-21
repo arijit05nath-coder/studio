@@ -1,147 +1,416 @@
+
 "use client"
 
-import { useState } from "react"
-import { Sparkles, ArrowRight, BrainCircuit, Loader2, CheckCircle2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, ChevronLeft, Target, Book, Clock, Calendar, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { personalizedStudyRecommendations, type PersonalizedStudyRecommendationsOutput } from "@/ai/flows/personalized-study-recommendations"
-import { useUser } from "@/firebase"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { generatePersonalizedStudyPlan, type PersonalizedStudyPlanOutput } from "@/ai/flows/personalized-study-recommendations"
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, addDoc, query, orderBy, limit, serverTimestamp, where, getDocs } from "firebase/firestore"
 import { cn } from "@/lib/utils"
+
+type Step = 'intro' | 'subjects' | 'ratings' | 'preferences' | 'generating' | 'result';
 
 export default function AICoachPage() {
   const { user } = useUser()
+  const db = useFirestore()
+  const [step, setStep] = useState<Step>('intro')
   const [loading, setLoading] = useState(false)
-  const [recommendations, setRecommendations] = useState<PersonalizedStudyRecommendationsOutput | null>(null)
+  const [useFocusData, setUseFocusData] = useState(false)
+  const [plan, setPlan] = useState<PersonalizedStudyPlanOutput | null>(null)
 
-  const generateRecommendations = async () => {
-    setLoading(true)
+  // Assessment State
+  const [assessment, setAssessment] = useState({
+    subjects: [] as string[],
+    topics: "",
+    ratings: {
+      conceptClarity: 3,
+      problemSolving: 3,
+      examReadiness: 3
+    },
+    learningStyle: "mixed",
+    studyTime: {
+      hoursPerDay: 2,
+      preferredTime: "evening"
+    },
+    deadlines: ""
+  })
+
+  // Fetch Focus Data if requested
+  const fetchFocusMetrics = async () => {
+    if (!user || !db) return null;
+    const q = query(collection(db, "userProfiles", user.uid, "focusSessions"), where("status", "==", "Completed"));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    
+    const docs = snap.docs.map(d => d.data());
+    const total = docs.length;
+    const avg = docs.reduce((acc, curr) => acc + (curr.actualDurationMinutes || 0), 0) / total;
+    return { avgSessionDuration: Math.round(avg), totalSessions: total };
+  }
+
+  const handleSubmit = async () => {
+    if (!user || !db) return;
+    setStep('generating');
+    setLoading(true);
+
     try {
-      // Mock performance data for the demo
-      const result = await personalizedStudyRecommendations({
-        userId: user?.uid || "demo-user",
-        completedSessions: [
-          { sessionId: "1", topic: "Calculus: Derivatives", durationMinutes: 45, focusScore: 4, notesTaken: true, quizScore: 85 },
-          { sessionId: "2", topic: "Physics: Thermodynamics", durationMinutes: 30, focusScore: 2, notesTaken: false, quizScore: 40 },
-          { sessionId: "3", topic: "Physics: Mechanics", durationMinutes: 60, focusScore: 5, notesTaken: true, quizScore: 92 },
-        ],
-        performanceSummary: {
-          overallGrade: "B+",
-          weakTopics: ["Thermodynamics", "French Grammar"],
-          strongTopics: ["Calculus", "Classical Mechanics"],
-          recentQuizScores: [
-            { topic: "Calculus", score: 88 },
-            { topic: "Physics", score: 65 },
-          ],
-        },
-        userPreferences: {
-          learningStyle: "Visual",
-          preferredStudyTimes: "Morning",
-          goals: "Improve Physics grade and master advanced calculus concepts.",
-        }
-      })
-      setRecommendations(result)
+      let focusMetrics = null;
+      if (useFocusData) {
+        focusMetrics = await fetchFocusMetrics();
+      }
+
+      const input = {
+        userId: user.uid,
+        ...assessment,
+        focusMetrics: focusMetrics || undefined
+      };
+
+      // Save Profile
+      await addDoc(collection(db, "userProfiles", user.uid, "coachProfiles"), {
+        ...input,
+        createdAt: new Date().toISOString()
+      });
+
+      // Generate Plan
+      const result = await generatePersonalizedStudyPlan(input);
+      setPlan(result);
+
+      // Save Plan
+      await addDoc(collection(db, "userProfiles", user.uid, "studyPlans"), {
+        userId: user.uid,
+        planContent: result,
+        createdAt: new Date().toISOString()
+      });
+
+      setStep('result');
     } catch (error) {
-      console.error("Failed to fetch recommendations", error)
+      console.error("Plan generation failed", error);
+      setStep('preferences');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
+  const toggleSubject = (subj: string) => {
+    setAssessment(prev => ({
+      ...prev,
+      subjects: prev.subjects.includes(subj) 
+        ? prev.subjects.filter(s => s !== subj)
+        : [...prev.subjects, subj]
+    }))
+  }
+
+  const commonSubjects = ["Mathematics", "Physics", "Chemistry", "Biology", "History", "Literature", "Computer Science", "Business"];
+
   return (
-    <div className="space-y-8">
-      <div className="bg-accent/10 p-8 rounded-3xl border border-accent/20">
-        <div className="flex flex-col md:flex-row gap-6 items-center">
-          <div className="bg-accent p-4 rounded-2xl shadow-lg">
-            <BrainCircuit className="h-10 w-10 text-accent-foreground" />
-          </div>
-          <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold tracking-tight">AI Study Coach</h1>
-            <p className="text-muted-foreground mt-1 max-w-xl">
-              I analyze your study sessions and performance to create a personalized roadmap just for you.
-            </p>
-          </div>
-          <Button 
-            onClick={generateRecommendations} 
-            disabled={loading}
-            className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full px-8 py-6 h-auto text-lg font-bold gap-3 shadow-md"
-          >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 fill-current" />}
-            {recommendations ? "Refresh Plan" : "Generate Plan"}
-          </Button>
+    <div className="max-w-4xl mx-auto space-y-8 pb-20">
+      {/* Header */}
+      <div className="flex items-center gap-4 bg-accent/10 p-6 rounded-3xl border border-accent/20">
+        <div className="bg-accent p-3 rounded-2xl shadow-sm">
+          <BrainCircuit className="h-8 w-8 text-accent-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">AI Study Coach</h1>
+          <p className="text-muted-foreground text-sm">Let's build your personalized roadmap.</p>
         </div>
       </div>
 
-      {!recommendations && !loading && (
-        <div className="grid md:grid-cols-3 gap-6 opacity-60">
-          {[
-            { title: "Analyze Habits", desc: "We track how long and how focused you stay." },
-            { title: "Spot Weaknesses", desc: "Identify topics where you struggle the most." },
-            { title: "Personalized Steps", desc: "Get concrete actions to improve your grades." },
-          ].map((item, i) => (
-            <Card key={i} className="bg-white border-dashed border-2">
-              <CardHeader>
-                <CardTitle className="text-lg">{item.title}</CardTitle>
-                <CardDescription>{item.desc}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+      {/* Wizard Steps */}
+      {step === 'intro' && (
+        <Card className="border-none shadow-xl bg-white p-10 text-center space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-4xl font-bold text-accent-foreground">Ready to level up?</h2>
+            <p className="text-muted-foreground text-lg max-w-lg mx-auto">
+              I'll analyze your goals and learning style to create a plan that actually works for you. No dummy data, just real results.
+            </p>
+          </div>
+          <Button onClick={() => setStep('subjects')} className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8 py-6 h-auto text-lg gap-2 shadow-lg">
+            Let's build your plan <ChevronRight className="h-5 w-5" />
+          </Button>
+        </Card>
       )}
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-12 w-12 text-accent animate-spin mb-4" />
-          <p className="text-muted-foreground animate-pulse">Consulting your study data...</p>
-        </div>
+      {step === 'subjects' && (
+        <Card className="border-none shadow-xl bg-white">
+          <CardHeader>
+            <CardTitle className="text-2xl">What are we focusing on?</CardTitle>
+            <CardDescription>Select your subjects and specific topics you're struggling with.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {commonSubjects.map(subj => (
+                <Button
+                  key={subj}
+                  variant={assessment.subjects.includes(subj) ? "default" : "outline"}
+                  className={cn(
+                    "rounded-xl justify-start gap-2",
+                    assessment.subjects.includes(subj) ? "bg-accent text-accent-foreground" : ""
+                  )}
+                  onClick={() => toggleSubject(subj)}
+                >
+                  <Book className="h-4 w-4" />
+                  {subj}
+                </Button>
+              ))}
+            </div>
+            
+            <div className="space-y-3">
+              <Label className="text-lg font-bold">Specific Topics</Label>
+              <Textarea 
+                placeholder="e.g. Integration techniques, Thermodynamics laws, Cell division..."
+                value={assessment.topics}
+                onChange={e => setAssessment({...assessment, topics: e.target.value})}
+                className="min-h-[120px] rounded-2xl"
+              />
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <Button variant="ghost" onClick={() => setStep('intro')}>Back</Button>
+              <Button 
+                disabled={assessment.subjects.length === 0} 
+                onClick={() => setStep('ratings')}
+                className="bg-accent text-accent-foreground"
+              >
+                Next Step
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {recommendations && (
-        <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          {recommendations.personalizedRecommendations.map((rec, i) => (
-            <Card key={i} className="border-none shadow-sm overflow-hidden bg-white">
-              <div className={cn(
-                "h-2 w-full",
-                rec.priorityLevel === 'High' ? "bg-destructive" : rec.priorityLevel === 'Medium' ? "bg-accent" : "bg-primary"
-              )} />
-              <CardHeader>
-                <div className="flex justify-between items-start">
+      {step === 'ratings' && (
+        <Card className="border-none shadow-xl bg-white">
+          <CardHeader>
+            <CardTitle className="text-2xl">How are you feeling about these?</CardTitle>
+            <CardDescription>Rate your current status on a scale of 1 to 5.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-10">
+            {[
+              { id: 'conceptClarity', label: 'Concept Clarity', desc: 'How well do you understand the theory?' },
+              { id: 'problemSolving', label: 'Problem Solving', desc: 'How confident are you in applying knowledge?' },
+              { id: 'examReadiness', label: 'Exam Readiness', desc: 'How prepared do you feel for a test right now?' }
+            ].map((rating) => (
+              <div key={rating.id} className="space-y-4">
+                <div className="flex justify-between items-end">
                   <div>
-                    <Badge variant="outline" className="mb-2 uppercase tracking-wider text-[10px]">
-                      {rec.priorityLevel} Priority
-                    </Badge>
-                    <CardTitle className="text-2xl text-accent-foreground">{rec.topic}</CardTitle>
+                    <Label className="text-lg font-bold">{rating.label}</Label>
+                    <p className="text-xs text-muted-foreground">{rating.desc}</p>
                   </div>
+                  <Badge variant="secondary" className="text-lg px-3 py-1">
+                    {assessment.ratings[rating.id as keyof typeof assessment.ratings]}/5
+                  </Badge>
                 </div>
-                <CardDescription className="text-base text-foreground/80 mt-2">
-                  {rec.reasoning}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-muted/50 p-4 rounded-xl border">
-                  <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-accent fill-current" />
-                    Suggested Approach
-                  </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {rec.suggestedApproach}
-                  </p>
+                <Slider 
+                  value={[assessment.ratings[rating.id as keyof typeof assessment.ratings]]}
+                  min={1} max={5} step={1}
+                  onValueChange={([val]) => setAssessment({
+                    ...assessment, 
+                    ratings: { ...assessment.ratings, [rating.id]: val }
+                  })}
+                />
+              </div>
+            ))}
+
+            <div className="flex justify-between pt-4">
+              <Button variant="ghost" onClick={() => setStep('subjects')}>Back</Button>
+              <Button onClick={() => setStep('preferences')} className="bg-accent text-accent-foreground">Next Step</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === 'preferences' && (
+        <Card className="border-none shadow-xl bg-white">
+          <CardHeader>
+            <CardTitle className="text-2xl">Preferences & Schedule</CardTitle>
+            <CardDescription>Help me tailor the plan to your daily life.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label>Learning Style</Label>
+                <Select value={assessment.learningStyle} onValueChange={v => setAssessment({...assessment, learningStyle: v})}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="visual">Visual (Videos, Charts)</SelectItem>
+                    <SelectItem value="practice">Practice-based (Exercises)</SelectItem>
+                    <SelectItem value="theory">Theory-heavy (Reading, Notes)</SelectItem>
+                    <SelectItem value="discussion">Discussion (Study Groups)</SelectItem>
+                    <SelectItem value="mixed">Mixed Approach</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Preferred Study Time</Label>
+                <Select value={assessment.studyTime.preferredTime} onValueChange={v => setAssessment({...assessment, studyTime: {...assessment.studyTime, preferredTime: v}})}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning</SelectItem>
+                    <SelectItem value="afternoon">Afternoon</SelectItem>
+                    <SelectItem value="evening">Evening</SelectItem>
+                    <SelectItem value="night">Late Night</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <Label className="font-bold">Available Study Time</Label>
+                <Badge variant="outline">{assessment.studyTime.hoursPerDay} hours/day</Badge>
+              </div>
+              <Slider 
+                value={[assessment.studyTime.hoursPerDay]}
+                min={1} max={12} step={1}
+                onValueChange={([val]) => setAssessment({...assessment, studyTime: {...assessment.studyTime, hoursPerDay: val}})}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label>Upcoming Deadlines (Optional)</Label>
+              <Input 
+                placeholder="e.g. Midterms in 2 weeks, Math quiz Friday..." 
+                value={assessment.deadlines}
+                onChange={e => setAssessment({...assessment, deadlines: e.target.value})}
+                className="rounded-xl"
+              />
+            </div>
+
+            <div className="bg-primary/20 p-4 rounded-2xl flex items-center justify-between border border-primary/30">
+              <div className="flex items-center gap-3">
+                <Clock className="h-5 w-5 text-accent-foreground" />
+                <div className="text-sm">
+                  <p className="font-bold">Use Focus Mode Data?</p>
+                  <p className="text-muted-foreground text-xs">Adapt study load to your real focus consistency.</p>
                 </div>
-                
-                <div>
-                  <h4 className="font-bold text-sm mb-3">Your Next Steps</h4>
-                  <div className="grid gap-2">
-                    {rec.nextSteps.map((step, si) => (
-                      <div key={si} className="flex items-start gap-3 p-3 rounded-lg hover:bg-primary/10 transition-colors">
-                        <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                        <span className="text-sm">{step}</span>
-                      </div>
+              </div>
+              <Button 
+                variant={useFocusData ? "default" : "outline"} 
+                size="sm" 
+                onClick={() => setUseFocusData(!useFocusData)}
+                className={useFocusData ? "bg-accent text-accent-foreground" : ""}
+              >
+                {useFocusData ? "Enabled" : "Disabled"}
+              </Button>
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <Button variant="ghost" onClick={() => setStep('ratings')}>Back</Button>
+              <Button onClick={handleSubmit} className="bg-accent text-accent-foreground px-8">Generate My Plan</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === 'generating' && (
+        <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
+          <div className="relative">
+            <Loader2 className="h-16 w-16 text-accent animate-spin" />
+            <Sparkles className="h-6 w-6 text-accent absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fill-current" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Crafting your roadmap...</h2>
+            <p className="text-muted-foreground max-w-xs mx-auto">
+              Analyzing your weaknesses and balancing your schedule for maximum efficiency.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {step === 'result' && plan && (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold">Your Personalized Plan</h2>
+            <Button variant="outline" onClick={() => setStep('subjects')} className="rounded-full">
+              Edit Weaknesses
+            </Button>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="border-none shadow-sm bg-white">
+                <CardHeader className="bg-accent/5 rounded-t-lg">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Target className="h-5 w-5 text-accent" />
+                    Priority Topics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="flex flex-wrap gap-2">
+                    {plan.priorityTopics.map((topic, i) => (
+                      <Badge key={i} className="bg-destructive/10 text-destructive border-destructive/20 text-sm py-1 px-3">
+                        {topic}
+                      </Badge>
                     ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-white">
+                <CardHeader className="bg-primary/5 rounded-t-lg">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary-foreground" />
+                    Weekly Schedule
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 prose prose-sm max-w-none prose-p:text-muted-foreground prose-headings:text-accent-foreground prose-strong:text-foreground">
+                  <div dangerouslySetInnerHTML={{ __html: plan.weeklyPlan.replace(/\n/g, '<br/>') }} />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="border-none shadow-sm bg-white">
+                <CardHeader className="bg-accent/5 rounded-t-lg">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5 text-accent" />
+                    Study Strategy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {plan.strategy}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-white">
+                <CardHeader>
+                  <CardTitle className="text-lg">Next Steps</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {plan.actionableSteps.map((step, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
+                      <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                      <span className="text-sm">{step}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Button 
+                onClick={handleSubmit} 
+                disabled={loading}
+                className="w-full bg-accent text-accent-foreground py-6 rounded-2xl gap-2 font-bold"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                Regenerate Plan
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

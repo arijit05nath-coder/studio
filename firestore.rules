@@ -1,11 +1,3 @@
-/**
- * FocusFlow Security Rules
- * 
- * Core Philosophy:
- * This ruleset implements a robust, multi-tiered authorization model designed for an 
- * educational environment. It prioritizes strict data ownership for students' personal 
- * records and role-based access control for curriculum management.
- */
 
 rules_version = '2';
 service cloud.firestore {
@@ -24,64 +16,37 @@ service cloud.firestore {
     }
 
     match /userProfiles/{userId} {
-      // Allow owners to see their own data, and teachers to see all student data for monitoring
       allow get, list: if isOwner(userId) || isTeacher();
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
 
       match /focusSessions/{focusSessionId} {
         allow get, list: if isOwner(userId) || isTeacher();
-        allow create: if isOwner(userId);
-        allow update, delete: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId);
       }
 
-      match /recommendations/{recommendationId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update, delete: if isOwner(userId);
+      match /coachProfiles/{profileId} {
+        allow read, write: if isOwner(userId);
       }
-    }
-    
-    // Explicitly allow teachers to list user profiles for the teacher dashboard roster
-    match /userProfiles {
-      allow list: if isTeacher();
-    }
 
-    match /subjects/{subjectId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isTeacher();
-    }
-
-    match /topics/{topicId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isTeacher();
+      match /studyPlans/{planId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     match /materials/{materialId} {
       allow get, list: if isSignedIn();
-      allow create: if isTeacher() && request.resource.data.teacherId == request.auth.uid;
-      allow update, delete: if resource != null && resource.data.teacherId == request.auth.uid;
+      allow create: if isTeacher();
+      allow update, delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
     }
 
-    match /studyGroups/{studyGroupId} {
-      // Allow any authenticated user to view study group details and lists
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      // Only members or the monitoring teacher can update or delete group metadata
-      allow update, delete: if resource != null && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId || isTeacher());
+    match /studyGroups/{groupId} {
+      allow get, list, create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (request.auth.uid in resource.data.memberIds || isTeacher());
 
       match /messages/{messageId} {
-        // Must be a member or a teacher to read messages
-        allow read, list: if isSignedIn() && (
-          request.auth.uid in get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.memberIds || 
-          request.auth.uid == get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.teacherId ||
-          isTeacher()
-        );
-        allow create: if isSignedIn() && (
-          request.auth.uid in get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.memberIds ||
-          request.auth.uid == get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.teacherId
-        );
+        allow read, write: if isSignedIn();
       }
     }
   }
