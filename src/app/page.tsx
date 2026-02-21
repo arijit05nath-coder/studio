@@ -110,7 +110,7 @@ export default function LandingPage() {
           level: 1,
           focusGoal: 4,
           focusScore: 0,
-          theme: currentTheme // Save selected landing page theme
+          theme: currentTheme
         }, { merge: true });
 
         await signOut(auth);
@@ -270,7 +270,11 @@ export default function LandingPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-4">
-          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="text-accent font-bold">
+          <Button 
+            variant="link" 
+            onClick={() => setIsSignUp(!isSignUp)} 
+            className="text-accent font-bold text-base hover:text-accent/80 transition-all underline-offset-4 hover:underline"
+          >
             {isSignUp ? t('login') : t('signup')}
           </Button>
         </CardFooter>
