@@ -166,8 +166,17 @@ export default function StudentDashboard() {
                   Level {profile?.level || 1} Scholar
                 </Badge>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[200px] text-center">
-                <p>Your Scholar Level increases as you complete focus sessions and achieve your daily study goals!</p>
+              <TooltipContent side="bottom" className="max-w-[300px] text-center p-4">
+                <div className="space-y-2">
+                  <p className="font-bold text-accent">How to Level Up:</p>
+                  <ul className="text-xs text-left list-disc list-inside space-y-1">
+                    <li>Complete focus sessions in Focus Mode.</li>
+                    <li>Achieve 100% of your daily focus goal.</li>
+                    <li>Maintain a daily study streak.</li>
+                    <li>Every 10 hours of focused study grants level progress.</li>
+                  </ul>
+                  <p className="text-[10px] text-muted-foreground pt-2">Visit the Achievements tab for full details.</p>
+                </div>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

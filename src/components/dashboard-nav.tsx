@@ -18,7 +18,8 @@ import {
   Sun,
   Moon,
   Trees,
-  Coffee
+  Coffee,
+  Trophy
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth, useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase"
@@ -47,7 +48,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/avatar"
 import { useToast } from "@/hooks/use-toast"
 
 interface DashboardNavProps {
@@ -93,6 +94,12 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
       title: "Focus Mode",
       href: "/dashboard/focus",
       icon: Clock,
+      hideFor: 'Teacher' as const,
+    },
+    {
+      title: "Achievements",
+      href: "/dashboard/achievements",
+      icon: Trophy,
       hideFor: 'Teacher' as const,
     },
     {
