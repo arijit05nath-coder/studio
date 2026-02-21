@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { collection, query, orderBy, doc, deleteDoc, serverTimestamp, getDoc } from "firebase/firestore"
-import { useEffect } from "react"
 
 export default function MaterialsPage() {
   const { user } = useUser()
@@ -34,16 +32,16 @@ export default function MaterialsPage() {
   }, [user, db]);
 
   const materialsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "materials"), orderBy("uploadDate", "desc"));
-  }, [db]);
+  }, [db, user]);
 
   const { data: materials, isLoading } = useCollection(materialsQuery);
 
   const subjectsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "subjects"), orderBy("name", "asc"));
-  }, [db]);
+  }, [db, user]);
 
   const { data: subjects } = useCollection(subjectsQuery);
 

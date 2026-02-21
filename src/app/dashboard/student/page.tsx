@@ -45,11 +45,11 @@ export default function StudentDashboard() {
 
   const { data: todaySessions, isLoading: sessionsLoading } = useCollection(todaySessionsQuery);
 
-  // Fetch all subjects for the count
+  // Fetch all subjects for the count - Wait for user to be available to avoid permission errors
   const subjectsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return collection(db, "subjects");
-  }, [db]);
+  }, [db, user]);
   const { data: subjects, isLoading: subjectsLoading } = useCollection(subjectsQuery);
 
   // Calculate today's total focus minutes

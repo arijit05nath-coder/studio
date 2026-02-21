@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, where, orderBy, limit } from "firebase/firestore"
 import { 
   Users, 
@@ -29,36 +29,37 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function StudentProgressPage() {
+  const { user } = useUser()
   const db = useFirestore()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
 
-  // Fetch all students
+  // Fetch all students - Only proceed if teacher is signed in
   const studentsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "userProfiles"), where("role", "==", "Student"));
-  }, [db]);
+  }, [db, user]);
 
   const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery);
 
   // Fetch data for selected student
   const sessionsQuery = useMemoFirebase(() => {
-    if (!db || !selectedStudent) return null;
+    if (!db || !selectedStudent || !user) return null;
     return query(
       collection(db, "userProfiles", selectedStudent.id, "focusSessions"),
       orderBy("startTime", "desc"),
       limit(20)
     );
-  }, [db, selectedStudent]);
+  }, [db, selectedStudent, user]);
 
   const plansQuery = useMemoFirebase(() => {
-    if (!db || !selectedStudent) return null;
+    if (!db || !selectedStudent || !user) return null;
     return query(
       collection(db, "userProfiles", selectedStudent.id, "studyPlans"),
       orderBy("createdAt", "desc"),
       limit(1)
     );
-  }, [db, selectedStudent]);
+  }, [db, selectedStudent, user]);
 
   const { data: sessions, isLoading: sessionsLoading } = useCollection(sessionsQuery);
   const { data: plans, isLoading: plansLoading } = useCollection(plansQuery);

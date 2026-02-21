@@ -40,16 +40,16 @@ export default function CoursesPage() {
   }, [user, db]);
 
   const subjectsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "subjects"), orderBy("name", "asc"));
-  }, [db]);
+  }, [db, user]);
 
   const { data: subjects, isLoading } = useCollection(subjectsQuery);
 
   const materialsQuery = useMemoFirebase(() => {
-    if (!db || !selectedSubject) return null;
+    if (!db || !selectedSubject || !user) return null;
     return query(collection(db, "materials"), where("subjectId", "==", selectedSubject.id));
-  }, [db, selectedSubject]);
+  }, [db, selectedSubject, user]);
 
   const { data: relatedMaterials, isLoading: isMaterialsLoading } = useCollection(materialsQuery);
 

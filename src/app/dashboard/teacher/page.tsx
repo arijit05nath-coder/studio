@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -6,28 +5,29 @@ import { Badge } from "@/components/ui/badge"
 import { Users, BookOpen, Search, Loader2, Book } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, where, orderBy } from "firebase/firestore"
 import { useState } from "react"
 
 export default function TeacherDashboard() {
+  const { user } = useUser()
   const db = useFirestore()
   const [searchTerm, setSearchTerm] = useState("")
 
   const studentsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "userProfiles"), where("role", "==", "Student"));
-  }, [db]);
+  }, [db, user]);
 
   const materialsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "materials"), orderBy("uploadDate", "desc"));
-  }, [db]);
+  }, [db, user]);
 
   const subjectsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
     return query(collection(db, "subjects"), orderBy("name", "asc"));
-  }, [db]);
+  }, [db, user]);
 
   const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery);
   const { data: materials, isLoading: materialsLoading } = useCollection(materialsQuery);
