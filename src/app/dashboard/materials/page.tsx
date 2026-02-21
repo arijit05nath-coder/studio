@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { collection, query, orderBy, doc, deleteDoc, serverTimestamp, getDoc } from "firebase/firestore"
-import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useEffect } from "react"
 
 export default function MaterialsPage() {
@@ -20,7 +19,7 @@ export default function MaterialsPage() {
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [newMaterial, setNewMaterial] = useState({ title: "", type: "PDF", linkUrl: "" })
+  const [newMaterial, setNewMaterial] = useState({ title: "", type: "PDF" })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export default function MaterialsPage() {
   ) || [];
 
   const handleUpload = async () => {
-    if (!user || !db || !newMaterial.title) return;
+    if (!user || !db || !newMaterial.title || !selectedFile) return;
     
     setIsUploading(true);
 
@@ -55,9 +54,7 @@ export default function MaterialsPage() {
     // const downloadUrl = await getDownloadURL(storageRef);
     
     // For this prototype, we'll simulate the upload with a placeholder URL
-    const simulatedUrl = selectedFile 
-      ? `https://placeholder-storage.com/${selectedFile.name}` 
-      : newMaterial.linkUrl;
+    const simulatedUrl = `https://placeholder-storage.com/${selectedFile.name}`;
 
     addDocumentNonBlocking(collection(db, "materials"), {
       teacherId: user.uid,
@@ -72,7 +69,7 @@ export default function MaterialsPage() {
       author: user.email?.split('@')[0] || "Unknown"
     });
     
-    setNewMaterial({ title: "", type: "PDF", linkUrl: "" });
+    setNewMaterial({ title: "", type: "PDF" });
     setSelectedFile(null);
     setIsUploading(false);
   }
@@ -123,52 +120,40 @@ export default function MaterialsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="PDF">PDF Document</SelectItem>
-                      <SelectItem value="Link">Web Link</SelectItem>
                       <SelectItem value="Note">Study Note</SelectItem>
                       <SelectItem value="Video">Video Resource</SelectItem>
+                      <SelectItem value="Sheet">Spreadsheet</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
-                {newMaterial.type === 'Link' ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="url">URL</Label>
-                    <Input 
-                      id="url" 
-                      placeholder="https://..." 
-                      value={newMaterial.linkUrl}
-                      onChange={e => setNewMaterial({...newMaterial, linkUrl: e.target.value})}
-                    />
+                <div className="space-y-2">
+                  <Label htmlFor="file">Upload File</Label>
+                  <div className="flex items-center justify-center w-full">
+                    <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          <span className="font-semibold">{selectedFile ? selectedFile.name : "Click to upload"}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground/60">
+                          {newMaterial.type} (MAX. 50MB)
+                        </p>
+                      </div>
+                      <Input 
+                        id="file-upload" 
+                        type="file" 
+                        className="hidden" 
+                        onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="file">Upload File</Label>
-                    <div className="flex items-center justify-center w-full">
-                      <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
-                          <p className="mb-2 text-sm text-muted-foreground">
-                            <span className="font-semibold">{selectedFile ? selectedFile.name : "Click to upload"}</span>
-                          </p>
-                          <p className="text-xs text-muted-foreground/60">
-                            {newMaterial.type} (MAX. 50MB)
-                          </p>
-                        </div>
-                        <Input 
-                          id="file-upload" 
-                          type="file" 
-                          className="hidden" 
-                          onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
               <DialogFooter>
                 <Button 
                   onClick={handleUpload} 
-                  disabled={!newMaterial.title || (newMaterial.type !== 'Link' && !selectedFile) || isUploading}
+                  disabled={!newMaterial.title || !selectedFile || isUploading}
                   className="bg-accent text-accent-foreground w-full"
                 >
                   {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Material"}

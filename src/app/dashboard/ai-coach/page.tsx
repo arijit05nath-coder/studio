@@ -1,8 +1,7 @@
-
 "use client"
 
-import { useState, useEffect } from "react"
-import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, ChevronLeft, Target, Book, Clock, Calendar, GraduationCap } from "lucide-react"
+import { useState } from "react"
+import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, Target, Book, Clock, Calendar, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,8 +11,8 @@ import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { generatePersonalizedStudyPlan, type PersonalizedStudyPlanOutput } from "@/ai/flows/personalized-study-recommendations"
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, addDoc, query, orderBy, limit, serverTimestamp, where, getDocs } from "firebase/firestore"
+import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase"
+import { collection, query, serverTimestamp, where, getDocs } from "firebase/firestore"
 import { cn } from "@/lib/utils"
 
 type Step = 'intro' | 'subjects' | 'ratings' | 'preferences' | 'generating' | 'result';
@@ -67,14 +66,15 @@ export default function AICoachPage() {
         focusMetrics = await fetchFocusMetrics();
       }
 
+      // Create input and sanitize for Firestore (no undefined values)
       const input = {
         userId: user.uid,
         ...assessment,
-        focusMetrics: focusMetrics || undefined
+        ...(focusMetrics ? { focusMetrics } : {})
       };
 
-      // Save Profile
-      await addDoc(collection(db, "userProfiles", user.uid, "coachProfiles"), {
+      // Save Profile - Non-blocking
+      addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "coachProfiles"), {
         ...input,
         createdAt: new Date().toISOString()
       });
@@ -83,8 +83,8 @@ export default function AICoachPage() {
       const result = await generatePersonalizedStudyPlan(input);
       setPlan(result);
 
-      // Save Plan
-      await addDoc(collection(db, "userProfiles", user.uid, "studyPlans"), {
+      // Save Plan - Non-blocking
+      addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "studyPlans"), {
         userId: user.uid,
         planContent: result,
         createdAt: new Date().toISOString()
@@ -92,7 +92,6 @@ export default function AICoachPage() {
 
       setStep('result');
     } catch (error) {
-      console.error("Plan generation failed", error);
       setStep('preferences');
     } finally {
       setLoading(false);
