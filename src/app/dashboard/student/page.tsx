@@ -1,20 +1,23 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Sparkles, Book, Clock, Trophy, Loader2, Settings2 } from "lucide-react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking } from "@/firebase"
-import { collection, query, where, doc, Timestamp } from "firebase/firestore"
+import { collection, query, where, doc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { cn } from "@/lib/utils"
 
 export default function StudentDashboard() {
   const { user } = useUser()
   const db = useFirestore()
+  const router = useRouter()
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false)
 
   // Get User Profile for the focus goal
@@ -66,7 +69,6 @@ export default function StudentDashboard() {
     updateDocumentNonBlocking(doc(db, "userProfiles", user.uid), {
       focusGoal: newGoal
     });
-    setIsGoalDialogOpen(false);
   }
 
   const stats = [
@@ -167,7 +169,7 @@ export default function StudentDashboard() {
               <p className="text-xs text-muted-foreground">
                 {progressPercent >= 100 
                   ? "Amazing! You've reached your goal for today. Keep it up!" 
-                  : `You're ${currentGoalHours - parseFloat(totalHoursToday)} hours away from your daily goal. You've got this!`}
+                  : `You're ${Math.max(0, currentGoalHours - parseFloat(totalHoursToday)).toFixed(1)} hours away from your daily goal. You've got this!`}
               </p>
             </div>
           </CardContent>
