@@ -202,12 +202,14 @@ export default function LandingPage() {
         </DropdownMenu>
       </div>
 
-      <div className="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-        <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary shadow-sm">
+      <div className="mb-8 text-center">
+        <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary shadow-sm border-2 border-accent/30">
           <Sparkles className="h-10 w-10 text-accent-foreground fill-current" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">{t('appName')}</h1>
-        <p className="mt-2 text-muted-foreground max-w-sm mx-auto">{t('tagline')}</p>
+        <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">{t('appName')}</h1>
+          <p className="mt-2 text-muted-foreground max-w-sm mx-auto">{t('tagline')}</p>
+        </div>
       </div>
 
       <Card className="w-full max-w-md border-none shadow-2xl bg-card animate-in fade-in slide-in-from-bottom-4 duration-700">
