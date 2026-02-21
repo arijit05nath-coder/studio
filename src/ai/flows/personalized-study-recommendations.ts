@@ -3,7 +3,7 @@
 /**
  * @fileOverview A Genkit flow for generating personalized study plans based on student self-assessment.
  *
- * - personalizedStudyPlan - A function that provides a personalized study roadmap.
+ * - generatePersonalizedStudyPlan - A function that provides a personalized study roadmap.
  */
 
 import { ai } from '@/ai/genkit';
@@ -41,10 +41,6 @@ const PersonalizedStudyPlanOutputSchema = z.object({
 
 export type PersonalizedStudyPlanOutput = z.infer<typeof PersonalizedStudyPlanOutputSchema>;
 
-export async function generatePersonalizedStudyPlan(input: PersonalizedStudyPlanInput): Promise<PersonalizedStudyPlanOutput> {
-  return personalizedStudyPlanFlow(input);
-}
-
 const personalizedStudyPlanPrompt = ai.definePrompt({
   name: 'personalizedStudyPlanPrompt',
   input: { schema: PersonalizedStudyPlanInputSchema },
@@ -69,10 +65,10 @@ const personalizedStudyPlanPrompt = ai.definePrompt({
 {{/if}}
 
 **Instructions:**
-1. Identify **Priority Topics** based on the lowest confidence ratings.
-2. Formulate a **Study Strategy** that matches their learning style (Visual, Practice-based, etc.).
-3. Create a **Weekly Plan** in Markdown. If focus metrics are available, adapt session lengths to match their average focus duration.
-4. Provide **Actionable Steps** that include specific tasks and Focus Mode suggestions.
+1. Identify Priority Topics based on the lowest confidence ratings.
+2. Formulate a Study Strategy that matches their learning style.
+3. Create a Weekly Plan in Markdown. If focus metrics are available, adapt session lengths to match their average focus duration.
+4. Provide Actionable Steps that include specific tasks and Focus Mode suggestions.
 
 Do NOT fabricate any quiz scores or performance data. Use the provided information to create an encouraging and actionable roadmap.`,
 });
@@ -88,3 +84,7 @@ const personalizedStudyPlanFlow = ai.defineFlow(
     return output!;
   }
 );
+
+export async function generatePersonalizedStudyPlan(input: PersonalizedStudyPlanInput): Promise<PersonalizedStudyPlanOutput> {
+  return personalizedStudyPlanFlow(input);
+}

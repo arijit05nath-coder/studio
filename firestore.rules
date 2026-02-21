@@ -41,6 +41,10 @@ service cloud.firestore {
       allow update, delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
     }
 
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+    }
+
     match /studyGroups/{groupId} {
       allow get, list, create: if isSignedIn();
       allow update, delete: if isSignedIn() && (request.auth.uid in resource.data.memberIds || isTeacher());

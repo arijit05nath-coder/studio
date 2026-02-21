@@ -63,6 +63,16 @@
         "createdAt": { "type": "string", "format": "date-time" }
       }
     },
+    "Subject": {
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents an academic subject.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
     "FocusSession": {
       "title": "FocusSession",
       "type": "object",
@@ -111,6 +121,15 @@
           "schema": { "$ref": "#/backend/entities/StudyPlan" },
           "description": "AI generated study plans.",
           "params": [{ "name": "userId" }, { "name": "planId" }]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}",
+        "definition": {
+          "entityName": "Subject",
+          "schema": { "$ref": "#/backend/entities/Subject" },
+          "description": "Academic subjects list.",
+          "params": [{ "name": "subjectId" }]
         }
       }
     ]
