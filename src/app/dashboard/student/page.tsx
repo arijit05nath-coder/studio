@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -5,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, Book, Clock, Trophy, Loader2, Settings2, Target, Calendar, ChevronRight, Lightbulb, TrendingUp } from "lucide-react"
+import { Sparkles, Book, Clock, Trophy, Loader2, Settings2, Target, Calendar, ChevronRight, Lightbulb, TrendingUp, Info } from "lucide-react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking } from "@/firebase"
 import { collection, query, where, doc, orderBy, limit } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const chartConfig = {
   current: {
@@ -156,9 +158,19 @@ export default function StudentDashboard() {
           <p className="text-muted-foreground">Welcome back, {profile?.firstName || 'Student'}! Here's your real-time study overview.</p>
         </div>
         <div className="hidden md:block">
-           <Badge variant="outline" className="px-4 py-2 rounded-full bg-card">
-              Level {profile?.level || 1} Scholar
-           </Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="px-4 py-2 rounded-full bg-card cursor-help border-accent/30 text-accent-foreground flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4" />
+                  Level {profile?.level || 1} Scholar
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                <p>Your Scholar Level increases as you complete focus sessions and achieve your daily study goals!</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
