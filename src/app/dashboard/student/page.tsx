@@ -68,8 +68,8 @@ export default function StudentDashboard() {
   }, [todaySessions]);
 
   const currentGoalHours = profile?.focusGoal || 4;
-  const totalHoursToday = (totalMinutesToday / 60).toFixed(1);
-  const progressPercent = Math.min(Math.round((parseFloat(totalHoursToday) / currentGoalHours) * 100), 100);
+  const todayTimeFormatted = `${Math.floor(totalMinutesToday / 60)}h ${totalMinutesToday % 60}min`;
+  const progressPercent = Math.min(Math.round(((totalMinutesToday / 60) / currentGoalHours) * 100), 100);
 
   const handleUpdateGoal = (newGoal: number) => {
     if (!user || !db) return;
@@ -79,7 +79,7 @@ export default function StudentDashboard() {
   }
 
   const stats = [
-    { title: "Today's Focus", value: `${totalHoursToday}h`, icon: Clock, color: "text-blue-500" },
+    { title: "Today's Focus", value: todayTimeFormatted, icon: Clock, color: "text-blue-500" },
     { title: "Courses", value: subjects?.length || 0, icon: Book, color: "text-purple-500" },
     { title: "Focus Score", value: profile?.focusScore || 0, icon: Sparkles, color: "text-accent-foreground" },
     { title: "Total Sessions", value: todaySessions?.length || 0, icon: Trophy, color: "text-yellow-500" },
@@ -165,7 +165,7 @@ export default function StudentDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium text-accent-foreground">{progressPercent}% of daily goal</span>
-                  <span className="text-muted-foreground">{totalHoursToday} / {currentGoalHours} hrs</span>
+                  <span className="text-muted-foreground">{todayTimeFormatted} / {currentGoalHours}h</span>
                 </div>
                 <Progress value={progressPercent} className="h-3 bg-primary/20" />
               </div>
@@ -177,7 +177,7 @@ export default function StudentDashboard() {
                 <p className="text-xs text-muted-foreground">
                   {progressPercent >= 100 
                     ? "Amazing! You've reached your goal for today. Keep it up!" 
-                    : `You're ${Math.max(0, currentGoalHours - parseFloat(totalHoursToday)).toFixed(1)} hours away from your daily goal. You've got this!`}
+                    : `You're ${Math.max(0, currentGoalHours - (totalMinutesToday / 60)).toFixed(1)} hours away from your daily goal. You've got this!`}
                 </p>
               </div>
             </CardContent>

@@ -448,7 +448,7 @@ export default function GroupsPage() {
                                 <div className="flex flex-col items-end shrink-0">
                                   <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3 text-muted-foreground" />
-                                    <span className="font-bold">{(item.totalMinutes / 60).toFixed(1)}h</span>
+                                    <span className="font-bold">{Math.floor(item.totalMinutes / 60)}h {item.totalMinutes % 60}min</span>
                                   </div>
                                   <span className="text-[10px] text-muted-foreground">This week</span>
                                 </div>
