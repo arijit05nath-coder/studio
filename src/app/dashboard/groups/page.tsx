@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -15,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { collection, query, where, serverTimestamp, orderBy } from "firebase/firestore"
+import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function GroupsPage() {
@@ -25,30 +24,53 @@ export default function GroupsPage() {
   const [message, setMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [newGroup, setNewGroup] = useState({ name: "", description: "" })
+  const [userRole, setUserRole] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Real-time groups the user is a member of
+  useEffect(() => {
+    const checkRole = async () => {
+      if (user && db) {
+        const snap = await getDoc(doc(db, "userProfiles", user.uid));
+        if (snap.exists()) setUserRole(snap.data().role);
+      }
+    };
+    checkRole();
+  }, [user, db]);
+
+  // Real-time groups the user is a member of or monitoring (if teacher)
   const groupsQuery = useMemoFirebase(() => {
-    if (!user || !db) return null;
+    if (!user || !db || !userRole) return null;
+    
     return query(
       collection(db, "studyGroups"),
-      where("memberIds", "array-contains", user.uid)
+      or(
+        where("memberIds", "array-contains", user.uid),
+        where("teacherId", "==", user.uid)
+      )
     );
-  }, [user, db]);
+  }, [user, db, userRole]);
 
   const { data: groups, isLoading: groupsLoading } = useCollection(groupsQuery);
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
   // Real-time messages for the selected group
-  // Filter by memberIds to satisfy security rules for 'list' operations
   const messagesQuery = useMemoFirebase(() => {
-    if (!selectedGroupId || !db || !user) return null;
+    if (!selectedGroupId || !db || !user || !userRole) return null;
+    
+    const messagesRef = collection(db, "studyGroups", selectedGroupId, "messages");
+    
+    // Students must filter by their membership to satisfy rules efficiently
+    // Teachers bypass this filter as they have broader read access in rules
+    if (userRole === 'Teacher') {
+      return query(messagesRef, orderBy("timestamp", "asc"));
+    }
+
     return query(
-      collection(db, "studyGroups", selectedGroupId, "messages"),
+      messagesRef,
       where("memberIds", "array-contains", user.uid),
       orderBy("timestamp", "asc")
     );
-  }, [selectedGroupId, db, user]);
+  }, [selectedGroupId, db, user, userRole]);
 
   const { data: messages } = useCollection(messagesQuery);
 
@@ -63,7 +85,7 @@ export default function GroupsPage() {
 
     addDocumentNonBlocking(collection(db, "studyGroups", selectedGroupId, "messages"), {
       senderId: user.uid,
-      senderName: user.email?.split('@')[0] || "Student",
+      senderName: user.email?.split('@')[0] || "User",
       text: message.trim(),
       timestamp: serverTimestamp(),
       memberIds: selectedGroup.memberIds // Denormalize for security rules
@@ -79,6 +101,7 @@ export default function GroupsPage() {
       name: newGroup.name,
       description: newGroup.description || "No description provided.",
       memberIds: [user.uid],
+      teacherId: userRole === 'Teacher' ? user.uid : null,
       dateCreated: new Date().toISOString(),
       timestamp: serverTimestamp()
     });
@@ -209,7 +232,7 @@ export default function GroupsPage() {
                 <CardHeader className="pb-2 border-b">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <MessageSquare className="h-5 w-5 text-accent" />
-                    Chat
+                    Chat {userRole === 'Teacher' && <Badge variant="secondary" className="ml-2">Monitoring Mode</Badge>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">

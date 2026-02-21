@@ -69,13 +69,19 @@ service cloud.firestore {
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
       // Only members or the monitoring teacher can update or delete group metadata
-      allow update, delete: if resource != null && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId);
+      allow update, delete: if resource != null && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId || isTeacher());
 
       match /messages/{messageId} {
-        // Must be a member to read messages
-        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.memberIds;
-        allow list: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.memberIds;
-        allow create: if isSignedIn() && request.auth.uid in request.resource.data.memberIds;
+        // Must be a member or a teacher to read messages
+        allow read, list: if isSignedIn() && (
+          request.auth.uid in get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.memberIds || 
+          request.auth.uid == get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.teacherId ||
+          isTeacher()
+        );
+        allow create: if isSignedIn() && (
+          request.auth.uid in get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.memberIds ||
+          request.auth.uid == get(/databases/$(database)/documents/studyGroups/$(studyGroupId)).data.teacherId
+        );
       }
     }
   }
