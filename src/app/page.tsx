@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from "@/firebase"
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth"
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth"
 import { doc, getDoc, serverTimestamp } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
@@ -77,8 +77,17 @@ export default function LandingPage() {
           theme: 'default'
         }, { merge: true });
 
-        toast({ title: "Account created successfully!" });
-        router.push(mappedRole === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
+        // Sign out immediately after sign up to force login
+        await signOut(auth);
+        
+        // Reset state to show login form
+        setIsSignUp(false);
+        setPassword("");
+        
+        toast({ 
+          title: "Account created successfully!", 
+          description: "Please log in with your new credentials." 
+        });
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
