@@ -273,7 +273,7 @@ export default function LandingPage() {
           <Button 
             variant="link" 
             onClick={() => setIsSignUp(!isSignUp)} 
-            className="text-accent font-bold text-base hover:text-accent/80 transition-all underline-offset-4 hover:underline"
+            className="text-accent font-bold text-base hover:text-accent/80 transition-all underline-offset-4 hover:underline bg-accent/5 px-6 py-2 rounded-full border border-accent/10"
           >
             {isSignUp ? t('login') : t('signup')}
           </Button>
