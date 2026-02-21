@@ -1,8 +1,9 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser, useFirestore, useDoc, updateDocumentNonBlocking } from "@/firebase"
-import { doc, updateEmail } from "firebase/auth"
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
+import { updateEmail } from "firebase/auth"
 import { doc as firestoreDoc } from "firebase/firestore"
 import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -27,8 +28,13 @@ export default function ProfilePage() {
   const db = useFirestore()
   const { toast } = useToast()
   
-  const profileRef = useDoc(user ? firestoreDoc(db, "userProfiles", user.uid) : null)
-  const profile = profileRef.data
+  const profileDocRef = useMemoFirebase(() => {
+    if (!user || !db) return null;
+    return firestoreDoc(db, "userProfiles", user.uid);
+  }, [user, db]);
+
+  const profileResult = useDoc(profileDocRef);
+  const profile = profileResult.data;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -88,7 +94,7 @@ export default function ProfilePage() {
     toast({ title: `Theme changed to ${THEMES.find(t => t.id === themeId)?.name}` })
   }
 
-  if (profileRef.isLoading) {
+  if (profileResult.isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
