@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -100,7 +101,7 @@ export default function LandingPage() {
         <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary">
           <Sparkles className="h-10 w-10 text-accent-foreground fill-current" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">FocusFlow</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">StudyNest</h1>
         <p className="mt-2 text-muted-foreground">Elevate your learning experience with AI-powered focus.</p>
       </div>
 
@@ -110,7 +111,7 @@ export default function LandingPage() {
             {isSignUp ? "Create an account" : "Welcome back"}
           </CardTitle>
           <CardTitle className="text-center font-normal text-muted-foreground text-sm mt-2">
-            {isSignUp ? "Join FocusFlow today" : "Log in to your account to continue"}
+            {isSignUp ? "Join StudyNest today" : "Log in to your account to continue"}
           </CardTitle>
         </CardHeader>
         <CardContent>

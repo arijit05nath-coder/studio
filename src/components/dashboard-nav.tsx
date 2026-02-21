@@ -149,7 +149,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                   <Sparkles className="size-4 fill-current" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold">FocusFlow</span>
+                  <span className="truncate font-semibold">StudyNest</span>
                 </div>
               </Link>
             </SidebarMenuButton>

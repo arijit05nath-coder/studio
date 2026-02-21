@@ -4,7 +4,7 @@
     "UserProfile": {
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user within the FocusFlow application.",
+      "description": "Represents a user within the StudyNest application.",
       "properties": {
         "id": { "type": "string" },
         "firstName": { "type": "string" },

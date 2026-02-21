@@ -5,7 +5,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'FocusFlow',
+  title: 'StudyNest',
   description: 'AI-powered study tool for students and teachers',
 };
 

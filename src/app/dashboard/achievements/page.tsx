@@ -50,7 +50,7 @@ export default function AchievementsPage() {
           <Card className="border-none shadow-sm bg-card overflow-hidden">
             <CardHeader className="bg-accent/5">
               <CardTitle>The Scholar Level System</CardTitle>
-              <CardDescription>How to advance your academic rank on FocusFlow.</CardDescription>
+              <CardDescription>How to advance your academic rank on StudyNest.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <div className="grid gap-4">
