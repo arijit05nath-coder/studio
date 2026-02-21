@@ -9,10 +9,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, where, orderBy } from "firebase/firestore"
 import { useState } from "react"
+import { useI18n } from "@/lib/i18n-store"
 
 export default function TeacherDashboard() {
   const { user } = useUser()
   const db = useFirestore()
+  const { t } = useI18n()
   const [searchTerm, setSearchTerm] = useState("")
 
   const studentsQuery = useMemoFirebase(() => {
@@ -41,19 +43,19 @@ export default function TeacherDashboard() {
 
   const stats = [
     { 
-      title: "Active Students", 
+      title: t('activeStudents'), 
       value: studentsLoading ? "..." : (students?.length || 0).toString(), 
       icon: Users, 
       color: "text-blue-600" 
     },
     { 
-      title: "Shared Resources", 
+      title: t('sharedResources'), 
       value: materialsLoading ? "..." : (materials?.length || 0).toString(), 
       icon: BookOpen, 
       color: "text-indigo-600" 
     },
     { 
-      title: "Total Courses", 
+      title: t('totalCourses'), 
       value: subjectsLoading ? "..." : (subjects?.length || 0).toString(), 
       icon: Book, 
       color: "text-emerald-600" 
@@ -63,8 +65,8 @@ export default function TeacherDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Teacher Overview</h1>
-        <p className="text-muted-foreground">Monitor class activity and student performance in real-time.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('appName')}</h1>
+        <p className="text-muted-foreground">{t('welcomeBack')}! Monitor class activity in real-time.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -88,13 +90,13 @@ export default function TeacherDashboard() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Student Roster</CardTitle>
-                <CardDescription>View all enrolled students and their contact info.</CardDescription>
+                <CardTitle>{t('studentRoster')}</CardTitle>
+                <CardDescription>{t('enrolledStudents')}</CardDescription>
               </div>
               <div className="relative w-64">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search students..." 
+                  placeholder={t('searchStudents')} 
                   className="pl-8 h-9 rounded-full bg-muted/30 border-none"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
