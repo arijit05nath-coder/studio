@@ -20,6 +20,7 @@ export default function LandingPage() {
   const [password, setPassword] = useState("")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
+  const [qualification, setQualification] = useState("")
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -63,6 +64,7 @@ export default function LandingPage() {
           lastName: lastName.trim(),
           email,
           role: role === 'teacher' ? 'Teacher' : 'Student',
+          educationalQualification: role === 'student' ? qualification.trim() : "",
           dateCreated: serverTimestamp(),
           level: 1,
           focusGoal: 4,
@@ -153,6 +155,19 @@ export default function LandingPage() {
                       />
                     </div>
                   </div>
+                  {role === 'student' && (
+                    <div className="flex flex-col space-y-1.5">
+                      <Label htmlFor="qualification">Educational Qualification</Label>
+                      <Input 
+                        id="qualification" 
+                        placeholder="e.g. High School Senior, Undergraduate" 
+                        value={qualification}
+                        onChange={(e) => setQualification(e.target.value)}
+                        required
+                        className="bg-background"
+                      />
+                    </div>
+                  )}
                 </>
               )}
               

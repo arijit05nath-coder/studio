@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { updateEmail } from "firebase/auth"
 import { doc as firestoreDoc } from "firebase/firestore"
-import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee } from "lucide-react"
+import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -40,6 +40,7 @@ export default function ProfilePage() {
     firstName: "",
     lastName: "",
     email: "",
+    educationalQualification: "",
   })
   const [loading, setLoading] = useState(false)
 
@@ -49,6 +50,7 @@ export default function ProfilePage() {
         firstName: profile.firstName || "",
         lastName: profile.lastName || "",
         email: profile.email || "",
+        educationalQualification: profile.educationalQualification || "",
       })
     }
   }, [profile])
@@ -63,6 +65,7 @@ export default function ProfilePage() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
+        educationalQualification: formData.educationalQualification,
       })
 
       if (formData.email !== user.email) {
@@ -131,6 +134,12 @@ export default function ProfilePage() {
               <Mail className="h-4 w-4 text-accent" />
               <span className="truncate">{formData.email}</span>
             </div>
+            {profile?.role === 'Student' && profile?.educationalQualification && (
+              <div className="flex items-center gap-3 text-sm">
+                <GraduationCap className="h-4 w-4 text-accent" />
+                <span className="truncate">{profile.educationalQualification}</span>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -172,6 +181,18 @@ export default function ProfilePage() {
                     className="rounded-xl"
                   />
                 </div>
+                {profile?.role === 'Student' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="qualification">Educational Qualification</Label>
+                    <Input 
+                      id="qualification" 
+                      value={formData.educationalQualification} 
+                      onChange={e => setFormData({...formData, educationalQualification: e.target.value})}
+                      placeholder="e.g. High School Senior, Undergraduate"
+                      className="rounded-xl"
+                    />
+                  </div>
+                )}
                 <Button disabled={loading} className="bg-accent text-accent-foreground rounded-xl px-8 shadow-sm hover:shadow-md transition-all">
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                   Save Changes
