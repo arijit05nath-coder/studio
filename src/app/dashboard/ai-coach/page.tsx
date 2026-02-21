@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -13,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { generatePersonalizedStudyPlan, type PersonalizedStudyPlanOutput } from "@/ai/flows/personalized-study-recommendations"
 import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase"
-import { collection, query, serverTimestamp, where, getDocs } from "firebase/firestore"
+import { collection, query, where, getDocs } from "firebase/firestore"
 import { cn } from "@/lib/utils"
 
 type Step = 'intro' | 'subjects' | 'ratings' | 'preferences' | 'generating' | 'result';
@@ -70,7 +69,12 @@ export default function AICoachPage() {
       // Create input and sanitize for Firestore (no undefined values)
       const input: any = {
         userId: user.uid,
-        ...assessment,
+        subjects: assessment.subjects,
+        topics: assessment.topics,
+        ratings: assessment.ratings,
+        learningStyle: assessment.learningStyle,
+        studyTime: assessment.studyTime,
+        deadlines: assessment.deadlines || ""
       };
 
       if (focusMetrics) {

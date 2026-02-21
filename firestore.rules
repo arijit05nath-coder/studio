@@ -26,11 +26,13 @@ service cloud.firestore {
       }
 
       match /coachProfiles/{profileId} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId) || isTeacher();
+        allow write: if isOwner(userId);
       }
 
       match /studyPlans/{planId} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId) || isTeacher();
+        allow write: if isOwner(userId);
       }
     }
 

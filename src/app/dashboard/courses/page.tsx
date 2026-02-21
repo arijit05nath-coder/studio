@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc, where } from "firebase/firestore"
-import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Edit, Video, Link as LinkIcon } from "lucide-react"
+import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Edit, Video, UploadCloud } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -274,21 +273,32 @@ export default function CoursesPage() {
                     <Input 
                       id="resTitle" 
                       placeholder="e.g. Chapter 1 Intro Video" 
-                      size={32} 
                       className="h-8"
                       value={newResource.title}
                       onChange={e => setNewResource({...newResource, title: e.target.value})}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="resUrl" className="text-xs">Link / URL</Label>
-                    <Input 
-                      id="resUrl" 
-                      placeholder="https://..." 
-                      className="h-8"
-                      value={newResource.url}
-                      onChange={e => setNewResource({...newResource, url: e.target.value})}
-                    />
+                    <Label htmlFor="resFile" className="text-xs">Upload Resource File</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                         <Input 
+                          id="resFile" 
+                          type="file"
+                          className="h-8 text-xs cursor-pointer opacity-0 absolute inset-0 z-10"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setNewResource({...newResource, url: `https://storage.placeholder.com/${file.name}`})
+                            }
+                          }}
+                        />
+                        <div className="h-8 flex items-center px-3 border rounded-md bg-white text-xs text-muted-foreground">
+                          <UploadCloud className="h-3 w-3 mr-2" />
+                          {newResource.url ? newResource.url.split('/').pop() : "Select a file..."}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1 space-y-1">
