@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase"
@@ -28,6 +27,7 @@ export default function AchievementsPage() {
   ]
 
   const currentLevel = profile?.level || 1;
+  const levelData = levels.find(l => l.level === currentLevel) || levels[0];
 
   return (
     <div className="space-y-8 pb-20">
@@ -41,7 +41,7 @@ export default function AchievementsPage() {
         </div>
         <Badge variant="outline" className="px-6 py-3 rounded-full text-lg font-bold bg-accent/10 border-accent/30 text-accent-foreground gap-2">
           <GraduationCap className="h-5 w-5" />
-          Level {currentLevel} {levels.find(l => l.level === currentLevel)?.title}
+          Level {currentLevel} {levelData.title}
         </Badge>
       </div>
 
