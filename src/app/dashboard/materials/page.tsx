@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebas
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, FileText, Link as LinkIcon, Download, Plus, Trash2, Loader2, Globe } from "lucide-react"
+import { Search, FileText, Globe, Download, Plus, Trash2, Loader2, UploadCloud } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,9 @@ export default function MaterialsPage() {
   const db = useFirestore()
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [newMaterial, setNewMaterial] = useState({ title: "", type: "PDF", linkUrl: "" })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
     const checkRole = async () => {
@@ -42,9 +44,21 @@ export default function MaterialsPage() {
     m.title.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!user || !db || !newMaterial.title) return;
     
+    setIsUploading(true);
+
+    // In a real app with Storage, we would upload the file here:
+    // const storageRef = ref(storage, `materials/${selectedFile.name}`);
+    // await uploadBytes(storageRef, selectedFile);
+    // const downloadUrl = await getDownloadURL(storageRef);
+    
+    // For this prototype, we'll simulate the upload with a placeholder URL
+    const simulatedUrl = selectedFile 
+      ? `https://placeholder-storage.com/${selectedFile.name}` 
+      : newMaterial.linkUrl;
+
     addDocumentNonBlocking(collection(db, "materials"), {
       teacherId: user.uid,
       subjectId: "General",
@@ -52,13 +66,15 @@ export default function MaterialsPage() {
       title: newMaterial.title,
       description: "Shared resource",
       type: newMaterial.type,
-      linkUrl: newMaterial.linkUrl,
+      linkUrl: simulatedUrl,
       uploadDate: new Date().toISOString(),
       dateCreated: serverTimestamp(),
       author: user.email?.split('@')[0] || "Unknown"
     });
     
     setNewMaterial({ title: "", type: "PDF", linkUrl: "" });
+    setSelectedFile(null);
+    setIsUploading(false);
   }
 
   const handleDelete = (id: string) => {
@@ -77,58 +93,86 @@ export default function MaterialsPage() {
         {isTeacher && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2">
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
                 Upload Material
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-2xl">
+            <DialogContent className="rounded-2xl max-w-md">
               <DialogHeader>
                 <DialogTitle>Upload New Material</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="title" className="text-right">Title</Label>
+              <div className="grid gap-6 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title</Label>
                   <Input 
                     id="title" 
-                    className="col-span-3" 
-                    placeholder="Resource name" 
+                    placeholder="e.g. Advanced Calculus Notes" 
                     value={newMaterial.title}
                     onChange={e => setNewMaterial({...newMaterial, title: e.target.value})}
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="type" className="text-right">Type</Label>
-                  <div className="col-span-3">
-                    <Select 
-                      value={newMaterial.type} 
-                      onValueChange={v => setNewMaterial({...newMaterial, type: v})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PDF">PDF Document</SelectItem>
-                        <SelectItem value="Link">Web Link</SelectItem>
-                        <SelectItem value="Note">Study Note</SelectItem>
-                        <SelectItem value="Video">Video Resource</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="type">Material Type</Label>
+                  <Select 
+                    value={newMaterial.type} 
+                    onValueChange={v => setNewMaterial({...newMaterial, type: v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PDF">PDF Document</SelectItem>
+                      <SelectItem value="Link">Web Link</SelectItem>
+                      <SelectItem value="Note">Study Note</SelectItem>
+                      <SelectItem value="Video">Video Resource</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {newMaterial.type === 'Link' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="url">URL</Label>
+                    <Input 
+                      id="url" 
+                      placeholder="https://..." 
+                      value={newMaterial.linkUrl}
+                      onChange={e => setNewMaterial({...newMaterial, linkUrl: e.target.value})}
+                    />
                   </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="url" className="text-right">URL</Label>
-                  <Input 
-                    id="url" 
-                    className="col-span-3" 
-                    placeholder="https://..." 
-                    value={newMaterial.linkUrl}
-                    onChange={e => setNewMaterial({...newMaterial, linkUrl: e.target.value})}
-                  />
-                </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="file">Upload File</Label>
+                    <div className="flex items-center justify-center w-full">
+                      <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
+                          <p className="mb-2 text-sm text-muted-foreground">
+                            <span className="font-semibold">{selectedFile ? selectedFile.name : "Click to upload"}</span>
+                          </p>
+                          <p className="text-xs text-muted-foreground/60">
+                            {newMaterial.type} (MAX. 50MB)
+                          </p>
+                        </div>
+                        <Input 
+                          id="file-upload" 
+                          type="file" 
+                          className="hidden" 
+                          onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter>
-                <Button onClick={handleUpload} className="bg-accent text-accent-foreground">Save Material</Button>
+                <Button 
+                  onClick={handleUpload} 
+                  disabled={!newMaterial.title || (newMaterial.type !== 'Link' && !selectedFile) || isUploading}
+                  className="bg-accent text-accent-foreground w-full"
+                >
+                  {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Material"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -159,7 +203,7 @@ export default function MaterialsPage() {
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg leading-tight">{material.title}</CardTitle>
-                  <Badge variant="outline">{material.subjectId}</Badge>
+                  <Badge variant="outline" className="text-[10px]">{material.type}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground space-y-1">
@@ -167,23 +211,23 @@ export default function MaterialsPage() {
                 <p>Date: {material.uploadDate ? new Date(material.uploadDate).toLocaleDateString() : 'N/A'}</p>
               </CardContent>
               <CardFooter className="flex justify-between pt-2">
-                <Button variant="ghost" size="sm" className="gap-2" asChild>
+                <Button variant="ghost" size="sm" className="gap-2 text-accent-foreground hover:bg-accent/10" asChild>
                   <a href={material.linkUrl || "#"} target="_blank" rel="noopener noreferrer">
                     <Download className="h-4 w-4" />
                     Access
                   </a>
                 </Button>
                 {(isTeacher || user?.uid === material.teacherId) && (
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(material.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(material.id)} className="text-destructive hover:bg-destructive/10">
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </CardFooter>
             </Card>
           ))}
           {filtered.length === 0 && !isLoading && (
-            <div className="col-span-full text-center py-20 text-muted-foreground">
-              No materials found.
+            <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-3xl">
+              No materials found. Start by uploading one!
             </div>
           )}
         </div>

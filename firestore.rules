@@ -42,6 +42,11 @@ service cloud.firestore {
         allow update, delete: if isOwner(userId);
       }
     }
+    
+    // Explicitly allow teachers to list user profiles for the teacher dashboard roster
+    match /userProfiles {
+      allow list: if isTeacher();
+    }
 
     match /subjects/{subjectId} {
       allow get, list: if isSignedIn();
