@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, Target, Book, Clock, Calendar, GraduationCap, Youtube, ExternalLink, Lightbulb } from "lucide-react"
+import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, Target, Book, Clock, Calendar, GraduationCap, Youtube, ExternalLink, Lightbulb, Plus, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -14,16 +14,20 @@ import { generatePersonalizedStudyPlan, type PersonalizedStudyPlanOutput } from 
 import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 type Step = 'intro' | 'subjects' | 'ratings' | 'preferences' | 'generating' | 'result';
 
 export default function AICoachPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const { toast } = useToast()
   const [step, setStep] = useState<Step>('intro')
   const [loading, setLoading] = useState(false)
   const [useFocusData, setUseFocusData] = useState(false)
   const [plan, setPlan] = useState<PersonalizedStudyPlanOutput | null>(null)
+  const [customSubject, setCustomSubject] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
 
   const [assessment, setAssessment] = useState({
     subjects: [] as string[],
@@ -78,26 +82,39 @@ export default function AICoachPage() {
         input.focusMetrics = focusMetrics;
       }
 
-      addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "coachProfiles"), {
-        ...input,
-        createdAt: new Date().toISOString()
-      });
-
       const result = await generatePersonalizedStudyPlan(input);
       setPlan(result);
-
-      addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "studyPlans"), {
-        userId: user.uid,
-        planContent: result,
-        createdAt: new Date().toISOString()
-      });
-
       setStep('result');
     } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Generation failed",
+        description: "Could not generate your plan. Please try again."
+      })
       setStep('preferences');
     } finally {
       setLoading(false);
     }
+  }
+
+  const handleSavePlan = () => {
+    if (!user || !db || !plan) return;
+    setIsSaving(true);
+
+    addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "studyPlans"), {
+      userId: user.uid,
+      planContent: plan,
+      createdAt: new Date().toISOString(),
+      assessment: assessment
+    });
+
+    setTimeout(() => {
+      setIsSaving(false);
+      toast({
+        title: "Plan Saved!",
+        description: "You can view your saved study plans in your dashboard."
+      });
+    }, 500);
   }
 
   const toggleSubject = (subj: string) => {
@@ -107,6 +124,16 @@ export default function AICoachPage() {
         ? prev.subjects.filter(s => s !== subj)
         : [...prev.subjects, subj]
     }))
+  }
+
+  const addCustomSubject = () => {
+    if (customSubject.trim() && !assessment.subjects.includes(customSubject.trim())) {
+      setAssessment(prev => ({
+        ...prev,
+        subjects: [...prev.subjects, customSubject.trim()]
+      }));
+      setCustomSubject("");
+    }
   }
 
   const commonSubjects = ["Mathematics", "Physics", "Chemistry", "Biology", "History", "Literature", "Computer Science", "Business"];
@@ -144,21 +171,49 @@ export default function AICoachPage() {
             <CardDescription>Select your subjects and specific topics you're struggling with.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {commonSubjects.map(subj => (
-                <Button
-                  key={subj}
-                  variant={assessment.subjects.includes(subj) ? "default" : "outline"}
-                  className={cn(
-                    "rounded-xl justify-start gap-2",
-                    assessment.subjects.includes(subj) ? "bg-accent text-accent-foreground" : ""
-                  )}
-                  onClick={() => toggleSubject(subj)}
-                >
-                  <Book className="h-4 w-4" />
-                  {subj}
+            <div className="space-y-4">
+              <Label className="text-lg font-bold">Common Subjects</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {commonSubjects.map(subj => (
+                  <Button
+                    key={subj}
+                    variant={assessment.subjects.includes(subj) ? "default" : "outline"}
+                    className={cn(
+                      "rounded-xl justify-start gap-2",
+                      assessment.subjects.includes(subj) ? "bg-accent text-accent-foreground" : ""
+                    )}
+                    onClick={() => toggleSubject(subj)}
+                  >
+                    <Book className="h-4 w-4" />
+                    {subj}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Label className="text-lg font-bold">Add Other Subjects</Label>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="e.g. Psychology, Art History..." 
+                  value={customSubject}
+                  onChange={(e) => setCustomSubject(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addCustomSubject()}
+                  className="rounded-xl"
+                />
+                <Button variant="outline" onClick={addCustomSubject} className="rounded-xl">
+                  <Plus className="h-4 w-4 mr-2" /> Add
                 </Button>
-              ))}
+              </div>
+              {assessment.subjects.filter(s => !commonSubjects.includes(s)).length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {assessment.subjects.filter(s => !commonSubjects.includes(s)).map(subj => (
+                    <Badge key={subj} variant="secondary" className="px-3 py-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive" onClick={() => toggleSubject(subj)}>
+                      {subj} ×
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="space-y-3">
@@ -333,9 +388,15 @@ export default function AICoachPage() {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold">Your Personalized Plan</h2>
-            <Button variant="outline" onClick={() => setStep('subjects')} className="rounded-full">
-              Edit Assessment
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep('subjects')} className="rounded-full">
+                Edit Assessment
+              </Button>
+              <Button onClick={handleSavePlan} disabled={isSaving} className="bg-accent text-accent-foreground rounded-full gap-2">
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Save Plan
+              </Button>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
