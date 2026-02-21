@@ -100,7 +100,11 @@ export default function StudentProgressPage() {
           </div>
         ) : filteredStudents.length > 0 ? (
           filteredStudents.map((student) => (
-            <Card key={student.id} className="border-none shadow-sm bg-white hover:shadow-md transition-all cursor-pointer group" onClick={() => setSelectedStudent(student)}>
+            <Card 
+              key={student.id} 
+              className="border-none shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" 
+              onClick={() => setSelectedStudent(student)}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12 border">
