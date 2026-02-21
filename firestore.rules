@@ -51,16 +51,21 @@ service cloud.firestore {
     }
 
     match /studyGroups/{groupId} {
+      // Helper to check if user is member or teacher of the group
+      function canAccessGroup() {
+        let group = get(/databases/$(database)/documents/studyGroups/$(groupId)).data;
+        return isTeacher() || (request.auth.uid in group.memberIds) || (request.auth.uid == group.teacherId);
+      }
+
       allow read, create: if isSignedIn();
       allow update, delete: if isSignedIn() && (isTeacher() || (request.auth.uid in resource.data.memberIds));
 
       match /messages/{messageId} {
-        // More efficient rule using denormalized memberIds
-        allow read: if isSignedIn() && (
-          isTeacher() || 
-          (request.auth.uid in resource.data.memberIds)
-        );
-        allow create: if isSignedIn() && (request.resource.data.senderId == request.auth.uid);
+        // Allow reading messages if the user can access the group
+        allow read: if isSignedIn() && canAccessGroup();
+        // Allow creating messages if the user is a member/teacher
+        allow create: if isSignedIn() && canAccessGroup();
+        // Only the sender (or a teacher) can delete/update a message
         allow update, delete: if isSignedIn() && (isTeacher() || (request.auth.uid == resource.data.senderId));
       }
     }

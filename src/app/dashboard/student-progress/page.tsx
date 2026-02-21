@@ -132,7 +132,7 @@ export default function StudentProgressPage() {
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-accent">
                 <AvatarImage src={`https://picsum.photos/seed/${selectedStudent?.id}/60/60`} />
-                <AvatarFallback>{selectedStudent?.firstName[0]}</AvatarFallback>
+                <AvatarFallback>{selectedStudent?.firstName?.[0] || 'S'}</AvatarFallback>
               </Avatar>
               <div className="text-left">
                 <DialogTitle className="text-2xl font-bold">{selectedStudent?.firstName} {selectedStudent?.lastName}</DialogTitle>
@@ -183,14 +183,14 @@ export default function StudentProgressPage() {
                         <div>
                           <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Priority Focus</p>
                           <div className="flex flex-wrap gap-2">
-                            {plans[0].planContent.priorityTopics.map((t: string, i: number) => (
+                            {plans[0].planContent?.priorityTopics?.map((t: string, i: number) => (
                               <Badge key={i} variant="secondary" className="bg-white">{t}</Badge>
                             ))}
                           </div>
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Strategy</p>
-                          <p className="text-sm">{plans[0].planContent.strategy}</p>
+                          <p className="text-sm">{plans[0].planContent?.strategy}</p>
                         </div>
                       </div>
                     </CardContent>

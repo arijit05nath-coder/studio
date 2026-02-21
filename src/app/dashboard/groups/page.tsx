@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -57,17 +58,10 @@ export default function GroupsPage() {
   const messagesQuery = useMemoFirebase(() => {
     if (!selectedGroupId || !db || !user || !userRole) return null;
     
-    const messagesRef = collection(db, "studyGroups", selectedGroupId, "messages");
-    
-    // Students must filter by their membership to satisfy rules efficiently
-    // Teachers bypass this filter as they have broader read access in rules
-    if (userRole === 'Teacher') {
-      return query(messagesRef, orderBy("timestamp", "asc"));
-    }
-
+    // With revised security rules, we don't need the complex filter on the subcollection query
+    // Access is granted based on the parent group's membership
     return query(
-      messagesRef,
-      where("memberIds", "array-contains", user.uid),
+      collection(db, "studyGroups", selectedGroupId, "messages"),
       orderBy("timestamp", "asc")
     );
   }, [selectedGroupId, db, user, userRole]);
@@ -87,8 +81,7 @@ export default function GroupsPage() {
       senderId: user.uid,
       senderName: user.email?.split('@')[0] || "User",
       text: message.trim(),
-      timestamp: serverTimestamp(),
-      memberIds: selectedGroup.memberIds // Denormalize for security rules
+      timestamp: serverTimestamp()
     });
 
     setMessage("");
@@ -114,7 +107,7 @@ export default function GroupsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Group Study</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
           <p className="text-muted-foreground">Collaborate with your peers in real-time.</p>
         </div>
         
@@ -189,7 +182,7 @@ export default function GroupsPage() {
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-base">{group.name}</CardTitle>
                     <Badge variant="outline" className="text-[10px]">
-                      {group.memberIds.length} Members
+                      {group.memberIds?.length || 0} Members
                     </Badge>
                   </div>
                   <CardDescription className="text-xs">
@@ -213,15 +206,15 @@ export default function GroupsPage() {
                     <CardDescription>{selectedGroup.description}</CardDescription>
                   </div>
                   <div className="flex -space-x-2">
-                    {selectedGroup.memberIds.slice(0, 5).map((id: string) => (
+                    {selectedGroup.memberIds?.slice(0, 5).map((id: string) => (
                       <Avatar key={id} className="border-2 border-white w-8 h-8">
                         <AvatarImage src={`https://picsum.photos/seed/${id}/32/32`} />
                         <AvatarFallback>U</AvatarFallback>
                       </Avatar>
                     ))}
-                    {selectedGroup.memberIds.length > 5 && (
+                    {(selectedGroup.memberIds?.length || 0) > 5 && (
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-[10px] border-2 border-white">
-                        +{selectedGroup.memberIds.length - 5}
+                        +{(selectedGroup.memberIds?.length || 0) - 5}
                       </div>
                     )}
                   </div>
