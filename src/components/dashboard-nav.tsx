@@ -10,6 +10,7 @@ import {
   Sparkles, 
   LogOut,
   Book,
+  BarChart3,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -31,6 +32,12 @@ export function DashboardNav({ role }: DashboardNavProps) {
       title: "Dashboard",
       href: role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student",
       icon: LayoutDashboard,
+    },
+    {
+      title: "Student Progress",
+      href: "/dashboard/student-progress",
+      icon: BarChart3,
+      showOnlyFor: 'Teacher' as const,
     },
     {
       title: "Courses",
@@ -62,7 +69,11 @@ export function DashboardNav({ role }: DashboardNavProps) {
     },
   ]
 
-  const filteredItems = navItems.filter(item => !item.hideFor || item.hideFor !== role)
+  const filteredItems = navItems.filter(item => {
+    if (item.hideFor === role) return false;
+    if (item.showOnlyFor && item.showOnlyFor !== role) return false;
+    return true;
+  })
 
   const handleLogout = async () => {
     await signOut(auth)
