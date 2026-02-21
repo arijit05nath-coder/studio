@@ -14,11 +14,16 @@ import {
   BarChart3,
   User,
   Settings2,
-  ChevronUp
+  ChevronUp,
+  Sun,
+  Moon,
+  Trees,
+  Coffee
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAuth, useUser } from "@/firebase"
+import { useAuth, useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase"
 import { signOut } from "firebase/auth"
+import { doc } from "firebase/firestore"
 import {
   Sidebar,
   SidebarContent,
@@ -37,20 +42,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useToast } from "@/hooks/use-toast"
 
 interface DashboardNavProps {
   role?: 'Student' | 'Teacher'
   profile?: any
 }
 
+const THEMES = [
+  { id: 'default', name: 'Light', icon: Sun },
+  { id: 'dark', name: 'Dark', icon: Moon },
+  { id: 'midnight', name: 'Midnight', icon: Sparkles },
+  { id: 'forest', name: 'Forest', icon: Trees },
+  { id: 'sunrise', name: 'Sunrise', icon: Coffee },
+]
+
 export function DashboardNav({ role, profile }: DashboardNavProps) {
   const pathname = usePathname()
   const auth = useAuth()
+  const db = useFirestore()
   const router = useRouter()
   const { user } = useUser()
   const { setOpenMobile } = useSidebar()
+  const { toast } = useToast()
 
   const navItems = [
     {
@@ -98,6 +118,14 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
   const handleLogout = async () => {
     await signOut(auth)
     router.push("/")
+  }
+
+  const handleThemeChange = (themeId: string) => {
+    if (!user || !db) return
+    updateDocumentNonBlocking(doc(db, "userProfiles", user.uid), {
+      theme: themeId
+    })
+    toast({ title: `Theme changed to ${THEMES.find(t => t.id === themeId)?.name}` })
   }
 
   const userName = profile ? `${profile.firstName} ${profile.lastName}` : (user?.email?.split('@')[0] || "User")
@@ -187,12 +215,32 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile" className="flex w-full items-center cursor-pointer">
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="cursor-pointer">
                       <Settings2 className="mr-2 h-4 w-4" />
-                      Theme
-                    </Link>
-                  </DropdownMenuItem>
+                      <span>Theme</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent className="p-1 min-w-[120px]">
+                        {THEMES.map((theme) => (
+                          <DropdownMenuItem 
+                            key={theme.id} 
+                            onClick={() => handleThemeChange(theme.id)}
+                            className={cn(
+                              "cursor-pointer flex items-center justify-between",
+                              profile?.theme === theme.id ? "bg-accent/10 text-accent font-medium" : ""
+                            )}
+                          >
+                            <div className="flex items-center">
+                              <theme.icon className="mr-2 h-4 w-4" />
+                              <span>{theme.name}</span>
+                            </div>
+                            {profile?.theme === theme.id && <div className="h-1.5 w-1.5 rounded-full bg-accent" />}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/profile" className="flex w-full items-center cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
