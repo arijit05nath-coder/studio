@@ -18,13 +18,16 @@ service cloud.firestore {
     }
 
     match /userProfiles/{userId} {
-      allow get, list: if isSignedIn() && (request.auth.uid == userId || isTeacher());
+      // Basic profile reading allowed for everyone signed in (to show names in groups/leaderboards)
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && (request.auth.uid == userId || isTeacher());
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
 
       match /focusSessions/{focusSessionId} {
-        allow get, list: if isOwner(userId) || isTeacher();
+        // Students can read focus sessions of others to see weekly totals on the leaderboard
+        allow get, list: if isSignedIn(); 
         allow create, update, delete: if isOwner(userId);
       }
 
@@ -57,15 +60,15 @@ service cloud.firestore {
         return isTeacher() || (request.auth.uid in group.memberIds) || (request.auth.uid == group.teacherId);
       }
 
-      allow read, create: if isSignedIn();
-      allow update, delete: if isSignedIn() && (isTeacher() || (request.auth.uid in resource.data.memberIds));
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      // Allow update for joining (adding self to memberIds)
+      allow update: if isSignedIn(); 
+      allow delete: if isSignedIn() && (isTeacher() || (request.auth.uid == resource.data.teacherId));
 
       match /messages/{messageId} {
-        // Allow reading messages if the user can access the group
         allow read: if isSignedIn() && canAccessGroup();
-        // Allow creating messages if the user is a member/teacher
         allow create: if isSignedIn() && canAccessGroup();
-        // Only the sender (or a teacher) can delete/update a message
         allow update, delete: if isSignedIn() && (isTeacher() || (request.auth.uid == resource.data.senderId));
       }
     }
