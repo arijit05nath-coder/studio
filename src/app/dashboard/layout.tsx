@@ -1,11 +1,11 @@
 
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { DashboardNav } from "@/components/dashboard-nav"
-import { doc, getDoc } from "firebase/firestore"
+import { doc } from "firebase/firestore"
 import { Loader2 } from "lucide-react"
 import { 
   SidebarProvider, 
@@ -23,15 +23,14 @@ export default function DashboardLayout({
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
   const router = useRouter()
-  const [role, setRole] = useState<string | null>(null)
-  const [profileLoading, setProfileLoading] = useState(true)
 
-  // Use real-time hook for theme sync
+  // Real-time profile hook
   const profileRef = useMemoFirebase(() => {
     if (!user || !db) return null;
     return doc(db, "userProfiles", user.uid);
   }, [user, db]);
-  const { data: profile } = useDoc(profileRef);
+  
+  const { data: profile, isLoading: isProfileLoading } = useDoc(profileRef);
 
   const getThemeClass = () => {
     if (!profile?.theme) return "";
@@ -42,45 +41,34 @@ export default function DashboardLayout({
     return "";
   }
 
-  // Apply theme class to body to ensure Portals (Dropdowns, Dialogs) are themed correctly
+  // Handle Authentication redirection
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.replace("/")
+    }
+  }, [user, isUserLoading, router]);
+
+  // Apply theme class to body
   useEffect(() => {
     const themeClass = getThemeClass();
     const body = document.body;
-    
-    // List of all possible theme classes to manage
     const themeClasses = ['dark', 'theme-midnight', 'theme-forest', 'theme-sunrise'];
     
-    // Clean up previous theme classes
     body.classList.remove(...themeClasses);
-    
-    // Apply new theme class
     if (themeClass) {
       body.classList.add(themeClass);
     }
     
-    // Optional: cleanup on unmount if needed, though layout persists
     return () => {
       body.classList.remove(...themeClasses);
     };
   }, [profile?.theme]);
 
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push("/")
-    } else if (user) {
-      const fetchRole = async () => {
-        const docRef = doc(db, "userProfiles", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setRole(docSnap.data().role);
-        }
-        setProfileLoading(false);
-      };
-      fetchRole();
-    }
-  }, [user, isUserLoading, db, router]);
+  // Show global loader if auth or initial profile is loading
+  // We check profile data availability if the user is authenticated
+  const isInitialLoading = isUserLoading || (user && isProfileLoading && !profile);
 
-  if (isUserLoading || profileLoading) {
+  if (isInitialLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-accent" />
@@ -92,7 +80,7 @@ export default function DashboardLayout({
     <div className={cn("min-h-screen", getThemeClass())}>
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background text-foreground transition-colors duration-500">
-          <DashboardNav role={role as any} profile={profile} />
+          <DashboardNav role={profile?.role as any} profile={profile} />
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 bg-background/95 backdrop-blur z-40">
               <SidebarTrigger className="-ml-1" />

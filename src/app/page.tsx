@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useAuth, useFirestore, useUser } from "@/firebase"
+import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from "@/firebase"
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"
+import { doc, getDoc, serverTimestamp } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 export default function LandingPage() {
@@ -31,22 +31,25 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser()
   const { toast } = useToast()
 
+  // Initial check for existing session
   useEffect(() => {
     if (user && !isUserLoading) {
-      const checkRole = async () => {
+      const checkRoleAndRedirect = async () => {
         const docRef = doc(db, "userProfiles", user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const userData = docSnap.data();
-          router.push(userData.role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
+          router.replace(userData.role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
         }
       };
-      checkRole();
+      checkRoleAndRedirect();
     }
   }, [user, isUserLoading, db, router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!email || !password) return;
+    
     setLoading(true)
 
     try {
@@ -57,24 +60,38 @@ export default function LandingPage() {
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         const newUser = userCredential.user
+        const mappedRole = role === 'teacher' ? 'Teacher' : 'Student';
         
-        await setDoc(doc(db, "userProfiles", newUser.uid), {
+        // Use non-blocking profile creation
+        setDocumentNonBlocking(doc(db, "userProfiles", newUser.uid), {
           id: newUser.uid,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email,
-          role: role === 'teacher' ? 'Teacher' : 'Student',
+          role: mappedRole,
           educationalQualification: qualification.trim(),
           dateCreated: serverTimestamp(),
           level: 1,
           focusGoal: 4,
-          focusScore: 0
-        })
+          focusScore: 0,
+          theme: 'default'
+        }, { merge: true });
 
-        toast({ title: "Account created successfully!" })
+        toast({ title: "Account created successfully!" });
+        router.push(mappedRole === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
       } else {
-        await signInWithEmailAndPassword(auth, email, password)
-        toast({ title: "Welcome back!" })
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Fetch role immediately to redirect faster
+        const docSnap = await getDoc(doc(db, "userProfiles", userCredential.user.uid));
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          router.push(userData.role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
+        } else {
+          // Fallback if profile is missing
+          router.push("/dashboard/student");
+        }
+        toast({ title: "Welcome back!" });
       }
     } catch (error: any) {
       toast({
