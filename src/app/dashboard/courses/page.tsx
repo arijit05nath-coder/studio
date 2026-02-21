@@ -79,7 +79,7 @@ export default function CurriculumPage() {
     });
     setNewCourseName("");
     setIsCreateCourseOpen(false);
-    toast({ title: "Course created successfully" });
+    toast({ title: "Material folder created successfully" });
   }
 
   const handleUpdateCourseDetails = () => {
@@ -91,7 +91,7 @@ export default function CurriculumPage() {
     });
     setTimeout(() => {
       setIsSavingCourse(false);
-      toast({ title: "Course details updated" });
+      toast({ title: "Details updated" });
     }, 500);
   }
 
@@ -159,21 +159,21 @@ export default function CurriculumPage() {
             <DialogTrigger asChild>
               <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
-                New Course
+                New Material
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Add New Course</DialogTitle>
+                <DialogTitle>Add New Material</DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label>Course Name</Label>
+                  <Label>Material Name</Label>
                   <Input placeholder="e.g., Organic Chemistry" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} />
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleAddCourse} disabled={!newCourseName.trim()} className="bg-accent text-accent-foreground">Create Course</Button>
+                <Button onClick={handleAddCourse} disabled={!newCourseName.trim()} className="bg-accent text-accent-foreground">Create Material</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -184,7 +184,7 @@ export default function CurriculumPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
           className="pl-10 rounded-full bg-card border-none shadow-sm h-12" 
-          placeholder="Search courses..." 
+          placeholder="Search materials..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -208,7 +208,7 @@ export default function CurriculumPage() {
                 <CardContent className="pt-6">
                   <CardTitle className="text-xl mb-2">{subject.name}</CardTitle>
                   <CardDescription className="line-clamp-2">
-                    {subject.description || `Comprehensive curriculum for ${subject.name}.`}
+                    {subject.description || `Comprehensive resources for ${subject.name}.`}
                   </CardDescription>
                   <div className="mt-6 flex items-center justify-between">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -227,7 +227,7 @@ export default function CurriculumPage() {
                 </CardContent>
               </Card>
             ))}
-            {filteredSubjects.length === 0 && <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-3xl">No courses found.</div>}
+            {filteredSubjects.length === 0 && <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-3xl">No materials found.</div>}
           </div>
         )}
       </div>
@@ -238,7 +238,7 @@ export default function CurriculumPage() {
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Book className="h-6 w-6 text-accent" /> 
-              {isTeacher ? "Manage Course" : selectedSubject?.name}
+              {isTeacher ? "Manage Material" : selectedSubject?.name}
             </DialogTitle>
           </DialogHeader>
 
@@ -247,7 +247,7 @@ export default function CurriculumPage() {
               <div className="space-y-6 border-b pb-8">
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label className="font-bold">Course Name</Label>
+                    <Label className="font-bold">Material Name</Label>
                     <Input 
                       placeholder="e.g., Organic Chemistry" 
                       value={editCourseName} 
@@ -256,9 +256,9 @@ export default function CurriculumPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label className="font-bold">Course Description</Label>
+                    <Label className="font-bold">Description</Label>
                     <Textarea 
-                      placeholder="Enter a brief overview of what this course covers..." 
+                      placeholder="Enter a brief overview..." 
                       value={editCourseDescription} 
                       onChange={(e) => setEditCourseDescription(e.target.value)} 
                       className="rounded-xl min-h-[100px]"
@@ -270,21 +270,21 @@ export default function CurriculumPage() {
                     className="bg-accent text-accent-foreground rounded-xl w-fit gap-2"
                   >
                     {isSavingCourse ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Save Course Details
+                    Save Details
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-2">
                 <p className="text-muted-foreground italic leading-relaxed">
-                  {selectedSubject?.description || "No description available for this course."}
+                  {selectedSubject?.description || "No description available."}
                 </p>
               </div>
             )}
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Course Resources</h4>
+                <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Resources</h4>
                 <Badge variant="outline">{allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length || 0} items</Badge>
               </div>
               
@@ -309,7 +309,7 @@ export default function CurriculumPage() {
                 ))}
                 {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0 && (
                   <div className="text-center py-6 border-2 border-dashed rounded-2xl opacity-50">
-                    <p className="text-sm italic">No resources linked to this course yet.</p>
+                    <p className="text-sm italic">No resources linked yet.</p>
                   </div>
                 )}
               </div>
