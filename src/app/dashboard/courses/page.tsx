@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -69,10 +68,6 @@ export default function CurriculumPage() {
 
   const filteredSubjects = subjects?.filter(subject => 
     subject.name.toLowerCase().includes(search.toLowerCase())
-  ) || [];
-
-  const filteredMaterials = allMaterials?.filter(m => 
-    m.title.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
   // Actions
@@ -189,100 +184,53 @@ export default function CurriculumPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
           className="pl-10 rounded-full bg-card border-none shadow-sm h-12" 
-          placeholder="Search courses or resources..." 
+          placeholder="Search courses..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      <Tabs defaultValue="courses" className="space-y-6">
-        <TabsList className="bg-card p-1 rounded-full w-fit">
-          <TabsTrigger value="courses" className="rounded-full gap-2 px-6">
-            <LayoutGrid className="h-4 w-4" /> By Course
-          </TabsTrigger>
-          <TabsTrigger value="materials" className="rounded-full gap-2 px-6">
-            <List className="h-4 w-4" /> All Resources
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="courses" className="space-y-6">
-          {isSubjectsLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-accent" /></div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredSubjects.map((subject) => (
-                <Card key={subject.id} className="border-none shadow-sm bg-card overflow-hidden group hover:shadow-md transition-all">
-                  <CardHeader className="bg-primary/20 pb-4 relative">
-                    <div className="flex justify-between items-center">
-                      <div className="p-2 bg-card rounded-lg shadow-sm">
-                        <Book className="h-5 w-5 text-accent" />
-                      </div>
-                      <Badge variant="secondary" className="bg-card/50">Curriculum</Badge>
+      <div className="space-y-6">
+        {isSubjectsLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-accent" /></div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredSubjects.map((subject) => (
+              <Card key={subject.id} className="border-none shadow-sm bg-card overflow-hidden group hover:shadow-md transition-all">
+                <CardHeader className="bg-primary/20 pb-4 relative">
+                  <div className="flex justify-between items-center">
+                    <div className="p-2 bg-card rounded-lg shadow-sm">
+                      <Book className="h-5 w-5 text-accent" />
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <CardTitle className="text-xl mb-2">{subject.name}</CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {subject.description || `Comprehensive curriculum for ${subject.name}.`}
-                    </CardDescription>
-                    <div className="mt-6 flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <GraduationCap className="h-3 w-3" />
-                        <span>Curriculum 2024</span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="gap-1 text-accent group-hover:translate-x-1 transition-transform font-bold" 
-                        onClick={() => setSelectedSubject(subject)}
-                      >
-                        {isTeacher ? <><Settings2 className="h-4 w-4" /> Manage</> : <>View Details <ChevronRight className="h-4 w-4" /></>}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="materials">
-          {isMaterialsLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-accent" /></div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredMaterials.map((material) => (
-                <Card key={material.id} className="border-none shadow-sm overflow-hidden group hover:shadow-md transition-shadow bg-card">
-                  <div className="relative h-24 bg-primary/20 flex items-center justify-center">
-                    {material.type === 'PDF' ? <FileText className="h-10 w-10 text-primary" /> : material.type === 'Video' ? <Video className="h-10 w-10 text-accent" /> : <Globe className="h-10 w-10 text-accent" />}
+                    <Badge variant="secondary" className="bg-card/50">Curriculum</Badge>
                   </div>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg leading-tight truncate">{material.title}</CardTitle>
-                      <Badge variant="outline" className="text-[10px]">{material.type}</Badge>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <CardTitle className="text-xl mb-2">{subject.name}</CardTitle>
+                  <CardDescription className="line-clamp-2">
+                    {subject.description || `Comprehensive curriculum for ${subject.name}.`}
+                  </CardDescription>
+                  <div className="mt-6 flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <GraduationCap className="h-3 w-3" />
+                      <span>Curriculum 2024</span>
                     </div>
-                  </CardHeader>
-                  <CardContent className="text-[10px] text-muted-foreground">
-                    <p>Uploaded by {material.author}</p>
-                    <p>{new Date(material.uploadDate).toLocaleDateString()}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between pt-2">
-                    <Button variant="ghost" size="sm" className="gap-2 text-accent" asChild>
-                      <a href={material.linkUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /> Open</a>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="gap-1 text-accent group-hover:translate-x-1 transition-transform font-bold" 
+                      onClick={() => setSelectedSubject(subject)}
+                    >
+                      {isTeacher ? <><Settings2 className="h-4 w-4" /> Manage</> : <>View Details <ChevronRight className="h-4 w-4" /></>}
                     </Button>
-                    {isTeacher && (
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteMaterial(material.id)} className="text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </CardFooter>
-                </Card>
-              ))}
-              {filteredMaterials.length === 0 && <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-3xl">No materials found.</div>}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {filteredSubjects.length === 0 && <div className="col-span-full text-center py-20 text-muted-foreground border-2 border-dashed rounded-3xl">No courses found.</div>}
+          </div>
+        )}
+      </div>
 
       {/* Unified Course Management / Detail Dialog */}
       <Dialog open={!!selectedSubject} onOpenChange={(o) => !o && setSelectedSubject(null)}>
