@@ -162,7 +162,7 @@ export default function StudentDashboard() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="outline" className="px-4 py-2 rounded-full bg-card cursor-help border-accent text-accent-foreground flex items-center gap-2 font-bold shadow-sm">
+                <Badge variant="outline" className="px-4 py-2 rounded-full bg-accent cursor-help border-accent text-white flex items-center gap-2 font-bold shadow-sm">
                   <GraduationCap className="h-4 w-4" />
                   {t('level')} {profile?.level || 1} {t('scholar')}
                 </Badge>
