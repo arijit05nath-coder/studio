@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
-import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal, LogOut, Trash2, AlertTriangle } from "lucide-react"
+import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal, LogOut, Trash2, AlertTriangle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, updateDoc, arrayUnion, arrayRemove, getDocs } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
@@ -47,7 +48,7 @@ export default function GroupsPage() {
   }, [user, db]);
 
   const groupsQuery = useMemoFirebase(() => {
-    if (!user || !db || !userRole) return null;
+    if (!user || !db) return null;
     return query(
       collection(db, "studyGroups"),
       or(
@@ -55,18 +56,18 @@ export default function GroupsPage() {
         where("teacherId", "==", user.uid)
       )
     );
-  }, [user, db, userRole]);
+  }, [user, db]);
 
   const { data: groups, isLoading: groupsLoading } = useCollection(groupsQuery);
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
   const messagesQuery = useMemoFirebase(() => {
-    if (!selectedGroupId || !db || !user || !userRole) return null;
+    if (!selectedGroupId || !db || !user) return null;
     return query(
       collection(db, "studyGroups", selectedGroupId, "messages"),
       orderBy("timestamp", "asc")
     );
-  }, [selectedGroupId, db, user, userRole]);
+  }, [selectedGroupId, db, user]);
 
   const { data: messages } = useCollection(messagesQuery);
 
@@ -88,11 +89,9 @@ export default function GroupsPage() {
 
         const memberStats = await Promise.all(
           (selectedGroup.memberIds || []).map(async (memberId: string) => {
-            // Get profile
             const profileSnap = await getDoc(doc(db, "userProfiles", memberId));
             const profile = profileSnap.data();
             
-            // Get weekly sessions
             const sessionsQuery = query(
               collection(db, "userProfiles", memberId, "focusSessions"),
               where("status", "==", "Completed"),
@@ -221,7 +220,7 @@ export default function GroupsPage() {
     }
   }
 
-  const isCreator = selectedGroup?.teacherId === user?.uid;
+  const isCreator = selectedGroup && user && selectedGroup.teacherId === user.uid;
 
   return (
     <div className="space-y-8">
@@ -349,24 +348,33 @@ export default function GroupsPage() {
           {selectedGroup ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <Card className="border-none shadow-sm bg-card">
-                <CardHeader className="flex flex-row items-center justify-between gap-4">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1 overflow-hidden">
                     <CardTitle className="text-2xl truncate">{selectedGroup.name}</CardTitle>
                     <CardDescription className="truncate">{selectedGroup.description}</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="hidden sm:flex flex-col items-end mr-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold">Group ID</span>
-                      <code className="text-[14px] bg-muted px-3 py-1 rounded font-mono font-bold tracking-wider">{selectedGroupId}</code>
+                      <div className="flex items-center gap-1">
+                        <code className="text-[14px] bg-muted px-3 py-1 rounded font-mono font-bold tracking-wider">{selectedGroupId}</code>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={copyGroupId}>
+                                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Copy ID</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </div>
-                    <Button variant="outline" size="icon" className="rounded-full" onClick={copyGroupId}>
-                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    </Button>
                     
                     {isCreator ? (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="rounded-full text-destructive hover:bg-destructive/10">
+                          <Button variant="outline" size="icon" className="rounded-full text-destructive hover:bg-destructive/10 border-destructive/20" title="Delete Group">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -391,7 +399,7 @@ export default function GroupsPage() {
                     ) : (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="rounded-full">
+                          <Button variant="outline" size="icon" className="rounded-full hover:bg-destructive/10 hover:text-destructive border-border" title="Leave Group">
                             <LogOut className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
