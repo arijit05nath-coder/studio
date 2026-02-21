@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { generatePersonalizedStudyPlan, type PersonalizedStudyPlanOutput } from "@/ai/flows/personalized-study-recommendations"
@@ -172,7 +173,10 @@ export default function AICoachPage() {
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-4">
-              <Label className="text-lg font-bold">Common Subjects</Label>
+              <div className="flex justify-between items-center">
+                <Label className="text-lg font-bold">Subjects</Label>
+                <Badge variant="outline">{assessment.subjects.length} selected</Badge>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {commonSubjects.map(subj => (
                   <Button
@@ -351,14 +355,10 @@ export default function AICoachPage() {
                   <p className="text-muted-foreground text-xs">Adapt study load to your real focus consistency.</p>
                 </div>
               </div>
-              <Button 
-                variant={useFocusData ? "default" : "outline"} 
-                size="sm" 
-                onClick={() => setUseFocusData(!useFocusData)}
-                className={useFocusData ? "bg-accent text-accent-foreground" : ""}
-              >
-                {useFocusData ? "Enabled" : "Disabled"}
-              </Button>
+              <Switch 
+                checked={useFocusData}
+                onCheckedChange={setUseFocusData}
+              />
             </div>
 
             <div className="flex justify-between pt-4">
