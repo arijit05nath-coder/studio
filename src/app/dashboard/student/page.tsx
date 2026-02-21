@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -15,7 +16,7 @@ import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
 
 export default function StudentDashboard() {
-  const { user } = useUser()
+  const { user, isUserLoading } = useUser()
   const db = useFirestore()
   const router = useRouter()
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false)
@@ -36,20 +37,20 @@ export default function StudentDashboard() {
 
   // Fetch today's focus sessions to calculate progress
   const todaySessionsQuery = useMemoFirebase(() => {
-    if (!user || !db) return null;
+    if (!user || !db || isUserLoading) return null;
     return query(
       collection(db, "userProfiles", user.uid, "focusSessions"),
       where("startTime", ">=", todayStart)
     );
-  }, [user, db, todayStart]);
+  }, [user, db, todayStart, isUserLoading]);
 
   const { data: todaySessions, isLoading: sessionsLoading } = useCollection(todaySessionsQuery);
 
-  // Fetch all subjects for the count - Wait for user to be available to avoid permission errors
+  // Fetch all subjects for the count
   const subjectsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
+    if (!db || !user || isUserLoading) return null;
     return collection(db, "subjects");
-  }, [db, user]);
+  }, [db, user, isUserLoading]);
   const { data: subjects, isLoading: subjectsLoading } = useCollection(subjectsQuery);
 
   // Calculate today's total focus minutes
@@ -74,7 +75,7 @@ export default function StudentDashboard() {
   const stats = [
     { title: "Today's Focus", value: `${totalHoursToday}h`, icon: Clock, color: "text-blue-500" },
     { title: "Courses", value: subjects?.length || 0, icon: Book, color: "text-purple-500" },
-    { title: "Focus Score", value: profile?.focusScore || "N/A", icon: Sparkles, color: "text-accent-foreground" },
+    { title: "Focus Score", value: profile?.focusScore || 0, icon: Sparkles, color: "text-accent-foreground" },
     { title: "Total Sessions", value: todaySessions?.length || 0, icon: Trophy, color: "text-yellow-500" },
   ]
 

@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -54,9 +55,11 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && (isTeacher() || (request.auth.uid in resource.data.memberIds));
 
       match /messages/{messageId} {
-        // Students can read messages in groups they belong to. Teachers can monitor.
-        // Simplified rule to bypass unexpected list permission issues while keeping it restricted to signed-in users.
-        allow read: if isSignedIn();
+        // More efficient rule using denormalized memberIds
+        allow read: if isSignedIn() && (
+          isTeacher() || 
+          (request.auth.uid in resource.data.memberIds)
+        );
         allow create: if isSignedIn() && (request.resource.data.senderId == request.auth.uid);
         allow update, delete: if isSignedIn() && (isTeacher() || (request.auth.uid == resource.data.senderId));
       }
