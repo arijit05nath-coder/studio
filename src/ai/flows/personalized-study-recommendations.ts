@@ -36,6 +36,15 @@ const PersonalizedStudyPlanOutputSchema = z.object({
   strategy: z.string().describe('Personalized study strategy tailored to learning style.'),
   weeklyPlan: z.string().describe('A structured weekly plan in Markdown format.'),
   actionableSteps: z.array(z.string()).describe('Specific, actionable tasks for the student.'),
+  conceptBreakdowns: z.array(z.object({
+    topic: z.string(),
+    explanation: z.string().describe('A simple, helpful explanation of the core concept.'),
+  })).describe('Brief explanations for the topics the student is weak in.'),
+  visualResources: z.array(z.object({
+    title: z.string(),
+    url: z.string().describe('A direct YouTube search link or educational video URL.'),
+    platform: z.string().default('YouTube'),
+  })).optional().describe('Suggested visual resources, especially for visual or mixed learners.'),
 });
 
 export type PersonalizedStudyPlanOutput = z.infer<typeof PersonalizedStudyPlanOutputSchema>;
@@ -44,7 +53,7 @@ const personalizedStudyPlanPrompt = ai.definePrompt({
   name: 'personalizedStudyPlanPrompt',
   input: { schema: PersonalizedStudyPlanInputSchema },
   output: { schema: PersonalizedStudyPlanOutputSchema },
-  prompt: `You are an expert AI Study Coach. Create a highly personalized, realistic study plan for a student based ONLY on their self-assessment and focus data.
+  prompt: `You are an expert AI Study Coach. Your goal is to not only plan a routine but also actively help the student understand the concepts they find difficult.
 
 **Student Profile:**
 - Subjects: {{#each subjects}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
@@ -64,12 +73,14 @@ const personalizedStudyPlanPrompt = ai.definePrompt({
 {{/if}}
 
 **Instructions:**
-1. Identify Priority Topics based on the lowest confidence ratings.
-2. Formulate a Study Strategy that matches their learning style.
-3. Create a Weekly Plan in Markdown. If focus metrics are available, adapt session lengths to match their average focus duration.
-4. Provide Actionable Steps that include specific tasks and Focus Mode suggestions.
+1. **Identify Priority Topics**: Based on the lowest confidence ratings.
+2. **Personalized Strategy**: Tailor this to their learning style.
+3. **Concept Breakdowns**: For the weak topics mentioned, provide a brief, high-impact explanation of the core principles to help them study immediately.
+4. **Visual Resources**: If the learning style is "visual" or "mixed", you MUST provide educational YouTube search links (format: https://www.youtube.com/results?search_query=TOPIC+NAME) or specific reputable channel suggestions (e.g., Khan Academy, Crash Course) related to their weak topics.
+5. **Weekly Plan**: A structured weekly plan in Markdown. If focus metrics are available, adapt session lengths to match their average focus duration.
+6. **Actionable Steps**: Specific tasks including Focus Mode suggestions.
 
-Do NOT fabricate any quiz scores or performance data. Use the provided information to create an encouraging and actionable roadmap.`,
+Ensure the tone is encouraging and focused on helping them bridge their knowledge gaps.`,
 });
 
 const personalizedStudyPlanFlow = ai.defineFlow(

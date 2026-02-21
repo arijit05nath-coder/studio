@@ -1,8 +1,7 @@
-
 "use client"
 
 import { useState } from "react"
-import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, Target, Book, Clock, Calendar, GraduationCap } from "lucide-react"
+import { Sparkles, BrainCircuit, Loader2, CheckCircle2, ChevronRight, Target, Book, Clock, Calendar, GraduationCap, Youtube, ExternalLink, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -335,7 +334,7 @@ export default function AICoachPage() {
           <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold">Your Personalized Plan</h2>
             <Button variant="outline" onClick={() => setStep('subjects')} className="rounded-full">
-              Edit Weaknesses
+              Edit Assessment
             </Button>
           </div>
 
@@ -356,6 +355,25 @@ export default function AICoachPage() {
                       </Badge>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Concept Breakdowns */}
+              <Card className="border-none shadow-sm bg-card">
+                <CardHeader className="bg-yellow-500/10 rounded-t-lg">
+                  <CardTitle className="text-xl flex items-center gap-2 text-foreground">
+                    <Lightbulb className="h-5 w-5 text-yellow-600" />
+                    Study Aid: Concept Breakdowns
+                  </CardTitle>
+                  <CardDescription>Key principles to help you study the topics you're weak in.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {plan.conceptBreakdowns.map((item, i) => (
+                    <div key={i} className="space-y-2 border-l-4 border-yellow-500/30 pl-4 py-1">
+                      <h4 className="font-bold text-foreground">{item.topic}</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{item.explanation}</p>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
 
@@ -387,6 +405,31 @@ export default function AICoachPage() {
                 </CardContent>
               </Card>
 
+              {/* Visual Resources */}
+              {plan.visualResources && plan.visualResources.length > 0 && (
+                <Card className="border-none shadow-sm bg-card">
+                  <CardHeader className="bg-red-500/5 rounded-t-lg">
+                    <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                      <Youtube className="h-5 w-5 text-red-600" />
+                      Visual Resources
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 space-y-3">
+                    {plan.visualResources.map((res, i) => (
+                      <Button key={i} variant="outline" className="w-full justify-between h-auto py-3 px-4 rounded-xl group" asChild>
+                        <a href={res.url} target="_blank" rel="noopener noreferrer">
+                          <div className="flex flex-col items-start gap-1 overflow-hidden">
+                            <span className="text-sm font-bold group-hover:text-red-600 truncate w-full">{res.title}</span>
+                            <span className="text-[10px] text-muted-foreground uppercase">{res.platform}</span>
+                          </div>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-red-600 shrink-0" />
+                        </a>
+                      </Button>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
               <Card className="border-none shadow-sm bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Next Steps</CardTitle>
@@ -404,7 +447,7 @@ export default function AICoachPage() {
               <Button 
                 onClick={handleSubmit} 
                 disabled={loading}
-                className="w-full bg-accent text-accent-foreground py-6 rounded-2xl gap-2 font-bold"
+                className="w-full bg-accent text-accent-foreground py-6 rounded-2xl gap-2 font-bold shadow-lg"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Regenerate Plan
