@@ -27,7 +27,6 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function StudentProgressPage() {
   const { user, isUserLoading } = useUser()
@@ -133,8 +132,8 @@ export default function StudentProgressPage() {
 
       {/* Student Detail Dialog */}
       <Dialog open={!!selectedStudent} onOpenChange={(open) => !open && setSelectedStudent(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-accent">
                 {selectedStudent?.photoUrl && <AvatarImage src={selectedStudent.photoUrl} />}
@@ -149,97 +148,95 @@ export default function StudentProgressPage() {
             </div>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 pr-4">
-            <div className="space-y-6 py-4">
-              {/* Stats Overview */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Card className="bg-muted/30 border-none">
-                  <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                    <Clock className="h-5 w-5 text-accent mb-2" />
-                    <span className="text-2xl font-bold">{calculateTotalFocusTime(sessions || [])}m</span>
-                    <span className="text-[10px] uppercase text-muted-foreground">Total Focus</span>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/30 border-none">
-                  <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                    <TrendingUp className="h-5 w-5 text-primary mb-2" />
-                    <span className="text-2xl font-bold">{sessions?.length || 0}</span>
-                    <span className="text-[10px] uppercase text-muted-foreground">Sessions</span>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/30 border-none col-span-2 md:col-span-1">
-                  <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                    <Target className="h-5 w-5 text-destructive mb-2" />
-                    <span className="text-2xl font-bold">{plans?.length || 0}</span>
-                    <span className="text-[10px] uppercase text-muted-foreground">Active Plans</span>
-                  </CardContent>
-                </Card>
-              </div>
+          <div className="space-y-6 py-4">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <Card className="bg-muted/30 border-none">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <Clock className="h-5 w-5 text-accent mb-2" />
+                  <span className="text-2xl font-bold">{calculateTotalFocusTime(sessions || [])}m</span>
+                  <span className="text-[10px] uppercase text-muted-foreground">Total Focus</span>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted/30 border-none">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <TrendingUp className="h-5 w-5 text-primary mb-2" />
+                  <span className="text-2xl font-bold">{sessions?.length || 0}</span>
+                  <span className="text-[10px] uppercase text-muted-foreground">Sessions</span>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted/30 border-none col-span-2 md:col-span-1">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <Target className="h-5 w-5 text-destructive mb-2" />
+                  <span className="text-2xl font-bold">{plans?.length || 0}</span>
+                  <span className="text-[10px] uppercase text-muted-foreground">Active Plans</span>
+                </CardContent>
+              </Card>
+            </div>
 
-              {/* Latest Study Plan */}
-              <div className="space-y-3">
-                <h4 className="font-bold flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-accent" />
-                  Latest AI Study Roadmap
-                </h4>
-                {plansLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : plans && plans.length > 0 ? (
-                  <Card className="border border-accent/20 bg-accent/5">
-                    <CardContent className="p-4">
-                      <div className="space-y-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Priority Focus</p>
-                          <div className="flex flex-wrap gap-2">
-                            {plans[0].planContent?.priorityTopics?.map((t: string, i: number) => (
-                              <Badge key={i} variant="secondary" className="bg-white">{t}</Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Strategy</p>
-                          <p className="text-sm">{plans[0].planContent?.strategy}</p>
+            {/* Latest Study Plan */}
+            <div className="space-y-3">
+              <h4 className="font-bold flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-accent" />
+                Latest AI Study Roadmap
+              </h4>
+              {plansLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : plans && plans.length > 0 ? (
+                <Card className="border border-accent/20 bg-accent/5">
+                  <CardContent className="p-4">
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Priority Focus</p>
+                        <div className="flex flex-wrap gap-2">
+                          {plans[0].planContent?.priorityTopics?.map((t: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="bg-white">{t}</Badge>
+                          ))}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Strategy</p>
+                        <p className="text-sm">{plans[0].planContent?.strategy}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">No study plan generated yet.</p>
+              )}
+            </div>
+
+            {/* Session History */}
+            <div className="space-y-3">
+              <h4 className="font-bold flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                Recent Focus Activity
+              </h4>
+              <div className="space-y-2">
+                {sessionsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : sessions && sessions.length > 0 ? (
+                  sessions.map((session: any) => (
+                    <div key={session.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border">
+                      <div>
+                        <p className="text-sm font-semibold">{session.type}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(session.startTime).toLocaleDateString()} • {session.actualDurationMinutes} mins
+                        </p>
+                      </div>
+                      <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
+                        {session.status}
+                      </Badge>
+                    </div>
+                  ))
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No study plan generated yet.</p>
+                  <p className="text-sm text-muted-foreground italic">No sessions recorded.</p>
                 )}
               </div>
-
-              {/* Session History */}
-              <div className="space-y-3">
-                <h4 className="font-bold flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  Recent Focus Activity
-                </h4>
-                <div className="space-y-2">
-                  {sessionsLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : sessions && sessions.length > 0 ? (
-                    sessions.map((session: any) => (
-                      <div key={session.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border">
-                        <div>
-                          <p className="text-sm font-semibold">{session.type}</p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {new Date(session.startTime).toLocaleDateString()} • {session.actualDurationMinutes} mins
-                          </p>
-                        </div>
-                        <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
-                          {session.status}
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">No sessions recorded.</p>
-                  )}
-                </div>
-              </div>
             </div>
-          </ScrollArea>
+          </div>
           
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t sticky bottom-0 bg-background z-10">
             <Button variant="outline" className="w-full rounded-xl" onClick={() => setSelectedStudent(null)}>Close Profile</Button>
           </div>
         </DialogContent>
