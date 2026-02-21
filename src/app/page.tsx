@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -80,7 +79,7 @@ export default function LandingPage() {
       toast({
         variant: "destructive",
         title: "Authentication failed",
-        description: error.message,
+        description: "Invalid email or password. Please check your credentials and try again.",
       })
     } finally {
       setLoading(false)
