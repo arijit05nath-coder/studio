@@ -131,7 +131,7 @@ export function DashboardNav({ role }: DashboardNavProps) {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
