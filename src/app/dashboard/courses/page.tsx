@@ -2,16 +2,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc, where } from "firebase/firestore"
-import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink } from "lucide-react"
+import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Edit, Video, Link as LinkIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { addDocumentNonBlocking } from "@/firebase"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function CoursesPage() {
   const { user } = useUser()
@@ -19,8 +19,16 @@ export default function CoursesPage() {
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
   const [newCourseName, setNewCourseName] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
+  
+  // Edit Course State
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editCourseName, setEditCourseName] = useState("")
+  const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null)
+
+  // Add Resource State
+  const [newResource, setNewResource] = useState({ title: "", url: "", type: "Video" })
 
   useEffect(() => {
     const checkRole = async () => {
@@ -58,7 +66,34 @@ export default function CoursesPage() {
     });
 
     setNewCourseName("");
-    setIsDialogOpen(false);
+    setIsCreateDialogOpen(false);
+  }
+
+  const handleUpdateCourse = () => {
+    if (!db || !editCourseName.trim() || !editingSubjectId) return;
+    
+    updateDocumentNonBlocking(doc(db, "subjects", editingSubjectId), {
+      name: editCourseName.trim()
+    });
+
+    setIsEditDialogOpen(false);
+    setEditingSubjectId(null);
+  }
+
+  const handleAddResource = () => {
+    if (!db || !user || !selectedSubject || !newResource.title || !newResource.url) return;
+
+    addDocumentNonBlocking(collection(db, "materials"), {
+      title: newResource.title,
+      linkUrl: newResource.url,
+      type: newResource.type,
+      subjectId: selectedSubject.id,
+      teacherId: user.uid,
+      author: user.email?.split('@')[0] || "Teacher",
+      uploadDate: new Date().toISOString()
+    });
+
+    setNewResource({ title: "", url: "", type: "Video" });
   }
 
   return (
@@ -70,7 +105,7 @@ export default function CoursesPage() {
         </div>
 
         {isTeacher && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
@@ -123,13 +158,28 @@ export default function CoursesPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredSubjects.map((subject) => (
             <Card key={subject.id} className="border-none shadow-sm bg-white overflow-hidden group hover:shadow-md transition-all">
-              <CardHeader className="bg-primary/10 pb-4">
+              <CardHeader className="bg-primary/10 pb-4 relative">
                 <div className="flex justify-between items-center">
                   <div className="p-2 bg-white rounded-lg shadow-sm">
                     <Book className="h-5 w-5 text-accent" />
                   </div>
                   <Badge variant="secondary" className="bg-white/50">Core</Badge>
                 </div>
+                {isTeacher && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingSubjectId(subject.id);
+                      setEditCourseName(subject.name);
+                      setIsEditDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="pt-6">
                 <CardTitle className="text-xl mb-2">{subject.name}</CardTitle>
@@ -165,9 +215,36 @@ export default function CoursesPage() {
         </div>
       )}
 
+      {/* Edit Course Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Course</DialogTitle>
+            <DialogDescription>
+              Update the name of this subject.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="editCourseName">Course Name</Label>
+              <Input
+                id="editCourseName"
+                value={editCourseName}
+                onChange={(e) => setEditCourseName(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleUpdateCourse} disabled={!editCourseName.trim()} className="bg-accent text-accent-foreground">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Course Details Dialog */}
       <Dialog open={!!selectedSubject} onOpenChange={(open) => !open && setSelectedSubject(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Book className="h-6 w-6 text-accent" />
@@ -188,6 +265,60 @@ export default function CoursesPage() {
               </p>
             </div>
 
+            {isTeacher && (
+              <div className="space-y-4 p-4 rounded-2xl bg-muted/20 border">
+                <h4 className="font-semibold text-sm uppercase tracking-wider text-accent-foreground">Add New Resource</h4>
+                <div className="grid gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="resTitle" className="text-xs">Resource Title</Label>
+                    <Input 
+                      id="resTitle" 
+                      placeholder="e.g. Chapter 1 Intro Video" 
+                      size={32} 
+                      className="h-8"
+                      value={newResource.title}
+                      onChange={e => setNewResource({...newResource, title: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="resUrl" className="text-xs">Link / URL</Label>
+                    <Input 
+                      id="resUrl" 
+                      placeholder="https://..." 
+                      className="h-8"
+                      value={newResource.url}
+                      onChange={e => setNewResource({...newResource, url: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Label className="text-xs">Type</Label>
+                      <Select 
+                        value={newResource.type} 
+                        onValueChange={v => setNewResource({...newResource, type: v})}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Video">Video Link</SelectItem>
+                          <SelectItem value="Link">External Website</SelectItem>
+                          <SelectItem value="Note">Online Note</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button 
+                      className="mt-auto h-8 bg-accent text-accent-foreground"
+                      onClick={handleAddResource}
+                      disabled={!newResource.title || !newResource.url}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Related Materials</h4>
               {isMaterialsLoading ? (
@@ -200,7 +331,7 @@ export default function CoursesPage() {
                     <div key={material.id} className="flex items-center justify-between p-3 rounded-xl border bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-white rounded-lg shadow-sm">
-                          <FileText className="h-4 w-4 text-accent" />
+                          {material.type === 'Video' ? <Video className="h-4 w-4 text-accent" /> : <FileText className="h-4 w-4 text-accent" />}
                         </div>
                         <div>
                           <p className="text-sm font-medium">{material.title}</p>
