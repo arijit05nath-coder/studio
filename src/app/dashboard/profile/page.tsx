@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { updateEmail } from "firebase/auth"
 import { doc as firestoreDoc } from "firebase/firestore"
-import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap } from "lucide-react"
+import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const THEMES = [
   { id: 'default', name: 'Default Light', icon: Sun, class: '' },
@@ -41,8 +42,11 @@ export default function ProfilePage() {
     lastName: "",
     email: "",
     educationalQualification: "",
+    photoUrl: "",
   })
   const [loading, setLoading] = useState(false)
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
+  const [tempPhotoUrl, setTempPhotoUrl] = useState("")
 
   useEffect(() => {
     if (profile) {
@@ -51,7 +55,9 @@ export default function ProfilePage() {
         lastName: profile.lastName || "",
         email: profile.email || "",
         educationalQualification: profile.educationalQualification || "",
+        photoUrl: profile.photoUrl || "",
       })
+      setTempPhotoUrl(profile.photoUrl || "")
     }
   }, [profile])
 
@@ -66,6 +72,7 @@ export default function ProfilePage() {
         lastName: formData.lastName,
         email: formData.email,
         educationalQualification: formData.educationalQualification,
+        photoUrl: formData.photoUrl,
       })
 
       if (formData.email !== user.email) {
@@ -84,6 +91,17 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleUpdateAvatar = () => {
+    setFormData(prev => ({ ...prev, photoUrl: tempPhotoUrl }))
+    if (user && db) {
+      updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
+        photoUrl: tempPhotoUrl,
+      })
+    }
+    setIsAvatarDialogOpen(false)
+    toast({ title: "Profile picture updated!" })
   }
 
   const handleThemeChange = (themeId: string) => {
@@ -112,17 +130,51 @@ export default function ProfilePage() {
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-1 space-y-6">
           <Card className="border-none shadow-sm overflow-hidden text-center p-8 bg-card">
-            <div className="relative inline-block mb-4">
-              <Avatar className="h-24 w-24 border-4 border-accent shadow-lg">
-                <AvatarImage src={profile?.photoUrl} />
-                <AvatarFallback className="text-2xl font-bold bg-accent text-accent-foreground">
-                  {formData.firstName?.[0]}{formData.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-background cursor-pointer hover:scale-110 transition-transform">
-                <User className="h-4 w-4" />
-              </div>
-            </div>
+            <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+              <DialogTrigger asChild>
+                <div className="relative inline-block mb-4 cursor-pointer group">
+                  <Avatar className="h-24 w-24 border-4 border-accent shadow-lg group-hover:opacity-80 transition-opacity">
+                    <AvatarImage src={formData.photoUrl} />
+                    <AvatarFallback className="text-2xl font-bold bg-accent text-accent-foreground">
+                      {formData.firstName?.[0]}{formData.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-background group-hover:scale-110 transition-transform">
+                    <Camera className="h-4 w-4" />
+                  </div>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Update Profile Picture</DialogTitle>
+                  <DialogDescription>
+                    Provide a URL for your new profile picture.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="photoUrl">Image URL</Label>
+                    <Input 
+                      id="photoUrl" 
+                      placeholder="https://example.com/photo.jpg" 
+                      value={tempPhotoUrl}
+                      onChange={(e) => setTempPhotoUrl(e.target.value)}
+                    />
+                  </div>
+                  {tempPhotoUrl && (
+                    <div className="flex justify-center">
+                      <Avatar className="h-24 w-24 border-2 border-accent">
+                        <AvatarImage src={tempPhotoUrl} />
+                        <AvatarFallback>Preview</AvatarFallback>
+                      </Avatar>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleUpdateAvatar} className="bg-accent text-accent-foreground">Save Photo</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <h2 className="text-xl font-bold">{formData.firstName} {formData.lastName}</h2>
             <p className="text-sm text-muted-foreground mb-4">{profile?.role || 'Student'}</p>
             <Badge variant="secondary" className="bg-primary/20 text-accent-foreground px-4">
@@ -180,6 +232,16 @@ export default function ProfilePage() {
                     type="email"
                     value={formData.email} 
                     onChange={e => setFormData({...formData, email: e.target.value})}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="formPhotoUrl">Profile Picture URL</Label>
+                  <Input 
+                    id="formPhotoUrl" 
+                    value={formData.photoUrl} 
+                    onChange={e => setFormData({...formData, photoUrl: e.target.value})}
+                    placeholder="https://example.com/photo.jpg"
                     className="rounded-xl"
                   />
                 </div>
