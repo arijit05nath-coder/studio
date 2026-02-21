@@ -6,9 +6,13 @@ import { useRouter } from "next/navigation"
 import { useUser, useFirestore } from "@/firebase"
 import { DashboardNav } from "@/components/dashboard-nav"
 import { doc, getDoc } from "firebase/firestore"
-import { Loader2, Menu, Sparkles } from "lucide-react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
+import { Loader2, Sparkles } from "lucide-react"
+import { 
+  SidebarProvider, 
+  SidebarInset, 
+  SidebarTrigger 
+} from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 
 export default function DashboardLayout({
   children,
@@ -46,38 +50,25 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 flex-col fixed inset-y-0">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
         <DashboardNav role={role as any} />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 bg-background/95 backdrop-blur z-40">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-accent fill-accent" />
+              <span className="font-bold text-lg hidden sm:inline-block">FocusFlow</span>
+            </div>
+          </header>
+          <main className="flex-1">
+            <div className="max-w-6xl mx-auto p-4 md:p-8">
+              {children}
+            </div>
+          </main>
+        </SidebarInset>
       </div>
-
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-accent fill-accent" />
-          <span className="font-bold text-lg">FocusFlow</span>
-        </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <SheetHeader className="sr-only">
-              <SheetTitle>Navigation Menu</SheetTitle>
-            </SheetHeader>
-            <DashboardNav role={role as any} />
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      <main className="flex-1 md:pl-64">
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
-          {children}
-        </div>
-      </main>
-    </div>
+    </SidebarProvider>
   )
 }

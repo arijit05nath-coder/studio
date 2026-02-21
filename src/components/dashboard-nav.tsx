@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -16,6 +17,16 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useAuth, useUser } from "@/firebase"
 import { signOut } from "firebase/auth"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  useSidebar,
+} from "@/components/ui/sidebar"
 
 interface DashboardNavProps {
   role?: 'Student' | 'Teacher'
@@ -26,6 +37,7 @@ export function DashboardNav({ role }: DashboardNavProps) {
   const auth = useAuth()
   const router = useRouter()
   const { user } = useUser()
+  const { setOpenMobile } = useSidebar()
 
   const navItems = [
     {
@@ -81,43 +93,51 @@ export function DashboardNav({ role }: DashboardNavProps) {
   }
 
   return (
-    <nav className="flex flex-col h-full bg-white border-r px-4 py-8">
-      <div className="mb-8 px-2">
-        <h1 className="text-2xl font-bold text-accent-foreground flex items-center gap-2">
-          <Sparkles className="h-6 w-6 fill-accent text-accent" />
-          FocusFlow
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1 truncate">
-          {user?.email}
-        </p>
-      </div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-2 px-2 py-1">
+          <Sparkles className="h-6 w-6 fill-accent text-accent shrink-0" />
+          <div className="flex flex-col gap-0.5 overflow-hidden group-data-[collapsible=icon]:hidden">
+            <span className="font-bold text-lg leading-none">FocusFlow</span>
+            <span className="text-[10px] text-muted-foreground truncate">{user?.email}</span>
+          </div>
+        </div>
+      </SidebarHeader>
 
-      <div className="space-y-1 flex-1">
-        {filteredItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-              pathname === item.href
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <item.icon className={cn("h-4 w-4", pathname === item.href ? "fill-current" : "")} />
-            {item.title}
-          </Link>
-        ))}
-      </div>
+      <SidebarContent className="px-2">
+        <SidebarMenu>
+          {filteredItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton 
+                asChild 
+                isActive={pathname === item.href}
+                tooltip={item.title}
+                onClick={() => setOpenMobile(false)}
+              >
+                <Link href={item.href}>
+                  <item.icon className={cn(pathname === item.href && "fill-current")} />
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
 
-      <Button 
-        variant="ghost" 
-        className="mt-auto flex items-center justify-start gap-3 text-muted-foreground hover:text-destructive p-3"
-        onClick={handleLogout}
-      >
-        <LogOut className="h-4 w-4" />
-        Logout
-      </Button>
-    </nav>
+      <SidebarFooter className="p-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className="text-muted-foreground hover:text-destructive transition-colors"
+              onClick={handleLogout}
+              tooltip="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   )
 }
