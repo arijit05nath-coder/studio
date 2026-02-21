@@ -156,7 +156,7 @@ export default function StudentDashboard() {
     <div className="space-y-8">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">{t('dashboard')}</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">{t('dashboard')}</h1>
           <p className="text-muted-foreground">{t('welcomeBack')}, {profile?.firstName || 'Student'}!</p>
         </div>
         <div className="hidden md:block">
