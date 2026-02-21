@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff } from "lucide-react"
+import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff, Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,8 +13,24 @@ import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from "@/fireba
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth"
 import { doc, getDoc, serverTimestamp } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/lib/i18n-store"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+const languages = [
+  { code: 'en', name: 'English' },
+  { code: 'hi', name: 'हिन्दी' },
+  { code: 'bn', name: 'বাংলা' },
+  { code: 'ta', name: 'தமிழ்' },
+  { code: 'ml', name: 'മലയാളം' },
+]
 
 export default function LandingPage() {
+  const { language, setLanguage, t } = useI18n()
   const [role, setRole] = useState<'student' | 'teacher'>('student')
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -31,7 +47,6 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser()
   const { toast } = useToast()
 
-  // Initial check for existing session
   useEffect(() => {
     if (user && !isUserLoading) {
       const checkRoleAndRedirect = async () => {
@@ -62,7 +77,6 @@ export default function LandingPage() {
         const newUser = userCredential.user
         const mappedRole = role === 'teacher' ? 'Teacher' : 'Student';
         
-        // Use non-blocking profile creation
         setDocumentNonBlocking(doc(db, "userProfiles", newUser.uid), {
           id: newUser.uid,
           firstName: firstName.trim(),
@@ -77,10 +91,7 @@ export default function LandingPage() {
           theme: 'default'
         }, { merge: true });
 
-        // Sign out immediately after sign up to force login
         await signOut(auth);
-        
-        // Reset state to show login form
         setIsSignUp(false);
         setPassword("");
         
@@ -90,14 +101,11 @@ export default function LandingPage() {
         });
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        
-        // Fetch role immediately to redirect faster
         const docSnap = await getDoc(doc(db, "userProfiles", userCredential.user.uid));
         if (docSnap.exists()) {
           const userData = docSnap.data();
           router.push(userData.role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
         } else {
-          // Fallback if profile is missing
           router.push("/dashboard/student");
         }
         toast({ title: "Welcome back!" });
@@ -106,7 +114,7 @@ export default function LandingPage() {
       toast({
         variant: "destructive",
         title: isSignUp ? "Registration failed" : "Login failed",
-        description: error.message || "An unexpected error occurred. Please try again.",
+        description: error.message || "An error occurred.",
       })
     } finally {
       setLoading(false)
@@ -123,21 +131,39 @@ export default function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+      <div className="absolute top-4 right-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="rounded-full">
+              <Languages className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {languages.map((lang) => (
+              <DropdownMenuItem 
+                key={lang.code} 
+                onClick={() => setLanguage(lang.code as any)}
+                className={language === lang.code ? "bg-accent text-accent-foreground" : ""}
+              >
+                {lang.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div className="mb-8 text-center">
         <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary">
           <Sparkles className="h-10 w-10 text-accent-foreground fill-current" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">StudyNest</h1>
-        <p className="mt-2 text-muted-foreground">Elevate your learning experience with AI-powered focus.</p>
+        <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">{t('appName')}</h1>
+        <p className="mt-2 text-muted-foreground">{t('tagline')}</p>
       </div>
 
       <Card className="w-full max-w-md border-none shadow-xl bg-card">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            {isSignUp ? "Create an account" : "Welcome back"}
-          </CardTitle>
-          <CardTitle className="text-center font-normal text-muted-foreground text-sm mt-2">
-            {isSignUp ? "Join StudyNest today" : "Log in to your account to continue"}
+            {isSignUp ? t('createAccount') : t('welcomeBack')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -159,87 +185,43 @@ export default function LandingPage() {
                   </Tabs>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input 
-                        id="firstName" 
-                        placeholder="Jane" 
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        required
-                        className="bg-background"
-                      />
+                      <Label htmlFor="firstName">{t('firstName')}</Label>
+                      <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                     </div>
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input 
-                        id="lastName" 
-                        placeholder="Doe" 
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        required
-                        className="bg-background"
-                      />
+                      <Label htmlFor="lastName">{t('lastName')}</Label>
+                      <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="qualification">Educational Qualification</Label>
-                    <Input 
-                      id="qualification" 
-                      placeholder={role === 'student' ? "e.g. High School Senior, Undergraduate" : "e.g. PhD in Physics, Math Professor"}
-                      value={qualification}
-                      onChange={(e) => setQualification(e.target.value)}
-                      required
-                      className="bg-background"
-                    />
+                    <Label htmlFor="qualification">{t('qualification')}</Label>
+                    <Input id="qualification" value={qualification} onChange={(e) => setQualification(e.target.value)} required />
                   </div>
                 </>
               )}
               
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email"
-                  placeholder="name@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-background"
-                />
+                <Label htmlFor="email">{t('email')}</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <div className="relative">
-                  <Input 
-                    id="password" 
-                    type={showPassword ? "text" : "password"} 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="pr-10 bg-background"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
               <Button type="submit" disabled={loading} className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold py-6 rounded-xl">
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isSignUp ? "Sign Up" : "Log In")}
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isSignUp ? t('signup') : t('login'))}
               </Button>
             </div>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-4">
-          <Button 
-            variant="link" 
-            onClick={() => setIsSignUp(!isSignUp)} 
-            className="text-sm font-bold text-accent-foreground hover:text-accent transition-colors underline-offset-4"
-          >
-            {isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up"}
+          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)}>
+            {isSignUp ? t('login') : t('signup')}
           </Button>
         </CardFooter>
       </Card>

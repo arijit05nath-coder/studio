@@ -19,12 +19,14 @@ import {
   Moon,
   Trees,
   Coffee,
-  Trophy
+  Trophy,
+  Languages
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth, useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase"
 import { signOut } from "firebase/auth"
 import { doc } from "firebase/firestore"
+import { useI18n } from "@/lib/i18n-store"
 import {
   Sidebar,
   SidebarContent,
@@ -64,7 +66,16 @@ const THEMES = [
   { id: 'sunrise', name: 'Sunrise', icon: Coffee },
 ]
 
+const languages = [
+  { code: 'en', name: 'English' },
+  { code: 'hi', name: 'हिन्दी' },
+  { code: 'bn', name: 'বাংলা' },
+  { code: 'ta', name: 'தமிழ்' },
+  { code: 'ml', name: 'മലയാളം' },
+]
+
 export function DashboardNav({ role, profile }: DashboardNavProps) {
+  const { language, setLanguage, t } = useI18n()
   const pathname = usePathname()
   const auth = useAuth()
   const db = useFirestore()
@@ -75,7 +86,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
 
   const navItems = [
     {
-      title: "Dashboard",
+      title: t('dashboard'),
       href: role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student",
       icon: LayoutDashboard,
     },
@@ -86,30 +97,30 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
       showOnlyFor: 'Teacher' as const,
     },
     {
-      title: "Curriculum",
+      title: t('curriculum'),
       href: "/dashboard/courses",
       icon: Book,
     },
     {
-      title: "Focus Mode",
+      title: t('focusMode'),
       href: "/dashboard/focus",
       icon: Clock,
       hideFor: 'Teacher' as const,
     },
     {
-      title: "Achievements",
+      title: t('achievements'),
       href: "/dashboard/achievements",
       icon: Trophy,
       hideFor: 'Teacher' as const,
     },
     {
-      title: "Groups",
+      title: t('groups'),
       href: "/dashboard/groups",
       icon: Users,
       hideFor: 'Teacher' as const,
     },
     {
-      title: "AI Coach",
+      title: t('aiCoach'),
       href: "/dashboard/ai-coach",
       icon: Sparkles,
       hideFor: 'Teacher' as const,
@@ -132,7 +143,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
     updateDocumentNonBlocking(doc(db, "userProfiles", user.uid), {
       theme: themeId
     })
-    toast({ title: `Theme changed to ${THEMES.find(t => t.id === themeId)?.name}` })
+    toast({ title: `Theme changed` })
   }
 
   const userName = profile ? `${profile.firstName} ${profile.lastName}` : (user?.email?.split('@')[0] || "User")
@@ -149,7 +160,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                   <Sparkles className="size-4 fill-current" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold">StudyNest</span>
+                  <span className="truncate font-semibold">{t('appName')}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -245,6 +256,31 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
+                  
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="cursor-pointer">
+                      <Languages className="mr-2 h-4 w-4" />
+                      <span>{t('language')}</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent className="p-1 min-w-[120px]">
+                        {languages.map((lang) => (
+                          <DropdownMenuItem 
+                            key={lang.code} 
+                            onClick={() => setLanguage(lang.code as any)}
+                            className={cn(
+                              "cursor-pointer flex items-center justify-between",
+                              language === lang.code ? "bg-accent/10 text-accent font-medium" : ""
+                            )}
+                          >
+                            <span>{lang.name}</span>
+                            {language === lang.code && <div className="h-1.5 w-1.5 rounded-full bg-accent" />}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/profile" className="flex w-full items-center cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
@@ -258,7 +294,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                   className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  {t('logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
