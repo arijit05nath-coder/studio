@@ -14,7 +14,6 @@ import {
   BarChart3,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { useAuth, useUser } from "@/firebase"
 import { signOut } from "firebase/auth"
 import {
@@ -94,14 +93,22 @@ export function DashboardNav({ role }: DashboardNavProps) {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2 px-2 py-1">
-          <Sparkles className="h-6 w-6 fill-accent text-accent shrink-0" />
-          <div className="flex flex-col gap-0.5 overflow-hidden group-data-[collapsible=icon]:hidden">
-            <span className="font-bold text-lg leading-none">FocusFlow</span>
-            <span className="text-[10px] text-muted-foreground truncate">{user?.email}</span>
-          </div>
-        </div>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href={role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student"}>
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                  <Sparkles className="size-4 fill-current" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-semibold">FocusFlow</span>
+                  <span className="truncate text-[10px] text-muted-foreground">{user?.email}</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent className="px-2">
