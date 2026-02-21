@@ -108,7 +108,7 @@ export default function StudentProgressPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12 border">
-                    <AvatarImage src={student.photoUrl} />
+                    {student.photoUrl && <AvatarImage src={student.photoUrl} />}
                     <AvatarFallback className="bg-accent text-accent-foreground font-bold">
                       {student.firstName?.[0] || ''}{student.lastName?.[0] || ''}
                     </AvatarFallback>
@@ -137,7 +137,7 @@ export default function StudentProgressPage() {
           <DialogHeader>
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-accent">
-                <AvatarImage src={selectedStudent?.photoUrl} />
+                {selectedStudent?.photoUrl && <AvatarImage src={selectedStudent.photoUrl} />}
                 <AvatarFallback className="bg-accent text-accent-foreground font-bold text-lg">
                   {selectedStudent?.firstName?.[0] || ''}{selectedStudent?.lastName?.[0] || ''}
                 </AvatarFallback>

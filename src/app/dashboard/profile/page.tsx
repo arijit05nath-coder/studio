@@ -167,7 +167,7 @@ export default function ProfilePage() {
               <DialogTrigger asChild>
                 <div className="relative inline-block mb-4 cursor-pointer group">
                   <Avatar className="h-24 w-24 border-4 border-accent shadow-lg group-hover:opacity-80 transition-opacity">
-                    <AvatarImage src={formData.photoUrl} />
+                    {formData.photoUrl && <AvatarImage src={formData.photoUrl} />}
                     <AvatarFallback className="text-2xl font-bold bg-accent text-accent-foreground">
                       {formData.firstName?.[0]}{formData.lastName?.[0]}
                     </AvatarFallback>

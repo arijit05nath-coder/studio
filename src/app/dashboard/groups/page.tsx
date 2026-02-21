@@ -105,6 +105,7 @@ export default function GroupsPage() {
               name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Student",
               firstName: profile?.firstName || "",
               lastName: profile?.lastName || "",
+              photoUrl: profile?.photoUrl || "",
               totalMinutes
             };
           })
@@ -521,7 +522,7 @@ export default function GroupsPage() {
                                     {index + 1}
                                   </div>
                                   <Avatar className="h-10 w-10 border shrink-0">
-                                    <AvatarImage src={item.photoUrl} />
+                                    {item.photoUrl && <AvatarImage src={item.photoUrl} />}
                                     <AvatarFallback className="bg-accent text-accent-foreground font-bold">
                                       {item.firstName?.[0] || '?'}{item.lastName?.[0] || ''}
                                     </AvatarFallback>

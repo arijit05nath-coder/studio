@@ -113,7 +113,7 @@ export default function TeacherDashboard() {
                   <div key={student.id} className="flex items-center justify-between group border-b border-muted/50 pb-4 last:border-0">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border border-muted">
-                        <AvatarImage src={student.photoUrl} />
+                        {student.photoUrl && <AvatarImage src={student.photoUrl} />}
                         <AvatarFallback className="bg-accent text-accent-foreground font-bold">
                           {student.firstName?.[0] || ''}{student.lastName?.[0] || ''}
                         </AvatarFallback>
