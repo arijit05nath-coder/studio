@@ -56,7 +56,7 @@ export function DashboardNav({ role }: DashboardNavProps) {
       hideFor: 'Teacher' as const,
     },
     {
-      title: "Group Study",
+      title: "Groups",
       href: "/dashboard/groups",
       icon: Users,
       hideFor: 'Teacher' as const,
