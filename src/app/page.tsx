@@ -96,8 +96,8 @@ export default function LandingPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Authentication failed",
-        description: "Invalid email or password. Please check your credentials and try again.",
+        title: isSignUp ? "Registration failed" : "Login failed",
+        description: error.message || "An unexpected error occurred. Please try again.",
       })
     } finally {
       setLoading(false)
