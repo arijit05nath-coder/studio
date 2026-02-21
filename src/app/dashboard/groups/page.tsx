@@ -62,12 +62,14 @@ export default function GroupsPage() {
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
   const messagesQuery = useMemoFirebase(() => {
-    if (!selectedGroupId || !db || !user) return null;
+    // Guard: Only query messages if the group is selected AND confirmed in our membership list
+    // This prevents permission errors during joining/syncing
+    if (!selectedGroupId || !db || !user || !selectedGroup) return null;
     return query(
       collection(db, "studyGroups", selectedGroupId, "messages"),
       orderBy("timestamp", "asc")
     );
-  }, [selectedGroupId, db, user]);
+  }, [selectedGroupId, db, user, selectedGroup]);
 
   const { data: messages } = useCollection(messagesQuery);
 
@@ -119,7 +121,7 @@ export default function GroupsPage() {
       }
     };
 
-    if (selectedGroupId) {
+    if (selectedGroupId && selectedGroup) {
       fetchLeaderboard();
     }
   }, [selectedGroupId, selectedGroup, db]);
