@@ -12,7 +12,7 @@ import { collection, query, where, doc, orderBy, limit } from "firebase/firestor
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 export default function StudentDashboard() {
@@ -142,16 +142,22 @@ export default function StudentDashboard() {
                   </DialogHeader>
                   <div className="py-6 space-y-6">
                     <div className="flex justify-between items-center">
-                      <Label className="text-lg font-bold">Target Hours</Label>
+                      <Label className="text-lg font-bold" htmlFor="goal-input">Target Hours</Label>
                       <Badge variant="secondary" className="text-lg px-4 py-1">{currentGoalHours}h</Badge>
                     </div>
-                    <Slider 
-                      value={[currentGoalHours]}
-                      min={1}
-                      max={12}
+                    <Input 
+                      id="goal-input"
+                      type="number"
+                      value={currentGoalHours}
+                      min={0.5}
+                      max={24}
                       step={0.5}
-                      onValueChange={([val]) => handleUpdateGoal(val)}
+                      onChange={(e) => handleUpdateGoal(parseFloat(e.target.value) || 0)}
+                      className="rounded-xl text-lg h-12"
                     />
+                    <p className="text-xs text-muted-foreground italic">
+                      Enter the number of hours you aim to focus each day.
+                    </p>
                   </div>
                   <DialogFooter>
                     <Button onClick={() => setIsGoalDialogOpen(false)} className="bg-accent text-accent-foreground">
