@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase"
 import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -134,28 +134,41 @@ export default function GroupsPage() {
     setMessage("");
   }
 
+  const generateGroupId = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
   const handleCreateGroup = () => {
     if (!user || !db || !newGroup.name) return;
 
-    addDocumentNonBlocking(collection(db, "studyGroups"), {
+    const customId = generateGroupId();
+    const groupRef = doc(db, "studyGroups", customId);
+
+    setDocumentNonBlocking(groupRef, {
       name: newGroup.name,
       description: newGroup.description || "No description provided.",
       memberIds: [user.uid],
       teacherId: userRole === 'Teacher' ? user.uid : null,
       dateCreated: new Date().toISOString(),
       timestamp: serverTimestamp()
-    });
+    }, { merge: true });
 
     setNewGroup({ name: "", description: "" });
     setIsCreateDialogOpen(false);
-    toast({ title: "Group created!" });
+    setSelectedGroupId(customId);
+    toast({ title: "Group created!", description: `Share ID: ${customId}` });
   }
 
   const handleJoinGroup = async () => {
     if (!user || !db || !joinId.trim()) return;
 
     try {
-      const groupRef = doc(db, "studyGroups", joinId.trim());
+      const groupRef = doc(db, "studyGroups", joinId.trim().toUpperCase());
       const groupSnap = await getDoc(groupRef);
 
       if (!groupSnap.exists()) {
@@ -204,16 +217,17 @@ export default function GroupsPage() {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Join a Study Group</DialogTitle>
-                <DialogDescription>Enter the shared Group ID to join your peers.</DialogDescription>
+                <DialogDescription>Enter the 6-character Group ID to join your peers.</DialogDescription>
               </DialogHeader>
               <div className="py-4">
                 <Label htmlFor="joinId">Group ID</Label>
                 <Input
                   id="joinId"
-                  placeholder="Paste group ID here..."
+                  placeholder="e.g. A1B2C3"
                   value={joinId}
-                  onChange={(e) => setJoinId(e.target.value)}
-                  className="mt-2"
+                  onChange={(e) => setJoinId(e.target.value.toUpperCase())}
+                  className="mt-2 font-mono"
+                  maxLength={6}
                 />
               </div>
               <DialogFooter>
@@ -234,7 +248,7 @@ export default function GroupsPage() {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Create Study Group</DialogTitle>
-                <DialogDescription>Invite others later by sharing your group ID.</DialogDescription>
+                <DialogDescription>A unique 6-character code will be generated for your group.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -318,7 +332,7 @@ export default function GroupsPage() {
                   <div className="flex items-center gap-2">
                     <div className="hidden sm:flex flex-col items-end mr-2">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold">Group ID</span>
-                      <code className="text-[10px] bg-muted px-2 py-1 rounded truncate max-w-[120px]">{selectedGroupId}</code>
+                      <code className="text-[14px] bg-muted px-3 py-1 rounded font-mono font-bold tracking-wider">{selectedGroupId}</code>
                     </div>
                     <Button variant="outline" size="icon" className="rounded-full" onClick={copyGroupId}>
                       {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
