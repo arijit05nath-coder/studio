@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, Book, Clock, Trophy, Loader2, Settings2, Target, Calendar, ChevronRight, Lightbulb } from "lucide-react"
+import { Sparkles, Book, Clock, Trophy, Loader2, Settings2, Target, Calendar, ChevronRight, Lightbulb, TrendingUp } from "lucide-react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking } from "@/firebase"
 import { collection, query, where, doc, orderBy, limit } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,19 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+
+const chartConfig = {
+  current: {
+    label: "This Week",
+    color: "hsl(var(--accent))",
+  },
+  previous: {
+    label: "Last Week",
+    color: "hsl(var(--muted-foreground))",
+  },
+} satisfies ChartConfig;
 
 export default function StudentDashboard() {
   const { user, isUserLoading } = useUser()
@@ -34,6 +47,16 @@ export default function StudentDashboard() {
     return d.toISOString();
   }, []);
 
+  const startOfPreviousWeek = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    // Find current Sunday
+    d.setDate(d.getDate() - d.getDay());
+    // Go back 7 more days to start of previous week
+    d.setDate(d.getDate() - 7);
+    return d.toISOString();
+  }, []);
+
   const todaySessionsQuery = useMemoFirebase(() => {
     if (!user || !db || isUserLoading) return null;
     return query(
@@ -43,6 +66,17 @@ export default function StudentDashboard() {
   }, [user, db, todayStart, isUserLoading]);
 
   const { data: todaySessions, isLoading: sessionsLoading } = useCollection(todaySessionsQuery);
+
+  const weeklySessionsQuery = useMemoFirebase(() => {
+    if (!user || !db || isUserLoading) return null;
+    return query(
+      collection(db, "userProfiles", user.uid, "focusSessions"),
+      where("startTime", ">=", startOfPreviousWeek),
+      where("status", "==", "Completed")
+    );
+  }, [user, db, startOfPreviousWeek, isUserLoading]);
+
+  const { data: weeklySessions, isLoading: weeklyLoading } = useCollection(weeklySessionsQuery);
 
   const subjectsQuery = useMemoFirebase(() => {
     if (!db || !user || isUserLoading) return null;
@@ -66,6 +100,36 @@ export default function StudentDashboard() {
       .filter(s => s.status === 'Completed')
       .reduce((acc, s) => acc + (s.actualDurationMinutes || 0), 0);
   }, [todaySessions]);
+
+  const chartData = useMemo(() => {
+    if (!weeklySessions) return [];
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const now = new Date();
+    const startOfThisWeek = new Date(now);
+    startOfThisWeek.setHours(0, 0, 0, 0);
+    startOfThisWeek.setDate(now.getDate() - now.getDay());
+
+    const stats = days.map((day, index) => ({
+      day,
+      current: 0,
+      previous: 0,
+    }));
+
+    weeklySessions.forEach(s => {
+      const sDate = new Date(s.startTime);
+      const dayIndex = sDate.getDay();
+      const mins = s.actualDurationMinutes || 0;
+      
+      if (sDate >= startOfThisWeek) {
+        stats[dayIndex].current += mins;
+      } else {
+        stats[dayIndex].previous += mins;
+      }
+    });
+
+    return stats;
+  }, [weeklySessions]);
 
   const currentGoalHours = profile?.focusGoal || 4;
   const todayTimeFormatted = `${Math.floor(totalMinutesToday / 60)}h ${totalMinutesToday % 60}min`;
@@ -191,6 +255,56 @@ export default function StudentDashboard() {
 
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-accent" />
+                Weekly Focus Trends
+              </CardTitle>
+              <CardDescription>Comparing focus time (mins) with last week.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px] w-full pt-4">
+              {weeklyLoading ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                </div>
+              ) : (
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis 
+                      dataKey="day" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 12 }} 
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 12 }} 
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar 
+                      dataKey="current" 
+                      fill="var(--color-current)" 
+                      radius={[4, 4, 0, 0]} 
+                      barSize={20}
+                    />
+                    <Bar 
+                      dataKey="previous" 
+                      fill="var(--color-previous)" 
+                      radius={[4, 4, 0, 0]} 
+                      barSize={20}
+                      opacity={0.5}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="border-none shadow-sm bg-card">
+            <CardHeader>
               <CardTitle>Today's Sessions</CardTitle>
               <CardDescription>Your focus activity for the last 24 hours</CardDescription>
             </CardHeader>
@@ -232,9 +346,7 @@ export default function StudentDashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        <div className="space-y-6">
           <Card className="border-none shadow-sm bg-card overflow-hidden">
             <CardHeader className="bg-accent/5">
               <div className="flex justify-between items-center">
