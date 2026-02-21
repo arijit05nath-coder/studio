@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -14,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 
 const chartConfig = {
@@ -268,7 +267,7 @@ export default function StudentDashboard() {
                 </div>
               ) : (
                 <ChartContainer config={chartConfig} className="h-full w-full">
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
                     <XAxis 
                       dataKey="day" 
@@ -282,20 +281,23 @@ export default function StudentDashboard() {
                       tick={{ fontSize: 12 }} 
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar 
-                      dataKey="current" 
-                      fill="var(--color-current)" 
-                      radius={[4, 4, 0, 0]} 
-                      barSize={20}
+                    <Line
+                      type="monotone"
+                      dataKey="current"
+                      stroke="var(--color-current)"
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: "var(--color-current)" }}
+                      activeDot={{ r: 6 }}
                     />
-                    <Bar 
-                      dataKey="previous" 
-                      fill="var(--color-previous)" 
-                      radius={[4, 4, 0, 0]} 
-                      barSize={20}
-                      opacity={0.5}
+                    <Line
+                      type="monotone"
+                      dataKey="previous"
+                      stroke="var(--color-previous)"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ r: 4, fill: "var(--color-previous)" }}
                     />
-                  </BarChart>
+                  </LineChart>
                 </ChartContainer>
               )}
             </CardContent>
