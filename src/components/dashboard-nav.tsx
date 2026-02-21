@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -186,13 +185,17 @@ export function DashboardNav({ role }: DashboardNavProps) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Settings2 className="mr-2 h-4 w-4" />
-                    Theme
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile" className="flex w-full items-center cursor-pointer">
+                      <Settings2 className="mr-2 h-4 w-4" />
+                      Theme
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile" className="flex w-full items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
