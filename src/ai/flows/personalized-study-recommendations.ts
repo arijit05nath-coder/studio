@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for generating personalized study recommendations for students.
@@ -102,7 +101,7 @@ No performance summary data available.
 No user preferences available.
 {{/if}}
 
-Based on this information, provide up to 3 personalized study recommendations. For each recommendation, identify the \`topic\`, explain the \`reasoning\` behind your choice, suggest a \`suggestedApproach\` considering their learning style and goals, assign a \`priorityLevel\` (High, Medium, or Low), and list concrete \`nextSteps\` they can take. Ensure your recommendations are specific and directly address potential areas for improvement or reinforcement.`,
+Based on this information, provide up to 3 personalized study recommendations. For each recommendation, identify the 'topic', explain the 'reasoning' behind your choice, suggest a 'suggestedApproach' considering their learning style and goals, assign a 'priorityLevel' (High, Medium, or Low), and list concrete 'nextSteps' they can take. Ensure your recommendations are specific and directly address potential areas for improvement or reinforcement.`,
 });
 
 const personalizedStudyRecommendationsFlow = ai.defineFlow(
