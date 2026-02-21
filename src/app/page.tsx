@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff, Languages } from "lucide-react"
+import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff, Languages, Sun, Moon, Trees, Coffee, Palette } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -27,6 +28,14 @@ const languages = [
   { code: 'bn', name: 'বাংলা' },
   { code: 'ta', name: 'தமிழ்' },
   { code: 'ml', name: 'മലയാളം' },
+]
+
+const THEMES = [
+  { id: 'default', name: 'Light', icon: Sun, class: '' },
+  { id: 'dark', name: 'Dark', icon: Moon, class: 'dark' },
+  { id: 'midnight', name: 'Midnight', icon: Sparkles, class: 'theme-midnight' },
+  { id: 'forest', name: 'Forest', icon: Trees, class: 'theme-forest' },
+  { id: 'sunrise', name: 'Sunrise', icon: Coffee, class: 'theme-sunrise' },
 ]
 
 export default function LandingPage() {
@@ -40,12 +49,25 @@ export default function LandingPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [currentTheme, setCurrentTheme] = useState('default')
   
   const router = useRouter()
   const auth = useAuth()
   const db = useFirestore()
   const { user, isUserLoading } = useUser()
   const { toast } = useToast()
+
+  // Apply theme to landing page for preview
+  useEffect(() => {
+    const body = document.body;
+    const themeClasses = ['dark', 'theme-midnight', 'theme-forest', 'theme-sunrise'];
+    body.classList.remove(...themeClasses);
+    
+    const themeConfig = THEMES.find(t => t.id === currentTheme);
+    if (themeConfig?.class) {
+      body.classList.add(themeConfig.class);
+    }
+  }, [currentTheme]);
 
   useEffect(() => {
     if (user && !isUserLoading) {
@@ -88,7 +110,7 @@ export default function LandingPage() {
           level: 1,
           focusGoal: 4,
           focusScore: 0,
-          theme: 'default'
+          theme: currentTheme // Save selected landing page theme
         }, { merge: true });
 
         await signOut(auth);
@@ -130,11 +152,36 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
-      <div className="absolute top-4 right-4">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background transition-colors duration-500">
+      <div className="absolute top-4 right-4 flex gap-2">
+        {/* Theme Switcher */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-full">
+            <Button variant="outline" size="icon" className="rounded-full bg-card shadow-sm">
+              <Palette className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {THEMES.map((theme) => (
+              <DropdownMenuItem 
+                key={theme.id} 
+                onClick={() => setCurrentTheme(theme.id)}
+                className={cn(
+                  "flex items-center gap-2 cursor-pointer",
+                  currentTheme === theme.id ? "bg-accent/10 text-accent font-bold" : ""
+                )}
+              >
+                <theme.icon className="h-4 w-4" />
+                {theme.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Language Switcher */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="rounded-full bg-card shadow-sm">
               <Languages className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -143,7 +190,10 @@ export default function LandingPage() {
               <DropdownMenuItem 
                 key={lang.code} 
                 onClick={() => setLanguage(lang.code as any)}
-                className={language === lang.code ? "bg-accent text-accent-foreground" : ""}
+                className={cn(
+                  "cursor-pointer",
+                  language === lang.code ? "bg-accent/10 text-accent font-bold" : ""
+                )}
               >
                 {lang.name}
               </DropdownMenuItem>
@@ -152,15 +202,15 @@ export default function LandingPage() {
         </DropdownMenu>
       </div>
 
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary">
+      <div className="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary shadow-sm">
           <Sparkles className="h-10 w-10 text-accent-foreground fill-current" />
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">{t('appName')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('tagline')}</p>
+        <p className="mt-2 text-muted-foreground max-w-sm mx-auto">{t('tagline')}</p>
       </div>
 
-      <Card className="w-full max-w-md border-none shadow-xl bg-card">
+      <Card className="w-full max-w-md border-none shadow-2xl bg-card animate-in fade-in slide-in-from-bottom-4 duration-700">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
             {isSignUp ? t('createAccount') : t('welcomeBack')}
@@ -186,41 +236,41 @@ export default function LandingPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col space-y-1.5">
                       <Label htmlFor="firstName">{t('firstName')}</Label>
-                      <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                      <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="rounded-xl" />
                     </div>
                     <div className="flex flex-col space-y-1.5">
                       <Label htmlFor="lastName">{t('lastName')}</Label>
-                      <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                      <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="rounded-xl" />
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="qualification">{t('qualification')}</Label>
-                    <Input id="qualification" value={qualification} onChange={(e) => setQualification(e.target.value)} required />
+                    <Input id="qualification" value={qualification} onChange={(e) => setQualification(e.target.value)} required className="rounded-xl" />
                   </div>
                 </>
               )}
               
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="email">{t('email')}</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-xl" />
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password">{t('password')}</Label>
                 <div className="relative">
-                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
-                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setShowPassword(!showPassword)}>
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="rounded-xl" />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
-              <Button type="submit" disabled={loading} className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold py-6 rounded-xl">
+              <Button type="submit" disabled={loading} className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold py-6 rounded-xl shadow-lg transition-all hover:scale-[1.02]">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isSignUp ? t('signup') : t('login'))}
               </Button>
             </div>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-4">
-          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)}>
+          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="text-accent-foreground font-medium">
             {isSignUp ? t('login') : t('signup')}
           </Button>
         </CardFooter>
