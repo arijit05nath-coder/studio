@@ -5,151 +5,71 @@
  * This ruleset implements a robust, multi-tiered authorization model designed for an 
  * educational environment. It prioritizes strict data ownership for students' personal 
  * records and role-based access control for curriculum management.
- * 
- * Data Structure:
- * - /userProfiles/{userId}: Root user documents containing identity and role (Student/Teacher).
- * - /subjects, /topics, /materials: Global curriculum collections.
- * - /studyGroups: Collaborative spaces shared via member arrays.
- * - /userProfiles/{userId}/focusSessions & /recommendations: Private student subcollections.
- * 
- * Key Security Decisions:
- * 1. Ownership Isolation: Personal student data (sessions and recommendations) is nested 
- *    under the user's profile path, ensuring that one student cannot access another's 
- *    performance metrics.
- * 2. Role-Based Curriculum Management: While curriculum data (Subjects/Topics) is 
- *    publicly readable by all authenticated users, modifications are strictly limited 
- *    to users identified as 'Teacher' in their profiles.
- * 3. Shared Collaboration: Study groups use a membership-list pattern. Access is 
- *    granted if the user's UID exists in the 'memberIds' array or if they are the 
- *    designated 'teacherId' monitoring the group.
- * 4. Denormalization for Performance: Authorization-critical fields like 'teacherId' 
- *    and 'studentId' are enforced on document creation to prevent costly cross-document 
- *    lookups during frequent read/write operations.
  */
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Global Helper Functions ---
-
-    /** @description Checks if the request is from a signed-in user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided ID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Checks ownership and ensures the document already exists for updates/deletes. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
-    /** @description Checks if the authenticated user has the 'Teacher' role. 
-        Note: This requires a cross-document fetch to the user's profile. */
     function isTeacher() {
       return isSignedIn() && get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'Teacher';
     }
 
-    // --- Collection Rules ---
-
-    /**
-     * @description Rules for user profile documents. Users can manage their own profiles.
-     * @path /userProfiles/{userId}
-     * @allow (get) If the user is the owner of the profile.
-     * @deny (create) If the user attempts to create a profile for a different UID.
-     * @principle Validates relational integrity between Auth UID and Document ID.
-     */
     match /userProfiles/{userId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId);
 
-      /**
-       * @description Private focus session records nested under the student's profile.
-       * @path /userProfiles/{userId}/focusSessions/{sessionId}
-       * @allow (list) If the student is viewing their own sessions.
-       * @deny (update) If the student tries to change the studentId link.
-       * @principle Path-based ownership and relational immutability.
-       */
       match /focusSessions/{focusSessionId} {
         allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.studentId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.studentId == resource.data.studentId;
-        allow delete: if isExistingOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isOwner(userId);
       }
 
-      /**
-       * @description AI-generated recommendations private to the student.
-       * @path /userProfiles/{userId}/recommendations/{recId}
-       * @allow (create) If the creator is the student (simulating local generation or system proxy).
-       * @deny (get) If another user attempts to read a student's recommendation.
-       * @principle Restricts access to a user's own data tree.
-       */
       match /recommendations/{recommendationId} {
         allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.studentId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.studentId == resource.data.studentId;
-        allow delete: if isExistingOwner(userId);
+        allow create: if isOwner(userId);
+        allow update, delete: if isOwner(userId);
       }
     }
 
-    /**
-     * @description Academic subjects. Public read, Teacher-only write.
-     * @path /subjects/{subjectId}
-     * @allow (get) All authenticated users.
-     * @deny (create) Students or unauthenticated users.
-     * @principle Role-based write restrictions for organizational data.
-     */
     match /subjects/{subjectId} {
       allow get, list: if isSignedIn();
       allow create, update, delete: if isTeacher();
     }
 
-    /**
-     * @description Sub-categories for subjects. Public read, Teacher-only write.
-     * @path /topics/{topicId}
-     * @allow (list) Any signed-in user browsing the catalog.
-     * @deny (delete) Any user without the Teacher role.
-     * @principle Global read access with administrative write control.
-     */
     match /topics/{topicId} {
       allow get, list: if isSignedIn();
       allow create, update, delete: if isTeacher();
     }
 
-    /**
-     * @description Study materials. Public read, but only the owner (teacher) can modify.
-     * @path /materials/{materialId}
-     * @allow (create) If the teacherId matches the user and they are a Teacher.
-     * @deny (update) If a teacher tries to edit another teacher's material.
-     * @principle Owner-only writes for public-facing educational content.
-     */
     match /materials/{materialId} {
       allow get, list: if isSignedIn();
       allow create: if isTeacher() && request.resource.data.teacherId == request.auth.uid;
-      allow update: if resource != null && resource.data.teacherId == request.auth.uid && request.resource.data.teacherId == resource.data.teacherId;
-      allow delete: if resource != null && resource.data.teacherId == request.auth.uid;
+      allow update, delete: if resource != null && resource.data.teacherId == request.auth.uid;
     }
 
-    /**
-     * @description Collaborative study groups. Access restricted to members and designated teachers.
-     * @path /studyGroups/{studyGroupId}
-     * @allow (get) If the user is in the memberIds array or is the monitoring teacher.
-     * @deny (update) If a non-member attempts to modify group details.
-     * @principle Shared access via denormalized member/role lists.
-     */
     match /studyGroups/{studyGroupId} {
       allow get: if isSignedIn() && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId);
-      allow list: if isSignedIn(); // Queries must filter by memberIds or teacherId to satisfy results
+      allow list: if isSignedIn(); 
       allow create: if isSignedIn();
-      allow update: if resource != null && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId);
-      allow delete: if resource != null && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId);
+      allow update, delete: if resource != null && (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.teacherId);
+
+      match /messages/{messageId} {
+        // Use denormalized memberIds for efficient authorization without get()
+        allow read: if isSignedIn() && request.auth.uid in resource.data.memberIds;
+        allow create: if isSignedIn() && request.auth.uid in request.resource.data.memberIds;
+      }
     }
   }
 }

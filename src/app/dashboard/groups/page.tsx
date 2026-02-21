@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { Users, Plus, MessageSquare, Shield, TrendingUp, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { collection, query, where, serverTimestamp } from "firebase/firestore"
+import { collection, query, where, serverTimestamp, orderBy } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function GroupsPage() {
@@ -25,6 +24,7 @@ export default function GroupsPage() {
   const [message, setMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [newGroup, setNewGroup] = useState({ name: "", description: "" })
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Real-time groups the user is a member of
   const groupsQuery = useMemoFirebase(() => {
@@ -38,10 +38,34 @@ export default function GroupsPage() {
   const { data: groups, isLoading: groupsLoading } = useCollection(groupsQuery);
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
+  // Real-time messages for the selected group
+  const messagesQuery = useMemoFirebase(() => {
+    if (!selectedGroupId || !db) return null;
+    return query(
+      collection(db, "studyGroups", selectedGroupId, "messages"),
+      orderBy("timestamp", "asc")
+    );
+  }, [selectedGroupId, db]);
+
+  const { data: messages } = useCollection(messagesQuery);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   const handleSendMessage = () => {
-    if (!message.trim() || !selectedGroupId || !user) return;
-    // Chat implementation would usually go here with a subcollection
-    // For MVP, we'll just clear the input to simulate activity
+    if (!message.trim() || !selectedGroupId || !user || !selectedGroup) return;
+
+    addDocumentNonBlocking(collection(db, "studyGroups", selectedGroupId, "messages"), {
+      senderId: user.uid,
+      senderName: user.email?.split('@')[0] || "Student",
+      text: message.trim(),
+      timestamp: serverTimestamp(),
+      memberIds: selectedGroup.memberIds // Denormalize for security rules
+    });
+
     setMessage("");
   }
 
@@ -176,54 +200,56 @@ export default function GroupsPage() {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <TrendingUp className="h-4 w-4 text-accent" />
-                        Group Goal
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-2xl font-bold">0%</div>
-                        <Progress value={0} className="h-2 bg-white" />
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <Shield className="h-4 w-4 text-accent" />
-                        Status
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">No active sessions</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
               </Card>
 
-              <Card className="border-none shadow-sm bg-white overflow-hidden flex flex-col h-[400px]">
+              <Card className="border-none shadow-sm bg-white overflow-hidden flex flex-col h-[500px]">
                 <CardHeader className="pb-2 border-b">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <MessageSquare className="h-5 w-5 text-accent" />
-                    Group Activity
+                    Chat
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
                   <ScrollArea className="flex-1 p-4">
-                    <div className="flex flex-col items-center justify-center h-full text-center space-y-2 opacity-50">
-                      <MessageSquare className="h-8 w-8" />
-                      <p className="text-sm italic">Connect with members to coordinate study sessions.</p>
+                    <div className="space-y-4">
+                      {messages && messages.length > 0 ? (
+                        messages.map((msg, i) => (
+                          <div 
+                            key={msg.id} 
+                            className={cn(
+                              "flex flex-col gap-1 max-w-[80%]",
+                              msg.senderId === user?.uid ? "ml-auto items-end" : "items-start"
+                            )}
+                          >
+                            <span className="text-[10px] text-muted-foreground px-1">{msg.senderName}</span>
+                            <div className={cn(
+                              "px-3 py-2 rounded-2xl text-sm",
+                              msg.senderId === user?.uid 
+                                ? "bg-accent text-accent-foreground rounded-tr-none" 
+                                : "bg-muted rounded-tl-none"
+                            )}>
+                              {msg.text}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center space-y-2 opacity-50 py-20">
+                          <MessageSquare className="h-8 w-8" />
+                          <p className="text-sm italic">Start the conversation!</p>
+                        </div>
+                      )}
+                      <div ref={scrollRef} />
                     </div>
                   </ScrollArea>
                   <div className="p-4 border-t bg-muted/10 flex gap-2">
                     <Input 
                       placeholder="Type a message..." 
-                      className="bg-white border-none shadow-inner" 
+                      className="bg-white" 
                       value={message}
                       onChange={e => setMessage(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                     />
-                    <Button onClick={handleSendMessage} size="icon" className="bg-accent text-accent-foreground">
+                    <Button onClick={handleSendMessage} size="icon" className="bg-accent text-accent-foreground shrink-0">
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>

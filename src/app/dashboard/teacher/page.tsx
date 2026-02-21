@@ -1,33 +1,52 @@
-
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Users, BookOpen, AlertCircle, TrendingUp, Search } from "lucide-react"
+import { Users, BookOpen, AlertCircle, TrendingUp, Search, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, where } from "firebase/firestore"
 
 export default function TeacherDashboard() {
+  const db = useFirestore()
+
+  const studentsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "userProfiles"), where("role", "==", "Student"));
+  }, [db]);
+
+  const materialsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "materials");
+  }, [db]);
+
+  const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery);
+  const { data: materials, isLoading: materialsLoading } = useCollection(materialsQuery);
+
   const stats = [
-    { title: "Active Students", value: "84", icon: Users, color: "text-blue-500" },
-    { title: "Resources", value: "24 Shared", icon: BookOpen, color: "text-purple-500" },
+    { 
+      title: "Active Students", 
+      value: studentsLoading ? "..." : (students?.length || 0).toString(), 
+      icon: Users, 
+      color: "text-blue-500" 
+    },
+    { 
+      title: "Resources", 
+      value: materialsLoading ? "..." : `${materials?.length || 0} Shared`, 
+      icon: BookOpen, 
+      color: "text-purple-500" 
+    },
     { title: "Avg. Focus Score", value: "78%", icon: TrendingUp, color: "text-accent-foreground" },
     { title: "At Risk", value: "3 Students", icon: AlertCircle, color: "text-destructive" },
-  ]
-
-  const students = [
-    { name: "Alice Smith", focus: 95, progress: 88, status: "Excellent" },
-    { name: "Bob Jones", focus: 45, progress: 32, status: "At Risk" },
-    { name: "Charlie Day", focus: 72, progress: 65, status: "Improving" },
-    { name: "Diana Prince", focus: 88, progress: 92, status: "Excellent" },
   ]
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Teacher Overview</h1>
-        <p className="text-muted-foreground">Monitor class activity and student performance.</p>
+        <p className="text-muted-foreground">Monitor class activity and student performance in real-time.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -38,7 +57,9 @@ export default function TeacherDashboard() {
               <stat.icon className={`h-4 w-4 ${stat.color} fill-current`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold">
+                {stat.value}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -49,8 +70,8 @@ export default function TeacherDashboard() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Student Performance</CardTitle>
-                <CardDescription>Track individual student engagement metrics.</CardDescription>
+                <CardTitle>Student Roster</CardTitle>
+                <CardDescription>View all enrolled students and their basic info.</CardDescription>
               </div>
               <div className="relative w-64">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -60,51 +81,59 @@ export default function TeacherDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {students.map((student) => (
-                <div key={student.name} className="flex items-center justify-between group">
-                  <div className="flex items-center gap-3 w-40">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={`https://picsum.photos/seed/${student.name}/32/32`} />
-                      <AvatarFallback>{student.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">{student.name}</span>
-                  </div>
-                  <div className="flex-1 px-8 space-y-1">
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
-                      <span>Focus Score</span>
-                      <span>{student.focus}%</span>
-                    </div>
-                    <Progress value={student.focus} className="h-1.5" />
-                  </div>
-                  <Badge variant={student.status === 'Excellent' ? 'secondary' : student.status === 'At Risk' ? 'destructive' : 'outline'} className="w-24 justify-center">
-                    {student.status}
-                  </Badge>
+              {studentsLoading ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-accent" />
                 </div>
-              ))}
+              ) : students && students.length > 0 ? (
+                students.map((student) => (
+                  <div key={student.id} className="flex items-center justify-between group border-b pb-4 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={`https://picsum.photos/seed/${student.id}/40/40`} />
+                        <AvatarFallback>{student.firstName[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold">{student.firstName} {student.lastName}</span>
+                        <span className="text-xs text-muted-foreground">{student.email}</span>
+                      </div>
+                    </div>
+                    <Badge variant="outline">
+                      Active
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-10 text-muted-foreground">No students found.</div>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-sm bg-white">
           <CardHeader>
-            <CardTitle>Class Activity</CardTitle>
-            <CardDescription>Recent group sessions</CardDescription>
+            <CardTitle>Recent Shared Resources</CardTitle>
+            <CardDescription>Latest materials uploaded by teachers</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { title: "Math Group A", action: "Active focus session", time: "Now" },
-                { title: "Physics Lab", action: "2 new uploads", time: "10m ago" },
-                { title: "General Discussion", action: "15 new messages", time: "1h ago" },
-              ].map((activity, i) => (
-                <div key={i} className="flex flex-col border-b pb-2 last:border-0">
-                  <span className="font-bold text-sm">{activity.title}</span>
-                  <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>{activity.action}</span>
-                    <span>{activity.time}</span>
-                  </div>
+              {materialsLoading ? (
+                <div className="flex justify-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-accent" />
                 </div>
-              ))}
+              ) : materials && materials.length > 0 ? (
+                materials.slice(0, 5).map((material) => (
+                  <div key={material.id} className="flex flex-col border-b pb-2 last:border-0">
+                    <span className="font-bold text-sm">{material.title}</span>
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span>{material.type}</span>
+                      <span>{material.uploadDate ? new Date(material.uploadDate).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground text-sm">No materials shared yet.</div>
+              )}
             </div>
           </CardContent>
         </Card>

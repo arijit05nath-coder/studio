@@ -27,12 +27,12 @@ const PersonalizedStudyRecommendationsInputSchema = z.object({
     weakTopics: z.array(z.string()).describe('Topics where the student has shown weakness.'),
     strongTopics: z.array(z.string()).describe('Topics where the student has performed well.'),
     recentQuizScores: z.array(z.object({ topic: z.string(), score: z.number() })).describe('Recent quiz scores for various topics.'),
-  }).describe('A summary of the student\u0027s academic performance.'),
+  }).describe('A summary of the student\'s academic performance.'),
   userPreferences: z.object({
-    learningStyle: z.string().nullable().describe('The student\u0027s preferred learning style (e.g., visual, auditory).'),
+    learningStyle: z.string().nullable().describe('The student\'s preferred learning style (e.g., visual, auditory).'),
     preferredStudyTimes: z.string().nullable().describe('Preferred times of day for studying.'),
-    goals: z.string().nullable().describe('The student\u0027s academic goals.'),
-  }).describe('Student\u0027s personal study preferences and goals.').optional(),
+    goals: z.string().nullable().describe('The student\'s academic goals.'),
+  }).describe('Student\'s personal study preferences and goals.').optional(),
 });
 
 export type PersonalizedStudyRecommendationsInput = z.infer<typeof PersonalizedStudyRecommendationsInputSchema>;
@@ -101,7 +101,7 @@ No performance summary data available.
 No user preferences available.
 {{/if}}
 
-Based on this information, provide up to 3 personalized study recommendations. For each recommendation, identify the `topic`, explain the `reasoning` behind your choice, suggest a `suggestedApproach` considering their learning style and goals, assign a `priorityLevel` (High, Medium, or Low), and list concrete `nextSteps` they can take. Ensure your recommendations are specific and directly address potential areas for improvement or reinforcement.`,
+Based on this information, provide up to 3 personalized study recommendations. For each recommendation, identify the \`topic\`, explain the \`reasoning\` behind your choice, suggest a \`suggestedApproach\` considering their learning style and goals, assign a \`priorityLevel\` (High, Medium, or Low), and list concrete \`nextSteps\` they can take. Ensure your recommendations are specific and directly address potential areas for improvement or reinforcement.`,
 });
 
 const personalizedStudyRecommendationsFlow = ai.defineFlow(

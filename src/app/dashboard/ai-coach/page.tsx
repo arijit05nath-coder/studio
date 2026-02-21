@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -7,10 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { personalizedStudyRecommendations, type PersonalizedStudyRecommendationsOutput } from "@/ai/flows/personalized-study-recommendations"
-import { useAuth } from "@/lib/auth-store"
+import { useUser } from "@/firebase"
+import { cn } from "@/lib/utils"
 
 export default function AICoachPage() {
-  const { user } = useAuth()
+  const { user } = useUser()
   const [loading, setLoading] = useState(false)
   const [recommendations, setRecommendations] = useState<PersonalizedStudyRecommendationsOutput | null>(null)
 
@@ -19,7 +19,7 @@ export default function AICoachPage() {
     try {
       // Mock performance data for the demo
       const result = await personalizedStudyRecommendations({
-        userId: user?.id || "demo-user",
+        userId: user?.uid || "demo-user",
         completedSessions: [
           { sessionId: "1", topic: "Calculus: Derivatives", durationMinutes: 45, focusScore: 4, notesTaken: true, quizScore: 85 },
           { sessionId: "2", topic: "Physics: Thermodynamics", durationMinutes: 30, focusScore: 2, notesTaken: false, quizScore: 40 },
