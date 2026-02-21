@@ -143,7 +143,6 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">FocusFlow</span>
-                  <span className="truncate text-[10px] text-muted-foreground">{user?.email}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -188,7 +187,6 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold capitalize">{userName}</span>
-                    <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
                   </div>
                   <ChevronUp className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
@@ -209,7 +207,6 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold capitalize">{userName}</span>
-                      <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
