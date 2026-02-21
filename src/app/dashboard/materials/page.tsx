@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -53,8 +54,6 @@ export default function MaterialsPage() {
     if (!user || !db || !newMaterial.title || !selectedFile || !newMaterial.subjectId) return;
     
     setIsUploading(true);
-    
-    // For this prototype, we'll simulate the upload with a placeholder URL
     const simulatedUrl = `https://placeholder-storage.com/${selectedFile.name}`;
 
     addDocumentNonBlocking(collection(db, "materials"), {
@@ -83,7 +82,7 @@ export default function MaterialsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Study Materials</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Study Materials</h1>
           <p className="text-muted-foreground">Access shared resources and course documents.</p>
         </div>
 
@@ -183,7 +182,7 @@ export default function MaterialsPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
-          className="pl-10 rounded-full bg-white border-none shadow-sm h-12" 
+          className="pl-10 rounded-full bg-card border-none shadow-sm h-12" 
           placeholder="Search materials by title..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -197,7 +196,7 @@ export default function MaterialsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((material) => (
-            <Card key={material.id} className="border-none shadow-sm bg-white overflow-hidden group hover:shadow-md transition-shadow">
+            <Card key={material.id} className="border-none shadow-sm overflow-hidden group hover:shadow-md transition-shadow bg-card">
               <div className="relative h-32 bg-primary/20 flex items-center justify-center">
                 {material.type.toUpperCase() === 'PDF' ? <FileText className="h-12 w-12 text-primary fill-primary/20" /> : <Globe className="h-12 w-12 text-accent fill-accent/20" />}
               </div>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -62,13 +63,13 @@ export default function TeacherDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Teacher Overview</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Teacher Overview</h1>
         <p className="text-muted-foreground">Monitor class activity and student performance in real-time.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.title} className="border-none shadow-sm bg-white">
+          <Card key={stat.title} className="border-none shadow-sm bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
@@ -83,7 +84,7 @@ export default function TeacherDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2 border-none shadow-sm bg-white">
+        <Card className="md:col-span-2 border-none shadow-sm bg-card">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
@@ -132,7 +133,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-white">
+        <Card className="border-none shadow-sm bg-card">
           <CardHeader>
             <CardTitle>Recent Shared Resources</CardTitle>
             <CardDescription>Latest materials uploaded across all courses</CardDescription>

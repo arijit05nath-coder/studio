@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -25,7 +26,6 @@ export default function AICoachPage() {
   const [useFocusData, setUseFocusData] = useState(false)
   const [plan, setPlan] = useState<PersonalizedStudyPlanOutput | null>(null)
 
-  // Assessment State
   const [assessment, setAssessment] = useState({
     subjects: [] as string[],
     topics: "",
@@ -42,7 +42,6 @@ export default function AICoachPage() {
     deadlines: ""
   })
 
-  // Fetch Focus Data if requested
   const fetchFocusMetrics = async () => {
     if (!user || !db) return null;
     const q = query(collection(db, "userProfiles", user.uid, "focusSessions"), where("status", "==", "Completed"));
@@ -66,7 +65,6 @@ export default function AICoachPage() {
         focusMetrics = await fetchFocusMetrics();
       }
 
-      // Create input and sanitize for Firestore (no undefined values)
       const input: any = {
         userId: user.uid,
         subjects: assessment.subjects,
@@ -81,17 +79,14 @@ export default function AICoachPage() {
         input.focusMetrics = focusMetrics;
       }
 
-      // Save Profile - Non-blocking
       addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "coachProfiles"), {
         ...input,
         createdAt: new Date().toISOString()
       });
 
-      // Generate Plan
       const result = await generatePersonalizedStudyPlan(input);
       setPlan(result);
 
-      // Save Plan - Non-blocking
       addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "studyPlans"), {
         userId: user.uid,
         planContent: result,
@@ -119,24 +114,22 @@ export default function AICoachPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      {/* Header */}
       <div className="flex items-center gap-4 bg-accent/10 p-6 rounded-3xl border border-accent/20">
         <div className="bg-accent p-3 rounded-2xl shadow-sm">
           <BrainCircuit className="h-8 w-8 text-accent-foreground" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">AI Study Coach</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">AI Study Coach</h1>
           <p className="text-muted-foreground text-sm">Let's build your personalized roadmap.</p>
         </div>
       </div>
 
-      {/* Wizard Steps */}
       {step === 'intro' && (
-        <Card className="border-none shadow-xl bg-white p-10 text-center space-y-6">
+        <Card className="border-none shadow-xl p-10 text-center space-y-6 bg-card">
           <div className="space-y-4">
             <h2 className="text-4xl font-bold text-accent-foreground">Ready to level up?</h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              I'll analyze your goals and learning style to create a plan that actually works for you. No dummy data, just real results.
+              I'll analyze your goals and learning style to create a plan that actually works for you.
             </p>
           </div>
           <Button onClick={() => setStep('subjects')} className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8 py-6 h-auto text-lg gap-2 shadow-lg">
@@ -146,7 +139,7 @@ export default function AICoachPage() {
       )}
 
       {step === 'subjects' && (
-        <Card className="border-none shadow-xl bg-white">
+        <Card className="border-none shadow-xl bg-card">
           <CardHeader>
             <CardTitle className="text-2xl">What are we focusing on?</CardTitle>
             <CardDescription>Select your subjects and specific topics you're struggling with.</CardDescription>
@@ -194,7 +187,7 @@ export default function AICoachPage() {
       )}
 
       {step === 'ratings' && (
-        <Card className="border-none shadow-xl bg-white">
+        <Card className="border-none shadow-xl bg-card">
           <CardHeader>
             <CardTitle className="text-2xl">How are you feeling about these?</CardTitle>
             <CardDescription>Rate your current status on a scale of 1 to 5.</CardDescription>
@@ -235,7 +228,7 @@ export default function AICoachPage() {
       )}
 
       {step === 'preferences' && (
-        <Card className="border-none shadow-xl bg-white">
+        <Card className="border-none shadow-xl bg-card">
           <CardHeader>
             <CardTitle className="text-2xl">Preferences & Schedule</CardTitle>
             <CardDescription>Help me tailor the plan to your daily life.</CardDescription>
@@ -299,7 +292,7 @@ export default function AICoachPage() {
             <div className="bg-primary/20 p-4 rounded-2xl flex items-center justify-between border border-primary/30">
               <div className="flex items-center gap-3">
                 <Clock className="h-5 w-5 text-accent-foreground" />
-                <div className="text-sm">
+                <div className="text-sm text-foreground">
                   <p className="font-bold">Use Focus Mode Data?</p>
                   <p className="text-muted-foreground text-xs">Adapt study load to your real focus consistency.</p>
                 </div>
@@ -348,7 +341,7 @@ export default function AICoachPage() {
 
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <Card className="border-none shadow-sm bg-white">
+              <Card className="border-none shadow-sm bg-card">
                 <CardHeader className="bg-accent/5 rounded-t-lg">
                   <CardTitle className="text-xl flex items-center gap-2">
                     <Target className="h-5 w-5 text-accent" />
@@ -366,10 +359,10 @@ export default function AICoachPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-sm bg-white">
+              <Card className="border-none shadow-sm bg-card">
                 <CardHeader className="bg-primary/5 rounded-t-lg">
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary-foreground" />
+                  <CardTitle className="text-xl flex items-center gap-2 text-foreground">
+                    <Calendar className="h-5 w-5" />
                     Weekly Schedule
                   </CardTitle>
                 </CardHeader>
@@ -380,7 +373,7 @@ export default function AICoachPage() {
             </div>
 
             <div className="space-y-6">
-              <Card className="border-none shadow-sm bg-white">
+              <Card className="border-none shadow-sm bg-card">
                 <CardHeader className="bg-accent/5 rounded-t-lg">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <GraduationCap className="h-5 w-5 text-accent" />
@@ -394,7 +387,7 @@ export default function AICoachPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-sm bg-white">
+              <Card className="border-none shadow-sm bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Next Steps</CardTitle>
                 </CardHeader>

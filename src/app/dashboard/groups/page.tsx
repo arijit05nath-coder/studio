@@ -3,14 +3,13 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { Users, Plus, MessageSquare, Shield, TrendingUp, Send, Loader2 } from "lucide-react"
+import { Users, Plus, MessageSquare, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -38,10 +37,8 @@ export default function GroupsPage() {
     checkRole();
   }, [user, db]);
 
-  // Real-time groups the user is a member of or monitoring (if teacher)
   const groupsQuery = useMemoFirebase(() => {
     if (!user || !db || !userRole) return null;
-    
     return query(
       collection(db, "studyGroups"),
       or(
@@ -54,12 +51,8 @@ export default function GroupsPage() {
   const { data: groups, isLoading: groupsLoading } = useCollection(groupsQuery);
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
-  // Real-time messages for the selected group
   const messagesQuery = useMemoFirebase(() => {
     if (!selectedGroupId || !db || !user || !userRole) return null;
-    
-    // With revised security rules, we don't need the complex filter on the subcollection query
-    // Access is granted based on the parent group's membership
     return query(
       collection(db, "studyGroups", selectedGroupId, "messages"),
       orderBy("timestamp", "asc")
@@ -107,7 +100,7 @@ export default function GroupsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Groups</h1>
           <p className="text-muted-foreground">Collaborate with your peers in real-time.</p>
         </div>
         
@@ -173,8 +166,8 @@ export default function GroupsPage() {
               <Card 
                 key={group.id} 
                 className={cn(
-                  "border-none shadow-sm cursor-pointer transition-all hover:translate-x-1",
-                  selectedGroupId === group.id ? "ring-2 ring-accent bg-white" : "bg-white"
+                  "border-none shadow-sm cursor-pointer transition-all hover:translate-x-1 bg-card",
+                  selectedGroupId === group.id ? "ring-2 ring-accent" : ""
                 )}
                 onClick={() => setSelectedGroupId(group.id)}
               >
@@ -199,7 +192,7 @@ export default function GroupsPage() {
         <div className="lg:col-span-2 space-y-6">
           {selectedGroup ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-              <Card className="border-none shadow-sm bg-white">
+              <Card className="border-none shadow-sm bg-card">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
                     <CardTitle className="text-2xl">{selectedGroup.name}</CardTitle>
@@ -207,13 +200,13 @@ export default function GroupsPage() {
                   </div>
                   <div className="flex -space-x-2">
                     {selectedGroup.memberIds?.slice(0, 5).map((id: string) => (
-                      <Avatar key={id} className="border-2 border-white w-8 h-8">
+                      <Avatar key={id} className="border-2 border-background w-8 h-8">
                         <AvatarImage src={`https://picsum.photos/seed/${id}/32/32`} />
                         <AvatarFallback>U</AvatarFallback>
                       </Avatar>
                     ))}
                     {(selectedGroup.memberIds?.length || 0) > 5 && (
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-[10px] border-2 border-white">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-[10px] border-2 border-background">
                         +{(selectedGroup.memberIds?.length || 0) - 5}
                       </div>
                     )}
@@ -221,7 +214,7 @@ export default function GroupsPage() {
                 </CardHeader>
               </Card>
 
-              <Card className="border-none shadow-sm bg-white overflow-hidden flex flex-col h-[500px]">
+              <Card className="border-none shadow-sm overflow-hidden flex flex-col h-[500px] bg-card">
                 <CardHeader className="pb-2 border-b">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <MessageSquare className="h-5 w-5 text-accent" />
@@ -263,7 +256,7 @@ export default function GroupsPage() {
                   <div className="p-4 border-t bg-muted/10 flex gap-2">
                     <Input 
                       placeholder="Type a message..." 
-                      className="bg-white" 
+                      className="bg-background" 
                       value={message}
                       onChange={e => setMessage(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
@@ -276,7 +269,7 @@ export default function GroupsPage() {
               </Card>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-white rounded-3xl border-2 border-dashed border-muted">
+            <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-card rounded-3xl border-2 border-dashed border-muted">
               <Users className="h-16 w-16 text-muted mb-4" />
               <h3 className="text-xl font-bold">Select a group to start collaborating</h3>
               <p className="text-muted-foreground max-w-sm mt-2">

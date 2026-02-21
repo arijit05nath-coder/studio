@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -32,7 +33,6 @@ export default function FocusPage() {
   const startTimeRef = useRef<Date | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Real-time session history
   const sessionsQuery = useMemoFirebase(() => {
     if (!user || !db) return null;
     return query(
@@ -44,7 +44,6 @@ export default function FocusPage() {
 
   const { data: sessions, isLoading: sessionsLoading } = useCollection(sessionsQuery);
 
-  // Update timer when mode or custom settings change (only if timer is not active)
   useEffect(() => {
     if (!isActive) {
       const mins = timerMode === 'pomodoro' 
@@ -133,9 +132,8 @@ export default function FocusPage() {
 
   return (
     <div className="space-y-8 relative">
-      {/* Strict Mode Overlay */}
       {isStrict && isActive && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
           <ShieldAlert className="h-16 w-16 text-destructive mb-6 animate-pulse fill-destructive/20" />
           <h2 className="text-4xl font-bold mb-4">Strict Focus Mode Active</h2>
           <p className="text-xl text-muted-foreground mb-12 max-w-md">
@@ -164,13 +162,13 @@ export default function FocusPage() {
       )}
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Focus Mode</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Focus Mode</h1>
         <p className="text-muted-foreground">Boost your productivity with custom timers and strict tracking.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6">
-          <Card className="border-none shadow-xl bg-white overflow-hidden">
+          <Card className="border-none shadow-xl overflow-hidden bg-card">
             <CardHeader className={cn(
               "text-center pb-8 transition-colors",
               sessionType === 'work' ? "bg-primary/20" : "bg-accent/20"
@@ -214,7 +212,7 @@ export default function FocusPage() {
           </Card>
 
           {timerMode === 'custom' && (
-            <Card className="border-none shadow-sm bg-white animate-in slide-in-from-top-4 duration-300">
+            <Card className="border-none shadow-sm animate-in slide-in-from-top-4 duration-300 bg-card">
               <CardHeader className="pb-4">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Settings2 className="h-4 w-4 text-accent" />
@@ -256,7 +254,7 @@ export default function FocusPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="border-none shadow-sm bg-white">
+          <Card className="border-none shadow-sm bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-accent fill-accent/20" />
@@ -278,7 +276,7 @@ export default function FocusPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-white">
+          <Card className="border-none shadow-sm bg-card">
             <CardHeader>
               <CardTitle>Session History</CardTitle>
             </CardHeader>
@@ -292,7 +290,7 @@ export default function FocusPage() {
                   sessions.map((log) => (
                     <div key={log.id} className="flex items-center justify-between text-sm border-b pb-2 last:border-0">
                       <div>
-                        <p className="font-medium">{log.type}</p>
+                        <p className="font-medium text-foreground">{log.type}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {log.actualDurationMinutes}m
                         </p>

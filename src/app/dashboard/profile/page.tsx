@@ -59,17 +59,14 @@ export default function ProfilePage() {
     setLoading(true)
 
     try {
-      // Update Firestore
       updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
       })
 
-      // Attempt to update Auth email if changed
       if (formData.email !== user.email) {
         try {
-          // @ts-ignore - simplified for prototype
           await updateEmail(user, formData.email)
         } catch (e) {}
       }
@@ -111,13 +108,13 @@ export default function ProfilePage() {
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-1 space-y-6">
-          <Card className="border-none shadow-sm bg-white overflow-hidden text-center p-8">
+          <Card className="border-none shadow-sm overflow-hidden text-center p-8 bg-card">
             <div className="relative inline-block mb-4">
               <Avatar className="h-24 w-24 border-4 border-accent shadow-lg">
                 <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/96/96`} />
                 <AvatarFallback className="text-2xl font-bold">{formData.firstName[0]}{formData.lastName[0]}</AvatarFallback>
               </Avatar>
-              <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-white cursor-pointer hover:scale-110 transition-transform">
+              <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-background cursor-pointer hover:scale-110 transition-transform">
                 <User className="h-4 w-4" />
               </div>
             </div>
@@ -128,7 +125,7 @@ export default function ProfilePage() {
             </Badge>
           </Card>
 
-          <Card className="border-none shadow-sm bg-white p-6 space-y-4">
+          <Card className="border-none shadow-sm p-6 space-y-4 bg-card">
             <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Account Info</h3>
             <div className="flex items-center gap-3 text-sm">
               <Mail className="h-4 w-4 text-accent" />
@@ -138,7 +135,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="md:col-span-2 space-y-8">
-          <Card className="border-none shadow-sm bg-white">
+          <Card className="border-none shadow-sm bg-card">
             <CardHeader>
               <CardTitle>Personal Details</CardTitle>
               <CardDescription>Update your name and primary email address.</CardDescription>
@@ -183,7 +180,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-white">
+          <Card className="border-none shadow-sm bg-card">
             <CardHeader>
               <CardTitle>Study Environments</CardTitle>
               <CardDescription>Choose a visual theme that matches your focus style.</CardDescription>

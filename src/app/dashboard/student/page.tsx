@@ -21,21 +21,18 @@ export default function StudentDashboard() {
   const router = useRouter()
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false)
 
-  // Get User Profile for the focus goal
   const profileRef = useMemoFirebase(() => {
     if (!user || !db) return null;
     return doc(db, "userProfiles", user.uid);
   }, [user, db]);
   const { data: profile, isLoading: profileLoading } = useDoc(profileRef);
 
-  // Get today's start for filtering sessions
   const todayStart = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d.toISOString();
   }, []);
 
-  // Fetch today's focus sessions to calculate progress
   const todaySessionsQuery = useMemoFirebase(() => {
     if (!user || !db || isUserLoading) return null;
     return query(
@@ -46,14 +43,12 @@ export default function StudentDashboard() {
 
   const { data: todaySessions, isLoading: sessionsLoading } = useCollection(todaySessionsQuery);
 
-  // Fetch all subjects for the count
   const subjectsQuery = useMemoFirebase(() => {
     if (!db || !user || isUserLoading) return null;
     return collection(db, "subjects");
   }, [db, user, isUserLoading]);
   const { data: subjects, isLoading: subjectsLoading } = useCollection(subjectsQuery);
 
-  // Calculate today's total focus minutes
   const totalMinutesToday = useMemo(() => {
     if (!todaySessions) return 0;
     return todaySessions
@@ -87,7 +82,7 @@ export default function StudentDashboard() {
           <p className="text-muted-foreground">Welcome back, {profile?.firstName || 'Student'}! Here's your real-time study overview.</p>
         </div>
         <div className="hidden md:block">
-           <Badge variant="outline" className="px-4 py-2 rounded-full bg-white">
+           <Badge variant="outline" className="px-4 py-2 rounded-full bg-card">
               Level {profile?.level || 1} Scholar
            </Badge>
         </div>
@@ -95,7 +90,7 @@ export default function StudentDashboard() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.title} className="border-none shadow-sm bg-white">
+          <Card key={stat.title} className="border-none shadow-sm bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <stat.icon className={cn("h-4 w-4 fill-current", stat.color)} />
@@ -114,7 +109,7 @@ export default function StudentDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-none shadow-sm bg-white overflow-hidden">
+        <Card className="border-none shadow-sm overflow-hidden bg-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Daily Focus Goal</CardTitle>
@@ -176,7 +171,7 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-white">
+        <Card className="border-none shadow-sm bg-card">
           <CardHeader>
             <CardTitle>Today's Sessions</CardTitle>
             <CardDescription>Your focus activity for the last 24 hours</CardDescription>
