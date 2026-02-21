@@ -82,7 +82,7 @@ export default function StudentDashboard() {
     <div className="space-y-8">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-accent-foreground">Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {profile?.firstName || 'Student'}! Here's your real-time study overview.</p>
         </div>
         <div className="hidden md:block">
