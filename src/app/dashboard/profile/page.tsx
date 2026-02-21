@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { updateEmail } from "firebase/auth"
 import { doc as firestoreDoc } from "firebase/firestore"
-import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera, Upload } from "lucide-react"
+import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera, Upload, Trash2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -125,6 +125,18 @@ export default function ProfilePage() {
     toast({ title: "Profile picture updated!" })
   }
 
+  const handleDeleteAvatar = () => {
+    setFormData(prev => ({ ...prev, photoUrl: "" }))
+    setTempPhotoUrl("")
+    if (user && db) {
+      updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
+        photoUrl: "",
+      })
+    }
+    setIsAvatarDialogOpen(false)
+    toast({ title: "Profile picture removed" })
+  }
+
   const handleThemeChange = (themeId: string) => {
     if (!user || !db) return
     updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
@@ -201,8 +213,22 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button onClick={handleUpdateAvatar} disabled={!tempPhotoUrl} className="bg-accent text-accent-foreground w-full sm:w-auto">
+                <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                  {formData.photoUrl && (
+                    <Button 
+                      variant="outline" 
+                      onClick={handleDeleteAvatar}
+                      className="w-full sm:w-auto text-destructive hover:bg-destructive/10 border-destructive/20 gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Remove Current
+                    </Button>
+                  )}
+                  <Button 
+                    onClick={handleUpdateAvatar} 
+                    disabled={!tempPhotoUrl || tempPhotoUrl === formData.photoUrl} 
+                    className="bg-accent text-accent-foreground w-full sm:w-auto"
+                  >
                     Save Photo
                   </Button>
                 </DialogFooter>
