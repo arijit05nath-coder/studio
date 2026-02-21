@@ -114,8 +114,10 @@ export default function ProfilePage() {
           <Card className="border-none shadow-sm overflow-hidden text-center p-8 bg-card">
             <div className="relative inline-block mb-4">
               <Avatar className="h-24 w-24 border-4 border-accent shadow-lg">
-                <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/96/96`} />
-                <AvatarFallback className="text-2xl font-bold">{formData.firstName[0]}{formData.lastName[0]}</AvatarFallback>
+                <AvatarImage src={profile?.photoUrl} />
+                <AvatarFallback className="text-2xl font-bold bg-accent text-accent-foreground">
+                  {formData.firstName?.[0]}{formData.lastName?.[0]}
+                </AvatarFallback>
               </Avatar>
               <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-background cursor-pointer hover:scale-110 transition-transform">
                 <User className="h-4 w-4" />

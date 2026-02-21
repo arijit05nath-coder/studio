@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -69,7 +70,7 @@ export default function DashboardLayout({
     <div className={cn("min-h-screen", getThemeClass())}>
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background text-foreground transition-colors duration-500">
-          <DashboardNav role={role as any} />
+          <DashboardNav role={role as any} profile={profile} />
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 bg-background/95 backdrop-blur z-40">
               <SidebarTrigger className="-ml-1" />

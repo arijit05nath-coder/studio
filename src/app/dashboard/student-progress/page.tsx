@@ -108,8 +108,10 @@ export default function StudentProgressPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12 border">
-                    <AvatarImage src={`https://picsum.photos/seed/${student.id}/48/48`} />
-                    <AvatarFallback>{student.firstName[0]}</AvatarFallback>
+                    <AvatarImage src={student.photoUrl} />
+                    <AvatarFallback className="bg-accent text-accent-foreground font-bold">
+                      {student.firstName?.[0] || ''}{student.lastName?.[0] || ''}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 overflow-hidden">
                     <h3 className="font-bold truncate">{student.firstName} {student.lastName}</h3>
@@ -135,8 +137,10 @@ export default function StudentProgressPage() {
           <DialogHeader>
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-accent">
-                <AvatarImage src={`https://picsum.photos/seed/${selectedStudent?.id}/60/60`} />
-                <AvatarFallback>{selectedStudent?.firstName?.[0] || 'S'}</AvatarFallback>
+                <AvatarImage src={selectedStudent?.photoUrl} />
+                <AvatarFallback className="bg-accent text-accent-foreground font-bold text-lg">
+                  {selectedStudent?.firstName?.[0] || ''}{selectedStudent?.lastName?.[0] || ''}
+                </AvatarFallback>
               </Avatar>
               <div className="text-left">
                 <DialogTitle className="text-2xl font-bold">{selectedStudent?.firstName} {selectedStudent?.lastName}</DialogTitle>

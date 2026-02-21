@@ -42,9 +42,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface DashboardNavProps {
   role?: 'Student' | 'Teacher'
+  profile?: any
 }
 
-export function DashboardNav({ role }: DashboardNavProps) {
+export function DashboardNav({ role, profile }: DashboardNavProps) {
   const pathname = usePathname()
   const auth = useAuth()
   const router = useRouter()
@@ -99,7 +100,8 @@ export function DashboardNav({ role }: DashboardNavProps) {
     router.push("/")
   }
 
-  const userName = user?.email?.split('@')[0] || "User"
+  const userName = profile ? `${profile.firstName} ${profile.lastName}` : (user?.email?.split('@')[0] || "User")
+  const initials = profile ? `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}` : "U"
 
   return (
     <Sidebar collapsible="icon">
@@ -151,8 +153,10 @@ export function DashboardNav({ role }: DashboardNavProps) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/32/32`} />
-                    <AvatarFallback className="rounded-lg">U</AvatarFallback>
+                    <AvatarImage src={profile?.photoUrl} />
+                    <AvatarFallback className="rounded-lg bg-accent text-accent-foreground font-bold">
+                      {initials}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold capitalize">{userName}</span>
@@ -170,8 +174,10 @@ export function DashboardNav({ role }: DashboardNavProps) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={`https://picsum.photos/seed/${user?.uid}/32/32`} />
-                      <AvatarFallback className="rounded-lg">U</AvatarFallback>
+                      <AvatarImage src={profile?.photoUrl} />
+                      <AvatarFallback className="rounded-lg bg-accent text-accent-foreground font-bold">
+                        {initials}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold capitalize">{userName}</span>

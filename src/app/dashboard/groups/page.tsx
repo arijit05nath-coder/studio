@@ -103,6 +103,8 @@ export default function GroupsPage() {
             return {
               id: memberId,
               name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Student",
+              firstName: profile?.firstName || "",
+              lastName: profile?.lastName || "",
               totalMinutes
             };
           })
@@ -519,8 +521,10 @@ export default function GroupsPage() {
                                     {index + 1}
                                   </div>
                                   <Avatar className="h-10 w-10 border shrink-0">
-                                    <AvatarImage src={`https://picsum.photos/seed/${item.id}/40/40`} />
-                                    <AvatarFallback>{item.name[0]}</AvatarFallback>
+                                    <AvatarImage src={item.photoUrl} />
+                                    <AvatarFallback className="bg-accent text-accent-foreground font-bold">
+                                      {item.firstName?.[0] || '?'}{item.lastName?.[0] || ''}
+                                    </AvatarFallback>
                                   </Avatar>
                                   <div className="flex flex-col">
                                     <span className="font-bold text-sm truncate max-w-[150px]">{item.name}</span>
