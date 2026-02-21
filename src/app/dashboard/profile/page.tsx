@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
@@ -22,7 +23,7 @@ const THEMES = [
 ]
 
 export default function ProfilePage() {
-  const { user, auth } = useUser()
+  const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
   
@@ -61,8 +62,6 @@ export default function ProfilePage() {
 
       // Attempt to update Auth email if changed
       if (formData.email !== user.email) {
-        // Note: updateEmail might require recent login
-        // We catch error silently as it's a prototype
         try {
           // @ts-ignore - simplified for prototype
           await updateEmail(user, formData.email)
