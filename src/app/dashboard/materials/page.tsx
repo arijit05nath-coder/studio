@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -19,7 +20,7 @@ export default function MaterialsPage() {
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [newMaterial, setNewMaterial] = useState({ title: "", type: "PDF" })
+  const [newMaterial, setNewMaterial] = useState({ title: "", type: "PDF", subjectId: "" })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
@@ -39,27 +40,28 @@ export default function MaterialsPage() {
 
   const { data: materials, isLoading } = useCollection(materialsQuery);
 
+  const subjectsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "subjects"), orderBy("name", "asc"));
+  }, [db]);
+
+  const { data: subjects } = useCollection(subjectsQuery);
+
   const filtered = materials?.filter(m => 
     m.title.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
   const handleUpload = async () => {
-    if (!user || !db || !newMaterial.title || !selectedFile) return;
+    if (!user || !db || !newMaterial.title || !selectedFile || !newMaterial.subjectId) return;
     
     setIsUploading(true);
-
-    // In a real app with Storage, we would upload the file here:
-    // const storageRef = ref(storage, `materials/${selectedFile.name}`);
-    // await uploadBytes(storageRef, selectedFile);
-    // const downloadUrl = await getDownloadURL(storageRef);
     
     // For this prototype, we'll simulate the upload with a placeholder URL
     const simulatedUrl = `https://placeholder-storage.com/${selectedFile.name}`;
 
     addDocumentNonBlocking(collection(db, "materials"), {
       teacherId: user.uid,
-      subjectId: "General",
-      topicId: "General",
+      subjectId: newMaterial.subjectId,
       title: newMaterial.title,
       description: "Shared resource",
       type: newMaterial.type,
@@ -69,7 +71,7 @@ export default function MaterialsPage() {
       author: user.email?.split('@')[0] || "Unknown"
     });
     
-    setNewMaterial({ title: "", type: "PDF" });
+    setNewMaterial({ title: "", type: "PDF", subjectId: "" });
     setSelectedFile(null);
     setIsUploading(false);
   }
@@ -108,6 +110,22 @@ export default function MaterialsPage() {
                     value={newMaterial.title}
                     onChange={e => setNewMaterial({...newMaterial, title: e.target.value})}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Course / Subject</Label>
+                  <Select 
+                    value={newMaterial.subjectId} 
+                    onValueChange={v => setNewMaterial({...newMaterial, subjectId: v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select course" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects?.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="type">Material Type</Label>
@@ -153,7 +171,7 @@ export default function MaterialsPage() {
               <DialogFooter>
                 <Button 
                   onClick={handleUpload} 
-                  disabled={!newMaterial.title || !selectedFile || isUploading}
+                  disabled={!newMaterial.title || !selectedFile || !newMaterial.subjectId || isUploading}
                   className="bg-accent text-accent-foreground w-full"
                 >
                   {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Material"}

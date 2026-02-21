@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -67,11 +68,14 @@ export default function AICoachPage() {
       }
 
       // Create input and sanitize for Firestore (no undefined values)
-      const input = {
+      const input: any = {
         userId: user.uid,
         ...assessment,
-        ...(focusMetrics ? { focusMetrics } : {})
       };
+
+      if (focusMetrics) {
+        input.focusMetrics = focusMetrics;
+      }
 
       // Save Profile - Non-blocking
       addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "coachProfiles"), {

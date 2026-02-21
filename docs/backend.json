@@ -73,6 +73,22 @@
       },
       "required": ["id", "name"]
     },
+    "Material": {
+      "title": "Material",
+      "type": "object",
+      "description": "Educational resource uploaded by teachers.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "linkUrl": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "author": { "type": "string" },
+        "uploadDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "type", "linkUrl", "subjectId", "teacherId"]
+    },
     "FocusSession": {
       "title": "FocusSession",
       "type": "object",
@@ -130,6 +146,15 @@
           "schema": { "$ref": "#/backend/entities/Subject" },
           "description": "Academic subjects list.",
           "params": [{ "name": "subjectId" }]
+        }
+      },
+      {
+        "path": "/materials/{materialId}",
+        "definition": {
+          "entityName": "Material",
+          "schema": { "$ref": "#/backend/entities/Material" },
+          "description": "Educational materials uploaded by teachers.",
+          "params": [{ "name": "materialId" }]
         }
       }
     ]
