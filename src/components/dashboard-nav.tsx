@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -63,14 +64,9 @@ export function DashboardNav({ role }: DashboardNavProps) {
       showOnlyFor: 'Teacher' as const,
     },
     {
-      title: "Courses",
+      title: "Curriculum",
       href: "/dashboard/courses",
       icon: Book,
-    },
-    {
-      title: "Materials",
-      href: "/dashboard/materials",
-      icon: BookOpen,
     },
     {
       title: "Focus Mode",
