@@ -11,8 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { collection, query, where, orderBy, serverTimestamp } from "firebase/firestore"
+import { collection, query, where, serverTimestamp } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 
 export default function GroupsPage() {
@@ -20,6 +23,8 @@ export default function GroupsPage() {
   const db = useFirestore()
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [message, setMessage] = useState("")
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [newGroup, setNewGroup] = useState({ name: "", description: "" })
 
   // Real-time groups the user is a member of
   const groupsQuery = useMemoFirebase(() => {
@@ -40,18 +45,19 @@ export default function GroupsPage() {
     setMessage("");
   }
 
-  const createGroup = () => {
-    if (!user || !db) return;
-    const name = prompt("Enter group name:");
-    if (!name) return;
+  const handleCreateGroup = () => {
+    if (!user || !db || !newGroup.name) return;
 
     addDocumentNonBlocking(collection(db, "studyGroups"), {
-      name,
-      description: "New study group",
+      name: newGroup.name,
+      description: newGroup.description || "No description provided.",
       memberIds: [user.uid],
       dateCreated: new Date().toISOString(),
       timestamp: serverTimestamp()
     });
+
+    setNewGroup({ name: "", description: "" });
+    setIsCreateDialogOpen(false);
   }
 
   return (
@@ -61,10 +67,52 @@ export default function GroupsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Group Study</h1>
           <p className="text-muted-foreground">Collaborate with your peers in real-time.</p>
         </div>
-        <Button onClick={createGroup} className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2">
-          <Plus className="h-4 w-4" />
-          Create Group
-        </Button>
+        
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2">
+              <Plus className="h-4 w-4" />
+              Create Group
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create Study Group</DialogTitle>
+              <DialogDescription>
+                Invite others later to collaborate on your learning goals.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Group Name</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g., Advanced Calculus Prep"
+                  value={newGroup.name}
+                  onChange={(e) => setNewGroup({ ...newGroup, name: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="What is this group focusing on?"
+                  value={newGroup.description}
+                  onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                onClick={handleCreateGroup} 
+                disabled={!newGroup.name}
+                className="bg-accent text-accent-foreground"
+              >
+                Create Group
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -115,7 +163,7 @@ export default function GroupsPage() {
                     <CardDescription>{selectedGroup.description}</CardDescription>
                   </div>
                   <div className="flex -space-x-2">
-                    {selectedGroup.memberIds.slice(0, 5).map((id: string, i: number) => (
+                    {selectedGroup.memberIds.slice(0, 5).map((id: string) => (
                       <Avatar key={id} className="border-2 border-white w-8 h-8">
                         <AvatarImage src={`https://picsum.photos/seed/${id}/32/32`} />
                         <AvatarFallback>U</AvatarFallback>
@@ -173,6 +221,7 @@ export default function GroupsPage() {
                       className="bg-white border-none shadow-inner" 
                       value={message}
                       onChange={e => setMessage(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                     />
                     <Button onClick={handleSendMessage} size="icon" className="bg-accent text-accent-foreground">
                       <Send className="h-4 w-4" />
