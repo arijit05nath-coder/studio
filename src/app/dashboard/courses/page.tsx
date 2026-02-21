@@ -1,10 +1,10 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc, deleteDoc } from "firebase/firestore"
-import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Video, UploadCloud, Globe, Trash2, LayoutGrid, List, Save, Settings2 } from "lucide-react"
+import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus, FileText, ExternalLink, Video, UploadCloud, Globe, Trash2, LayoutGrid, List, Save, Settings2, X, FileUp } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +23,7 @@ export default function CurriculumPage() {
   const { toast } = useToast()
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Course State
   const [newCourseName, setNewCourseName] = useState("")
@@ -32,7 +33,7 @@ export default function CurriculumPage() {
   // Unified Management State
   const [editCourseName, setEditCourseName] = useState("")
   const [editCourseDescription, setEditCourseDescription] = useState("")
-  const [newResource, setNewResource] = useState({ title: "", url: "", type: "PDF" })
+  const [newResource, setNewResource] = useState({ title: "", url: "", type: "PDF", fileName: "" })
   const [isSavingCourse, setIsSavingCourse] = useState(false)
   const [isAddingResource, setIsAddingResource] = useState(false)
 
@@ -99,6 +100,31 @@ export default function CurriculumPage() {
     }, 500);
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit for Firestore storage (Base64 is ~33% larger)
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please select a file smaller than 1MB."
+        });
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewResource(prev => ({ 
+          ...prev, 
+          url: reader.result as string,
+          fileName: file.name
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   const handleAddResourceToCourse = () => {
     if (!db || !user || !selectedSubject || !newResource.title || !newResource.url) return;
     setIsAddingResource(true);
@@ -112,7 +138,8 @@ export default function CurriculumPage() {
       uploadDate: new Date().toISOString()
     });
     setTimeout(() => {
-      setNewResource({ title: "", url: "", type: "PDF" });
+      setNewResource({ title: "", url: "", type: "PDF", fileName: "" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setIsAddingResource(false);
       toast({ title: "Resource added successfully" });
     }, 500);
@@ -369,13 +396,46 @@ export default function CurriculumPage() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-xs">File URL / Link</Label>
-                    <Input 
-                      placeholder="https://..." 
-                      value={newResource.url} 
-                      onChange={(e) => setNewResource({...newResource, url: e.target.value})} 
-                      className="rounded-xl h-9"
-                    />
+                    <Label className="text-xs">Upload File</Label>
+                    <div 
+                      className={cn(
+                        "border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors",
+                        newResource.url ? "bg-accent/5 border-accent/40" : "bg-background hover:bg-muted/50 border-muted-foreground/20"
+                      )}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {newResource.fileName ? (
+                        <div className="flex items-center gap-2 w-full justify-between">
+                          <div className="flex items-center gap-2 truncate">
+                            <FileText className="h-5 w-5 text-accent" />
+                            <span className="text-sm font-medium truncate">{newResource.fileName}</span>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 rounded-full" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNewResource(prev => ({ ...prev, url: "", fileName: "" }));
+                              if (fileInputRef.current) fileInputRef.current.value = "";
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <FileUp className="h-6 w-6 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">Click to upload (PDF, Video, etc.)</p>
+                        </>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        className="hidden" 
+                      />
+                    </div>
                   </div>
                   <Button 
                     onClick={handleAddResourceToCourse} 
