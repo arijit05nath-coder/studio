@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -10,20 +10,26 @@ import {
   Users, 
   Sparkles, 
   LogOut,
-  Upload
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/lib/auth-store"
 import { Button } from "@/components/ui/button"
+import { useAuth, useUser } from "@/firebase"
+import { signOut } from "firebase/auth"
 
-export function DashboardNav() {
+interface DashboardNavProps {
+  role?: 'Student' | 'Teacher'
+}
+
+export function DashboardNav({ role }: DashboardNavProps) {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const auth = useAuth()
+  const router = useRouter()
+  const { user } = useUser()
 
   const navItems = [
     {
       title: "Dashboard",
-      href: user?.role === 'teacher' ? "/dashboard/teacher" : "/dashboard/student",
+      href: role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student",
       icon: LayoutDashboard,
     },
     {
@@ -35,7 +41,7 @@ export function DashboardNav() {
       title: "Focus Mode",
       href: "/dashboard/focus",
       icon: Clock,
-      hideFor: 'teacher' as const,
+      hideFor: 'Teacher' as const,
     },
     {
       title: "Group Study",
@@ -46,20 +52,27 @@ export function DashboardNav() {
       title: "AI Coach",
       href: "/dashboard/ai-coach",
       icon: Sparkles,
-      hideFor: 'teacher' as const,
+      hideFor: 'Teacher' as const,
     },
   ]
 
-  const filteredItems = navItems.filter(item => !item.hideFor || item.hideFor !== user?.role)
+  const filteredItems = navItems.filter(item => !item.hideFor || item.hideFor !== role)
+
+  const handleLogout = async () => {
+    await signOut(auth)
+    router.push("/")
+  }
 
   return (
     <nav className="flex flex-col h-full bg-white border-r px-4 py-8">
       <div className="mb-8 px-2">
         <h1 className="text-2xl font-bold text-accent-foreground flex items-center gap-2">
-          <Sparkles className="fill-accent text-accent" />
+          <Sparkles className="h-6 w-6 fill-accent text-accent" />
           FocusFlow
         </h1>
-        <p className="text-xs text-muted-foreground mt-1">Hello, {user?.name}</p>
+        <p className="text-xs text-muted-foreground mt-1 truncate">
+          {user?.email}
+        </p>
       </div>
 
       <div className="space-y-1 flex-1">
@@ -82,11 +95,8 @@ export function DashboardNav() {
 
       <Button 
         variant="ghost" 
-        className="mt-auto flex items-center justify-start gap-3 text-muted-foreground hover:text-destructive"
-        onClick={() => {
-            logout()
-            window.location.href = "/"
-        }}
+        className="mt-auto flex items-center justify-start gap-3 text-muted-foreground hover:text-destructive p-3"
+        onClick={handleLogout}
       >
         <LogOut className="h-4 w-4" />
         Logout
