@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, updateDoc, arrayUnion, arrayRemove, getDocs } from "firebase/firestore"
+import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, updateDoc, arrayUnion, arrayRemove, getDocs, setDoc } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useToast } from "@/hooks/use-toast"
 
@@ -62,8 +62,6 @@ export default function GroupsPage() {
   const selectedGroup = groups?.find(g => g.id === selectedGroupId);
 
   const messagesQuery = useMemoFirebase(() => {
-    // Guard: Only query messages if the group is selected AND confirmed in our membership list
-    // This prevents permission errors during joining/syncing
     if (!selectedGroupId || !db || !user || !selectedGroup) return null;
     return query(
       collection(db, "studyGroups", selectedGroupId, "messages"),
@@ -79,7 +77,6 @@ export default function GroupsPage() {
     }
   }, [messages]);
 
-  // Leaderboard Calculation
   useEffect(() => {
     const fetchLeaderboard = async () => {
       if (!selectedGroup || !db) return;
@@ -167,6 +164,11 @@ export default function GroupsPage() {
     setIsCreateDialogOpen(false);
     setSelectedGroupId(customId);
     toast({ title: "Group created!", description: `Share ID: ${customId}` });
+    
+    // Refresh the webpage after a short delay to ensure clean state and rules sync
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
   }
 
   const handleJoinGroup = async () => {
@@ -189,6 +191,11 @@ export default function GroupsPage() {
       setIsJoinDialogOpen(false);
       setSelectedGroupId(groupSnap.id);
       toast({ title: "Joined group successfully!" });
+      
+      // Refresh the webpage to ensure proper rules synchronization for subcollections
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Failed to join", description: error.message });
     }
