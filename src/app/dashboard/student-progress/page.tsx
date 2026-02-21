@@ -11,7 +11,8 @@ import {
   Clock, 
   Target, 
   TrendingUp,
-  User as UserIcon
+  User as UserIcon,
+  Sparkles
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
