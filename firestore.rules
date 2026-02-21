@@ -42,6 +42,7 @@ service cloud.firestore {
 
     match /subjects/{subjectId} {
       allow read, list: if isSignedIn();
+      allow create, update, delete: if isTeacher();
     }
 
     match /studyGroups/{groupId} {

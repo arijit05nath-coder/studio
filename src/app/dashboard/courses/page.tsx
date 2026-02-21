@@ -1,17 +1,34 @@
 "use client"
 
-import { useState } from "react"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy } from "firebase/firestore"
-import { Book, Search, Loader2, GraduationCap, ChevronRight } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
+import { Book, Search, Loader2, GraduationCap, ChevronRight, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { addDocumentNonBlocking } from "@/firebase"
 
 export default function CoursesPage() {
+  const { user } = useUser()
   const db = useFirestore()
   const [search, setSearch] = useState("")
+  const [isTeacher, setIsTeacher] = useState(false)
+  const [newCourseName, setNewCourseName] = useState("")
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (user && db) {
+        const snap = await getDoc(doc(db, "userProfiles", user.uid));
+        if (snap.exists()) setIsTeacher(snap.data().role === 'Teacher');
+      }
+    };
+    checkRole();
+  }, [user, db]);
 
   const subjectsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -24,6 +41,17 @@ export default function CoursesPage() {
     subject.name.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
+  const handleAddCourse = () => {
+    if (!db || !newCourseName.trim()) return;
+    
+    addDocumentNonBlocking(collection(db, "subjects"), {
+      name: newCourseName.trim(),
+    });
+
+    setNewCourseName("");
+    setIsDialogOpen(false);
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -31,6 +59,41 @@ export default function CoursesPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Available Courses</h1>
           <p className="text-muted-foreground">Explore subjects and manage your curriculum.</p>
         </div>
+
+        {isTeacher && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
+                <Plus className="h-4 w-4" />
+                Add Course
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Course</DialogTitle>
+                <DialogDescription>
+                  Create a new subject for students to explore.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="courseName">Course Name</Label>
+                  <Input
+                    id="courseName"
+                    placeholder="e.g., Organic Chemistry"
+                    value={newCourseName}
+                    onChange={(e) => setNewCourseName(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddCourse} disabled={!newCourseName.trim()} className="bg-accent text-accent-foreground">
+                  Create Course
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <div className="relative">
