@@ -1,11 +1,11 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { updateEmail } from "firebase/auth"
 import { doc as firestoreDoc } from "firebase/firestore"
-import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera } from "lucide-react"
+import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera, Upload } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const profileDocRef = useMemoFirebase(() => {
     if (!user || !db) return null;
@@ -93,6 +94,26 @@ export default function ProfilePage() {
     }
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit for Firestore storage (Base64 is ~33% larger)
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please select an image smaller than 1MB."
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempPhotoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   const handleUpdateAvatar = () => {
     setFormData(prev => ({ ...prev, photoUrl: tempPhotoUrl }))
     if (user && db) {
@@ -148,30 +169,42 @@ export default function ProfilePage() {
                 <DialogHeader>
                   <DialogTitle>Update Profile Picture</DialogTitle>
                   <DialogDescription>
-                    Provide a URL for your new profile picture.
+                    Upload an image file from your device.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="photoUrl">Image URL</Label>
-                    <Input 
-                      id="photoUrl" 
-                      placeholder="https://example.com/photo.jpg" 
-                      value={tempPhotoUrl}
-                      onChange={(e) => setTempPhotoUrl(e.target.value)}
-                    />
-                  </div>
-                  {tempPhotoUrl && (
-                    <div className="flex justify-center">
-                      <Avatar className="h-24 w-24 border-2 border-accent">
-                        <AvatarImage src={tempPhotoUrl} />
-                        <AvatarFallback>Preview</AvatarFallback>
-                      </Avatar>
+                  <div className="flex flex-col items-center gap-4">
+                    <div 
+                      className="w-full h-40 border-2 border-dashed border-muted-foreground/20 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/30 transition-colors overflow-hidden relative"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {tempPhotoUrl ? (
+                        <img src={tempPhotoUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <>
+                          <Upload className="h-8 w-8 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Click to select image</span>
+                        </>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
                     </div>
-                  )}
+                    {tempPhotoUrl && (
+                      <Button variant="ghost" size="sm" onClick={() => setTempPhotoUrl("")}>
+                        Clear Selection
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleUpdateAvatar} className="bg-accent text-accent-foreground">Save Photo</Button>
+                  <Button onClick={handleUpdateAvatar} disabled={!tempPhotoUrl} className="bg-accent text-accent-foreground w-full sm:w-auto">
+                    Save Photo
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -232,16 +265,6 @@ export default function ProfilePage() {
                     type="email"
                     value={formData.email} 
                     onChange={e => setFormData({...formData, email: e.target.value})}
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="formPhotoUrl">Profile Picture URL</Label>
-                  <Input 
-                    id="formPhotoUrl" 
-                    value={formData.photoUrl} 
-                    onChange={e => setFormData({...formData, photoUrl: e.target.value})}
-                    placeholder="https://example.com/photo.jpg"
                     className="rounded-xl"
                   />
                 </div>
