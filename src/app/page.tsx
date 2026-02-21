@@ -63,7 +63,7 @@ export default function LandingPage() {
           lastName: lastName.trim(),
           email,
           role: role === 'teacher' ? 'Teacher' : 'Student',
-          educationalQualification: role === 'student' ? qualification.trim() : "",
+          educationalQualification: qualification.trim(),
           dateCreated: serverTimestamp(),
           level: 1,
           focusGoal: 4,
@@ -154,19 +154,17 @@ export default function LandingPage() {
                       />
                     </div>
                   </div>
-                  {role === 'student' && (
-                    <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="qualification">Educational Qualification</Label>
-                      <Input 
-                        id="qualification" 
-                        placeholder="e.g. High School Senior, Undergraduate" 
-                        value={qualification}
-                        onChange={(e) => setQualification(e.target.value)}
-                        required
-                        className="bg-background"
-                      />
-                    </div>
-                  )}
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="qualification">Educational Qualification</Label>
+                    <Input 
+                      id="qualification" 
+                      placeholder={role === 'student' ? "e.g. High School Senior, Undergraduate" : "e.g. PhD in Physics, Math Professor"}
+                      value={qualification}
+                      onChange={(e) => setQualification(e.target.value)}
+                      required
+                      className="bg-background"
+                    />
+                  </div>
                 </>
               )}
               
