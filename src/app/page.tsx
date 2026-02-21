@@ -203,8 +203,8 @@ export default function LandingPage() {
       </div>
 
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary shadow-sm border-2 border-accent/30">
-          <Sparkles className="h-10 w-10 text-accent-foreground fill-current" />
+        <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-[#E6E6FA] shadow-sm border-2 border-[#A0D6B4]">
+          <Sparkles className="h-10 w-10 text-[#6A5ACD] fill-current" />
         </div>
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">{t('appName')}</h1>
