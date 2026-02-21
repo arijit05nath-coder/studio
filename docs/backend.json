@@ -1,0 +1,436 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user within the FocusFlow application, linked to an external authentication system. Stores user-specific information and role.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity, typically matching the Firebase Authentication UID."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user. Stored for informational purposes, not for authentication.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user within the application (Student or Teacher)."
+        },
+        "dateCreated": {
+          "type": "string",
+          "description": "The date and time when the user profile was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "role",
+        "dateCreated"
+      ]
+    },
+    "Subject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents an academic subject or category for organizing study materials.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Subject entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the academic subject (e.g., 'Mathematics', 'History')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the subject."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Topic": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Topic",
+      "type": "object",
+      "description": "Represents a specific topic or sub-category within a broader subject.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Topic entity."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this topic belongs to. (Relationship: Subject 1:N Topic)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the topic within a subject (e.g., 'Algebra', 'World War II')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the topic."
+        }
+      },
+      "required": [
+        "id",
+        "subjectId",
+        "name"
+      ]
+    },
+    "Material": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Material",
+      "type": "object",
+      "description": "Represents a study material uploaded by a teacher, categorized by subject and topic.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Material entity."
+        },
+        "teacherId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (teacher) who uploaded this material. (Relationship: UserProfile 1:N Material)"
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this material is associated with. (Relationship: Subject 1:N Material)"
+        },
+        "topicId": {
+          "type": "string",
+          "description": "Reference to the Topic this material is associated with. (Relationship: Topic 1:N Material)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the study material."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the study material."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of the study material (e.g., PDF, Link, Note)."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "The URL to the material file stored in Firebase Storage (for PDF/Note types).",
+          "format": "uri"
+        },
+        "linkUrl": {
+          "type": "string",
+          "description": "The URL to an external study resource (for Link type).",
+          "format": "uri"
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "The date and time when the material was uploaded.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "teacherId",
+        "subjectId",
+        "topicId",
+        "title",
+        "type",
+        "uploadDate"
+      ]
+    },
+    "FocusSession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FocusSession",
+      "type": "object",
+      "description": "Records the details of a student's focus session, including duration, status, and interruptions.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FocusSession entity."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (student) who participated in this session. (Relationship: UserProfile 1:N FocusSession)"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of focus session conducted (e.g., Pomodoro, Custom)."
+        },
+        "plannedDurationMinutes": {
+          "type": "number",
+          "description": "The planned duration of the focus session in minutes."
+        },
+        "actualDurationMinutes": {
+          "type": "number",
+          "description": "The actual duration the user was focused in minutes."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The date and time when the focus session started.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "The date and time when the focus session ended (or was interrupted).",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The outcome status of the focus session (e.g., 'Completed', 'Interrupted', 'Abandoned')."
+        },
+        "interruptionCount": {
+          "type": "number",
+          "description": "The number of times the strict focus mode was interrupted or the user navigated away."
+        },
+        "strictModeUsed": {
+          "type": "boolean",
+          "description": "Indicates if strict focus mode was enabled for this session."
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "type",
+        "plannedDurationMinutes",
+        "startTime",
+        "endTime",
+        "status",
+        "interruptionCount",
+        "strictModeUsed"
+      ]
+    },
+    "StudyGroup": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudyGroup",
+      "type": "object",
+      "description": "Represents a group of students collaborating on study, with optional teacher monitoring.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudyGroup entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the study group."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the study group's purpose or focus."
+        },
+        "teacherId": {
+          "type": "string",
+          "description": "Optional reference to a UserProfile (teacher) monitoring this group. (Relationship: UserProfile 0:1 StudyGroup)"
+        },
+        "memberIds": {
+          "type": "array",
+          "description": "References to UserProfile entities (students) who are members of this group. (Relationship: UserProfile N:N StudyGroup)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dateCreated": {
+          "type": "string",
+          "description": "The date and time when the study group was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "memberIds",
+        "dateCreated"
+      ]
+    },
+    "Recommendation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Recommendation",
+      "type": "object",
+      "description": "Stores AI-generated personalized study recommendations for students, based on their performance and focus session data.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Recommendation entity."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Reference to the UserProfile (student) for whom this recommendation is made. (Relationship: UserProfile 1:N Recommendation)"
+        },
+        "generatedDate": {
+          "type": "string",
+          "description": "The date and time when the recommendation was generated.",
+          "format": "date-time"
+        },
+        "content": {
+          "type": "string",
+          "description": "The AI-generated textual content of the study recommendation."
+        },
+        "materialIds": {
+          "type": "array",
+          "description": "Optional references to Material entities relevant to this recommendation. (Relationship: Material N:N Recommendation)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the recommendation from the student's perspective (e.g., 'New', 'Addressed', 'Dismissed')."
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "generatedDate",
+        "content",
+        "status"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/userProfiles/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information, with the document ID matching the Firebase Auth UID. Includes the user's role (Student/Teacher) for role-based access control. This collection is private to the owning user for write operations, and potentially publicly readable for basic profile information. Role field is used for DBAC.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user, matching Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}",
+        "definition": {
+          "entityName": "Subject",
+          "schema": {
+            "$ref": "#/backend/entities/Subject"
+          },
+          "description": "Contains definitions of academic subjects. These documents are generally public read for all authenticated users and writable only by 'Teacher' roles.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique ID of the academic subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/topics/{topicId}",
+        "definition": {
+          "entityName": "Topic",
+          "schema": {
+            "$ref": "#/backend/entities/Topic"
+          },
+          "description": "Contains definitions of specific topics within subjects. Includes denormalized 'subjectId' for authorization independence and efficient querying. These documents are generally public read for all authenticated users and writable only by 'Teacher' roles.",
+          "params": [
+            {
+              "name": "topicId",
+              "description": "The unique ID of the topic."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/materials/{materialId}",
+        "definition": {
+          "entityName": "Material",
+          "schema": {
+            "$ref": "#/backend/entities/Material"
+          },
+          "description": "Stores study materials uploaded by teachers. Includes denormalized 'teacherId', 'subjectId', and 'topicId' for authorization independence and efficient filtering. Materials are readable by all authenticated users and writable only by the owning teacher (resource.data.teacherId == request.auth.uid) with a 'Teacher' role.",
+          "params": [
+            {
+              "name": "materialId",
+              "description": "The unique ID of the study material."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/userProfiles/{studentId}/focusSessions/{focusSessionId}",
+        "definition": {
+          "entityName": "FocusSession",
+          "schema": {
+            "$ref": "#/backend/entities/FocusSession"
+          },
+          "description": "Records individual focus sessions for students. This data is private and owned by the student, with the 'studentId' explicitly included in the path for direct ownership checks (request.auth.uid == studentId). No denormalization beyond the path is needed for authorization.",
+          "params": [
+            {
+              "name": "studentId",
+              "description": "The unique ID of the student, matching Firebase Authentication UID, who conducted the session."
+            },
+            {
+              "name": "focusSessionId",
+              "description": "The unique ID of the focus session."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/studyGroups/{studyGroupId}",
+        "definition": {
+          "entityName": "StudyGroup",
+          "schema": {
+            "$ref": "#/backend/entities/StudyGroup"
+          },
+          "description": "Manages study groups. Includes denormalized 'memberIds' array and 'teacherId' (optional) for authorization independence. Access (read/write) is granted if the user is in 'memberIds' or is the monitoring 'teacherId'. This enables efficient array-contains queries for group membership.",
+          "params": [
+            {
+              "name": "studyGroupId",
+              "description": "The unique ID of the study group."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/userProfiles/{studentId}/recommendations/{recommendationId}",
+        "definition": {
+          "entityName": "Recommendation",
+          "schema": {
+            "$ref": "#/backend/entities/Recommendation"
+          },
+          "description": "Stores AI-generated study recommendations for students. This data is private and owned by the student, with the 'studentId' explicitly included in the path for direct ownership checks (request.auth.uid == studentId). No denormalization beyond the path is needed for authorization.",
+          "params": [
+            {
+              "name": "studentId",
+              "description": "The unique ID of the student, matching Firebase Authentication UID, for whom the recommendation is made."
+            },
+            {
+              "name": "recommendationId",
+              "description": "The unique ID of the recommendation."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The proposed Firestore structure prioritizes Authorization Independence and Structural Segregation to ensure secure, scalable, and debuggable security rules. Each document includes all necessary authorization context, either through its path or via denormalized fields, eliminating the need for expensive and complex `get()` calls in security rules.\n\n1.  **User Profiles (`/userProfiles/{userId}`):** User profiles are stored in a top-level collection, with the document ID matching the Firebase Authentication UID. The `role` (Student/Teacher) is stored directly in the `UserProfile` document. This allows for simple, direct authorization checks (e.g., `request.auth.uid == userId` for personal data, and `resource.data.role == 'teacher'` for role-based access) without any `get()` operations. This also supports the DBAC principle.\n\n2.  **Global App Data (`/subjects`, `/topics`, `/materials`):**\n    *   **Subjects (`/subjects/{subjectId}`) and Topics (`/topics/{topicId}`):** These are stored as top-level collections. `Topic` documents denormalize `subjectId` directly. This structural segregation provides a homogeneous security posture: read-only for all authenticated users, and write-access exclusively for 'Teacher' roles. This enables QAPs for listing all subjects and topics efficiently.\n    *   **Materials (`/materials/{materialId}`):** Materials are also stored in a top-level collection. Critical authorization fields like `teacherId`, `subjectId`, and `topicId` are explicitly denormalized within each `Material` document. This ensures that rules can determine material ownership and categorization without requiring `get()` calls to parent collections. Security rules can permit all authenticated users to read materials, while restricting write operations to the `teacherId` associated with the material (e.g., `resource.data.teacherId == request.auth.uid && request.auth.token.role == 'teacher'`). This design supports QAPs, allowing students to list materials by subject, topic, or even teacher through efficient queries.\n\n3.  **User-Specific Private Data (`/userProfiles/{userId}/focusSessions`, `/userProfiles/{userId}/recommendations`):** Data highly specific and private to a user, like `FocusSession` and `Recommendation` records, are stored in subcollections under their respective `UserProfile` document. The `studentId` is implicitly part of the path (`userId`), making authorization trivial: `request.auth.uid == userId`. This ensures strong ownership and simplifies rules. QAPs are supported as students can list their own focus sessions and recommendations securely.\n\n4.  **Collaborative Data (`/studyGroups/{studyGroupId}`):** Study groups are managed in a top-level collection. Authorization is handled by denormalizing a `memberIds` array and an optional `teacherId` within each `StudyGroup` document. Security rules can check `request.auth.uid in resource.data.memberIds` for student access or `request.auth.uid == resource.data.teacherId` for teacher monitoring. This enables QAPs, allowing users to query for groups they are members of or monitor using `array-contains` or direct field matching without needing `get()` calls to other user profiles.\n\nThis architecture strictly avoids hierarchical authorization dependencies by denormalizing all relevant authorization context into the documents themselves or embedding it in the document path. This makes security rules atomic, easy to understand, and highly performant, directly supporting QAPs by enabling secure `list` operations via collection-level access controls and field-based queries."
+  }
+}
