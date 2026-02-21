@@ -108,9 +108,9 @@ export default function LandingPage() {
           <CardTitle className="text-2xl text-center">
             {isSignUp ? "Create an account" : "Welcome back"}
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-center font-normal text-muted-foreground text-sm mt-2">
             {isSignUp ? "Join FocusFlow today" : "Log in to your account to continue"}
-          </CardDescription>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth}>
@@ -202,9 +202,6 @@ export default function LandingPage() {
           >
             {isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up"}
           </Button>
-          <p className="text-[10px] text-muted-foreground">
-            By clicking continue, you agree to our Terms of Service.
-          </p>
         </CardFooter>
       </Card>
     </div>
