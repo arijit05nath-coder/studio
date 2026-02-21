@@ -1,13 +1,11 @@
-
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Sparkles, Book, Clock, Trophy, Loader2 } from "lucide-react"
-import { useUser, useFirestore, useCollection } from "@/firebase"
-import { collection, query, where, limit } from "firebase/firestore"
-import { useMemoFirebase } from "@/firebase"
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, limit } from "firebase/firestore"
 
 export default function StudentDashboard() {
   const { user } = useUser()
@@ -21,11 +19,17 @@ export default function StudentDashboard() {
     );
   }, [user, db]);
 
+  const subjectsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "subjects");
+  }, [db]);
+
   const { data: sessions, isLoading: sessionsLoading } = useCollection(sessionsQuery);
+  const { data: subjects, isLoading: subjectsLoading } = useCollection(subjectsQuery);
 
   const stats = [
     { title: "Study Sessions", value: sessions?.length || 0, icon: Clock, color: "text-blue-500" },
-    { title: "Courses", value: "Real-time sync coming", icon: Book, color: "text-purple-500" },
+    { title: "Courses", value: subjects?.length || 0, icon: Book, color: "text-purple-500" },
     { title: "Focus Score", value: "---", icon: Sparkles, color: "text-accent-foreground" },
     { title: "Achievements", value: "0", icon: Trophy, color: "text-yellow-500" },
   ]
@@ -45,7 +49,13 @@ export default function StudentDashboard() {
               <stat.icon className={`h-4 w-4 ${stat.color} fill-current`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold">
+                {subjectsLoading && stat.title === "Courses" ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : (
+                  stat.value
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -75,7 +85,7 @@ export default function StudentDashboard() {
             <div className="space-y-4">
               {sessionsLoading ? (
                 <div className="flex justify-center p-4">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-6 w-6 animate-spin text-accent" />
                 </div>
               ) : sessions && sessions.length > 0 ? (
                 sessions.map((session: any) => (
@@ -86,7 +96,7 @@ export default function StudentDashboard() {
                         {session.plannedDurationMinutes} mins • {session.status}
                       </span>
                     </div>
-                    <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'}>
+                    <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
                       {session.status}
                     </Badge>
                   </div>
