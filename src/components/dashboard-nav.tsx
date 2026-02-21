@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -10,6 +9,7 @@ import {
   Users, 
   Sparkles, 
   LogOut,
+  Book,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,11 @@ export function DashboardNav({ role }: DashboardNavProps) {
       title: "Dashboard",
       href: role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student",
       icon: LayoutDashboard,
+    },
+    {
+      title: "Courses",
+      href: "/dashboard/courses",
+      icon: Book,
     },
     {
       title: "Materials",
