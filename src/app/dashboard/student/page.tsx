@@ -297,7 +297,7 @@ export default function StudentDashboard() {
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-accent" />
               Study Roadmap
-            </Badge>
+            </DialogTitle>
             <DialogDescription>
               Saved on {selectedPlan && new Date(selectedPlan.createdAt).toLocaleString()}
             </DialogDescription>
