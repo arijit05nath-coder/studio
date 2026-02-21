@@ -97,13 +97,13 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <div className="mb-8 text-center">
         <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary">
-          <Sparkles className="h-10 w-10 text-accent-foreground fill-accent" />
+          <Sparkles className="h-10 w-10 text-accent-foreground fill-current" />
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">FocusFlow</h1>
         <p className="mt-2 text-muted-foreground">Elevate your learning experience with AI-powered focus.</p>
       </div>
 
-      <Card className="w-full max-w-md border-none shadow-xl">
+      <Card className="w-full max-w-md border-none shadow-xl bg-card">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
             {isSignUp ? "Create an account" : "Welcome back"}
@@ -138,6 +138,7 @@ export default function LandingPage() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         required
+                        className="bg-background"
                       />
                     </div>
                     <div className="flex flex-col space-y-1.5">
@@ -148,6 +149,7 @@ export default function LandingPage() {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
+                        className="bg-background"
                       />
                     </div>
                   </div>
@@ -163,6 +165,7 @@ export default function LandingPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-background"
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
@@ -174,7 +177,7 @@ export default function LandingPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pr-10"
+                    className="pr-10 bg-background"
                   />
                   <button
                     type="button"
@@ -192,7 +195,11 @@ export default function LandingPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-4">
-          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="text-sm">
+          <Button 
+            variant="link" 
+            onClick={() => setIsSignUp(!isSignUp)} 
+            className="text-sm font-bold text-accent-foreground hover:text-accent transition-colors underline-offset-4"
+          >
             {isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up"}
           </Button>
           <p className="text-[10px] text-muted-foreground">
