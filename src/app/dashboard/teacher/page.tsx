@@ -83,8 +83,8 @@ export default function TeacherDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2 border-none shadow-sm bg-card">
+      <div className="grid gap-6">
+        <Card className="border-none shadow-sm bg-card">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
@@ -130,34 +130,6 @@ export default function TeacherDashboard() {
                 ))
               ) : (
                 <div className="text-center py-10 text-muted-foreground italic">No students found.</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm bg-card">
-          <CardHeader>
-            <CardTitle>Recent Shared Resources</CardTitle>
-            <CardDescription>Latest materials uploaded across all courses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {materialsLoading ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-accent" />
-                </div>
-              ) : materials && materials.length > 0 ? (
-                materials.slice(0, 6).map((material) => (
-                  <div key={material.id} className="flex flex-col border-b border-muted/30 pb-3 last:border-0 last:pb-0">
-                    <span className="font-semibold text-sm truncate">{material.title}</span>
-                    <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-1">
-                      <Badge variant="outline" className="text-[9px] py-0 h-4">{material.type}</Badge>
-                      <span>{material.uploadDate ? new Date(material.uploadDate).toLocaleDateString() : 'N/A'}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-muted-foreground text-sm italic">No materials shared yet.</div>
               )}
             </div>
           </CardContent>
