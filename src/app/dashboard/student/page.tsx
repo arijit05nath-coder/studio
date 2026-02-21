@@ -236,9 +236,6 @@ export default function StudentDashboard() {
                   <Sparkles className="h-5 w-5 text-accent" />
                   Your AI Roadmap
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="text-xs h-8 rounded-full" onClick={() => router.push('/dashboard/ai-coach')}>
-                  New Assessment
-                </Button>
               </div>
               <CardDescription>Your recently saved personalized study plans.</CardDescription>
             </CardHeader>
