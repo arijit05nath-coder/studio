@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -10,6 +9,7 @@ import { Search, FileText, Link as LinkIcon, Download, Plus, Trash2, Loader2, Gl
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { collection, query, orderBy, doc, deleteDoc, serverTimestamp, getDoc } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useEffect } from "react"
@@ -99,13 +99,22 @@ export default function MaterialsPage() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="type" className="text-right">Type</Label>
-                  <Input 
-                    id="type" 
-                    className="col-span-3" 
-                    placeholder="PDF, Link, etc." 
-                    value={newMaterial.type}
-                    onChange={e => setNewMaterial({...newMaterial, type: e.target.value})}
-                  />
+                  <div className="col-span-3">
+                    <Select 
+                      value={newMaterial.type} 
+                      onValueChange={v => setNewMaterial({...newMaterial, type: v})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PDF">PDF Document</SelectItem>
+                        <SelectItem value="Link">Web Link</SelectItem>
+                        <SelectItem value="Note">Study Note</SelectItem>
+                        <SelectItem value="Video">Video Resource</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="url" className="text-right">URL</Label>
