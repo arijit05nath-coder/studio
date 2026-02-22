@@ -165,7 +165,7 @@ export default function FocusPage() {
 
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('focusMode')}</h1>
-        <p className="text-muted-foreground">Boost your productivity with custom timers and strict tracking.</p>
+        <p className="text-muted-foreground">{t('focusModeDesc')}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

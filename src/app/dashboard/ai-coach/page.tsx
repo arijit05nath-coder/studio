@@ -152,7 +152,7 @@ export default function AICoachPage() {
     });
 
     setTimeout(() => {
-      setIsSaving(false);
+      setIsSavingCourse(false);
       toast({
         title: "Plan Saved!",
         description: "You can view your saved study plans in your dashboard."
@@ -189,7 +189,7 @@ export default function AICoachPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('aiCoach')}</h1>
-          <p className="text-muted-foreground text-sm">Personalized roadmaps and expert assignment feedback.</p>
+          <p className="text-muted-foreground text-sm">{t('aiCoachDesc')}</p>
         </div>
       </div>
 

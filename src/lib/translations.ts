@@ -64,7 +64,6 @@ export const translations = {
     personalDetails: "Personal Details",
     studyEnvironments: "Study Environments",
     accountInfo: "Account Info",
-    // New additions for full app coverage
     student: "Student",
     teacher: "Teacher",
     readyToLevelUp: "Ready to level up?",
@@ -156,7 +155,12 @@ export const translations = {
     dailyGoalDesc: "Track your progress against your daily target.",
     howToLevelUp: "How to Level Up:",
     levelUpRules: "Complete sessions, achieve goals, maintain streaks.",
-    currentProgress: "Current Progress"
+    currentProgress: "Current Progress",
+    focusModeDesc: "Boost your productivity with custom timers and strict tracking.",
+    studentProgressDesc: "Track engagement and performance across your students.",
+    manageCurriculum: "Manage subjects and exploration materials.",
+    teacherDashboardDesc: "Monitor class activity in real-time.",
+    aiCoachDesc: "Personalized roadmaps and expert assignment feedback."
   },
   hi: {
     appName: "StudyNest",
@@ -266,7 +270,7 @@ export const translations = {
     analyzeAssignment: "असाइनमेंट का विश्लेषण करें",
     evaluatingWork: "कार्य का मूल्यांकन किया जा रहा है...",
     checkingRubric: "मानकों की जांच की जा रही है।",
-    analysisResults: "विश्लेषण परिणाम",
+    analysisResults: "分析 परिणाम",
     criterionBreakdown: "मानदंड विवरण",
     strengths: "ताकत",
     growthAreas: "सुधार के क्षेत्र",
@@ -313,7 +317,12 @@ export const translations = {
     dailyGoalDesc: "अपने दैनिक लक्ष्य के विरुद्ध प्रगति ट्रैक करें।",
     howToLevelUp: "स्तर कैसे बढ़ाएं:",
     levelUpRules: "सत्र पूरे करें, लक्ष्य हासिल करें, निरंतरता बनाए रखें।",
-    currentProgress: "वर्तमान प्रगति"
+    currentProgress: "वर्तमान प्रगति",
+    focusModeDesc: "कस्टम टाइमर और सख्त ट्रैकिंग के साथ अपनी उत्पादकता बढ़ाएं।",
+    studentProgressDesc: "अपने छात्रों के जुड़ाव और प्रदर्शन को ट्रैक करें।",
+    manageCurriculum: "विषयों और अन्वेषण सामग्रियों का प्रबंधन करें।",
+    teacherDashboardDesc: "वास्तविक समय में कक्षा की गतिविधि की निगरानी करें।",
+    aiCoachDesc: "व्यक्तिगत रोडमैप और विशेषज्ञ असाइनमेंट फीडबैक।"
   },
   bn: {
     appName: "StudyNest",
@@ -470,7 +479,12 @@ export const translations = {
     dailyGoalDesc: "আপনার লক্ষ্যের অগ্রগতি দেখুন।",
     howToLevelUp: "কিভাবে উন্নতি করবেন:",
     levelUpRules: "সেশন শেষ করুন, লক্ষ্য অর্জন করুন।",
-    currentProgress: "বর্তমান অগ্রগতি"
+    currentProgress: "বর্তমান অগ্রগতি",
+    focusModeDesc: "কাস্টম টাইমার এবং কঠোর ট্র্যাকিংয়ের সাথে আপনার উত্পাদনশীলতা বাড়ান।",
+    studentProgressDesc: "আপনার ছাত্রদের ব্যস্ততা এবং কর্মক্ষমতা ট্র্যাক করুন।",
+    manageCurriculum: "বিষয় এবং অন্বেষণ উপকরণ পরিচালনা করুন।",
+    teacherDashboardDesc: "রিয়েল-টাইমে ক্লাসের কার্যকলাপ নিরীক্ষণ করুন।",
+    aiCoachDesc: "ব্যক্তিগতকৃত রোডম্যাপ এবং বিশেষজ্ঞ অ্যাসাইনমেন্ট প্রতিক্রিয়া।"
   },
   ta: {
     appName: "StudyNest",
@@ -607,14 +621,14 @@ export const translations = {
     howToAdvance: "உங்கள் தரவரிசையை உயர்த்துவது எப்படி.",
     earningExp: "அனுபவத்தைப் பெறுதல் (EXP)",
     focusHoursExp: "ஒவ்வொரு மணிநேர கவனமும் முன்னேற்றத்தைத் தரும்.",
-    focusGoalBonus: "இலக்கை அடைந்தால் போனஸ் கிடைக்கும்.",
+    goalCompletionExp: "Hitting 100% of your daily focus goal provides a bonus.",
     dailyStreaksExp: "தொடர்ச்சியாகப் படிப்பது முன்னேற்றத்தை அதிகரிக்கும்.",
-    groupMilestonesExp: "குழு விவாதங்களில் பங்கேற்கவும்.",
-    unlockedRewards: "நீங்கள் முன்னேறும்போது வெகுமதிகள் கிடைக்கும்:",
-    exclusiveThemes: "பிரத்தியேக சுயவிவர தீம்கள்",
-    customFrames: "தனிப்பயன் அவதார பிரேம்கள்",
-    advancedAICoach: "மேம்பட்ட AI பயிற்சியாளர் அம்சங்கள்",
-    approxUntilNext: "அடுத்த நிலைக்கு சுமார் 4.5 மணிநேரம்",
+    groupMilestonesExp: "Participating in group discussions and leaderboards.",
+    unlockedRewards: "As you level up, you'll unlock exclusive rewards:",
+    exclusiveThemes: "Exclusive Profile Themes",
+    customFrames: "Custom Avatar Frames",
+    advancedAICoach: "Advanced AI Coach Features",
+    approxUntilNext: "Approx. 4.5 hours until next level",
     manageIdentity: "உங்கள் அடையாளம் மற்றும் பயன்பாட்டுத் தோற்றத்தை நிர்வகிக்கவும்.",
     personalDetailsDesc: "உங்கள் பெயர் மற்றும் மின்னஞ்சலைப் புதுப்பிக்கவும்.",
     studyEnvironmentsDesc: "உங்கள் கவனத்திற்கு ஏற்ற தீமைத் தேர்ந்தெடுக்கவும்.",
@@ -627,7 +641,12 @@ export const translations = {
     dailyGoalDesc: "உங்கள் இலக்கிற்கு எதிரான முன்னேற்றத்தைக் கண்காணிக்கவும்.",
     howToLevelUp: "நிலையை உயர்த்துவது எப்படி:",
     levelUpRules: "அமர்வுகளை முடிக்கவும், இலக்குகளை அடையவும், தொடர்ச்சியைப் பேணவும்.",
-    currentProgress: "தற்போதைய முன்னேற்றம்"
+    currentProgress: "தற்போதைய முன்னேற்றம்",
+    focusModeDesc: "தனிப்பயன் டைமர்கள் மற்றும் கடுமையான கண்காணிப்புடன் உங்கள் உற்பத்தித்திறனை அதிகரிக்கவும்.",
+    studentProgressDesc: "உங்கள் மாணவர்களின் ஈடுபாடு மற்றும் செயல்திறனைக் கண்காணிக்கவும்.",
+    manageCurriculum: "பாடங்கள் மற்றும் ஆய்வுப் பொருட்களை நிர்வகிக்கவும்.",
+    teacherDashboardDesc: "வகுப்புச் செயல்பாட்டை நிகழ்நேரத்தில் கண்காணிக்கவும்.",
+    aiCoachDesc: "தனிப்பயனாக்கப்பட்ட சாலை வரைபடங்கள் மற்றும் நிபுணர் ஒதுக்கீடு கருத்து."
   },
   ml: {
     appName: "StudyNest",
@@ -764,14 +783,14 @@ export const translations = {
     howToAdvance: "നിങ്ങളുടെ റാങ്ക് എങ്ങനെ വർദ്ധിപ്പിക്കാം.",
     earningExp: "എക്സ്പീരിയൻസ് (EXP) നേടാം",
     focusHoursExp: "ഓരോ മണിക്കൂർ ഫോക്കസും പുരോഗതി നൽകുന്നു.",
-    goalCompletionExp: "ലക്ഷ്യം പൂർത്തിയാക്കുമ്പോൾ ബോണസ് ലഭിക്കും.",
-    dailyStreaksExp: "തുടർച്ചയായ പഠനം പുരോഗതി വർദ്ധിപ്പിക്കും.",
-    groupMilestonesExp: "ഗ്രൂപ്പ് ചർച്ചകളിൽ പങ്കെടുക്കുക.",
-    unlockedRewards: "നിങ്ങൾ മുന്നേറുമ്പോൾ സമ്മാനങ്ങൾ ലഭിക്കും:",
-    exclusiveThemes: "പ്രത്യേക പ്രൊഫൈൽ തീമുകൾ",
-    customFrames: "കസ്റ്റം അവതാർ ഫ്രെയിമുകൾ",
-    advancedAICoach: "അഡ്വാൻസ്ഡ് AI കോച്ച് ഫീച്ചറുകൾ",
-    approxUntilNext: "അടുത്ത ലെവലിലേക്ക് ഏകദേശം 4.5 മണിക്കൂർ",
+    goalCompletionExp: "Hitting 100% of your daily focus goal provides a bonus.",
+    dailyStreaksExp: "Studying multiple days in a row multipliers progress.",
+    groupMilestonesExp: "Participating in group discussions and leaderboards.",
+    unlockedRewards: "As you level up, you'll unlock exclusive rewards:",
+    exclusiveThemes: "Exclusive Profile Themes",
+    customFrames: "Custom Avatar Frames",
+    advancedAICoach: "Advanced AI Coach Features",
+    approxUntilNext: "Approx. 4.5 hours until next level",
     manageIdentity: "നിങ്ങളുടെ വിവരങ്ങളും ആപ്പിന്റെ രൂപവും മാറ്റുക.",
     personalDetailsDesc: "പേരും ഇമെയിലും പുതുക്കുക.",
     studyEnvironmentsDesc: "നിങ്ങളുടെ താൽപ്പര്യത്തിനനുസരിച്ചുള്ള തീം തിരഞ്ഞെടുക്കുക.",
@@ -784,7 +803,12 @@ export const translations = {
     dailyGoalDesc: "നിങ്ങളുടെ ലക്ഷ്യത്തിലേക്കുള്ള പുരോഗതി നോക്കുക.",
     howToLevelUp: "ലെവൽ വർദ്ധിപ്പിക്കുന്നത് എങ്ങനെ:",
     levelUpRules: "സെഷനുകൾ പൂർത്തിയാക്കുക, ലക്ഷ്യങ്ങൾ നേടുക.",
-    currentProgress: "നിലവിലെ പുരോഗതി"
+    currentProgress: "നിലവിലെ പുരോഗതി",
+    focusModeDesc: "ഇഷ്‌ടാനുസൃത ടൈമറുകളും കർശനമായ ട്രാക്കിംഗും ഉപയോഗിച്ച് നിങ്ങളുടെ ഉൽപ്പാദനക്ഷമത വർദ്ധിപ്പിക്കുക.",
+    studentProgressDesc: "നിങ്ങളുടെ വിദ്യാർത്ഥികളുടെ ഇടപഴകലും പ്രകടനവും ട്രാക്ക് ചെയ്യുക.",
+    manageCurriculum: "വിഷയങ്ങളും പര്യവേഷണ സാമഗ്രികളും നിയന്ത്രിക്കുക.",
+    teacherDashboardDesc: "തത്സമയം ക്ലാസ് പ്രവർത്തനം നിരീക്ഷിക്കുക.",
+    aiCoachDesc: "വ്യക്തിഗതമാക്കിയ റോഡ്‌മാപ്പുകളും വിദഗ്ദ്ധ അസൈൻമെന്റ് ഫീഡ്‌ബാക്കും."
   }
 };
 

@@ -66,7 +66,7 @@ export default function TeacherDashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('appName')}</h1>
-        <p className="text-muted-foreground">{t('welcomeBack')}! Monitor class activity in real-time.</p>
+        <p className="text-muted-foreground">{t('welcomeBack')}! {t('teacherDashboardDesc')}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

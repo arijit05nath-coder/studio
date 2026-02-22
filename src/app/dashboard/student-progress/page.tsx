@@ -79,7 +79,7 @@ export default function StudentProgressPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('studentProgress')}</h1>
-        <p className="text-muted-foreground">Track engagement and performance across your students.</p>
+        <p className="text-muted-foreground">{t('studentProgressDesc')}</p>
       </div>
 
       <div className="flex items-center gap-4 max-w-md">
