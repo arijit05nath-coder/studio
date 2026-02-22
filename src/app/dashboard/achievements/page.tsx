@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase"
@@ -7,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n-store"
 
 export default function AchievementsPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const { t } = useI18n()
 
   const profileRef = useMemoFirebase(() => {
     if (!user || !db) return null;
@@ -35,13 +38,13 @@ export default function AchievementsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
             <Trophy className="h-8 w-8 text-yellow-500" />
-            Achievements & Rank
+            {t('achievements')} & {t('scholarRank')}
           </h1>
           <p className="text-muted-foreground">Track your academic journey and scholar progression.</p>
         </div>
         <Badge variant="outline" className="px-6 py-3 rounded-full text-lg font-bold bg-accent/10 border-accent/30 text-accent-foreground gap-2">
           <GraduationCap className="h-5 w-5" />
-          Level {currentLevel} {levelData.title}
+          {t('level')} {currentLevel} {levelData.title}
         </Badge>
       </div>
 
@@ -49,7 +52,7 @@ export default function AchievementsPage() {
         <div className="md:col-span-2 space-y-8">
           <Card className="border-none shadow-sm bg-card overflow-hidden">
             <CardHeader className="bg-accent/5">
-              <CardTitle>The Scholar Level System</CardTitle>
+              <CardTitle>The {t('scholarRank')} System</CardTitle>
               <CardDescription>How to advance your academic rank on StudyNest.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
@@ -69,7 +72,7 @@ export default function AchievementsPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold uppercase text-muted-foreground">Level {l.level}</span>
+                          <span className="text-xs font-bold uppercase text-muted-foreground">{t('level')} {l.level}</span>
                           {l.level === currentLevel && <Badge className="text-[10px] bg-accent text-accent-foreground">Current Rank</Badge>}
                           {l.level < currentLevel && <CheckCircle2 className="h-4 w-4 text-green-500" />}
                         </div>
@@ -122,15 +125,15 @@ export default function AchievementsPage() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  <span>Level {currentLevel}</span>
-                  <span>Level {currentLevel + 1}</span>
+                  <span>{t('level')} {currentLevel}</span>
+                  <span>{t('level')} {currentLevel + 1}</span>
                 </div>
                 <Progress value={45} className="h-3 bg-primary/20" />
                 <p className="text-xs text-center text-muted-foreground italic">Approx. 4.5 hours until next level</p>
               </div>
 
               <div className="space-y-4 pt-4 border-t">
-                <h4 className="text-sm font-bold">Daily Milestone</h4>
+                <h4 className="text-sm font-bold">{t('dailyMilestone')}</h4>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border">
                   <div className="flex items-center gap-3">
                     <Target className="h-4 w-4 text-destructive" />
@@ -153,7 +156,7 @@ export default function AchievementsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-accent" />
-                Rewards
+                {t('rewards')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

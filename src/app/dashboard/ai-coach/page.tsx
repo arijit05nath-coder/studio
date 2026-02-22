@@ -20,6 +20,7 @@ import { collection, query, where, getDocs } from "firebase/firestore"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
+import { useI18n } from "@/lib/i18n-store"
 
 type Step = 'intro' | 'subjects' | 'ratings' | 'preferences' | 'generating' | 'result';
 
@@ -27,6 +28,7 @@ export default function AICoachPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const { t } = useI18n()
   
   // Study Plan State
   const [step, setStep] = useState<Step>('intro')
@@ -187,7 +189,7 @@ export default function AICoachPage() {
           <BrainCircuit className="h-8 w-8 text-accent-foreground" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">AI Study Coach</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('aiCoach')}</h1>
           <p className="text-muted-foreground text-sm">Personalized roadmaps and expert assignment feedback.</p>
         </div>
       </div>
@@ -195,10 +197,10 @@ export default function AICoachPage() {
       <Tabs defaultValue="planner" className="w-full">
         <TabsList className="bg-muted p-1 rounded-full mb-8">
           <TabsTrigger value="planner" className="rounded-full px-8 gap-2">
-            <Calendar className="h-4 w-4" /> Study Planner
+            <Calendar className="h-4 w-4" /> {t('studyPlanner')}
           </TabsTrigger>
           <TabsTrigger value="assignment" className="rounded-full px-8 gap-2">
-            <FileText className="h-4 w-4" /> Assignment Analysis
+            <FileText className="h-4 w-4" /> {t('assignmentAnalysis')}
           </TabsTrigger>
         </TabsList>
 
@@ -212,7 +214,7 @@ export default function AICoachPage() {
                 </p>
               </div>
               <Button onClick={() => setStep('subjects')} className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8 py-6 h-auto text-lg gap-2 shadow-lg">
-                Let's build your plan <ChevronRight className="h-5 w-5" />
+                {t('letBuildPlan')} <ChevronRight className="h-5 w-5" />
               </Button>
             </Card>
           )}
@@ -446,7 +448,7 @@ export default function AICoachPage() {
                   </Button>
                   <Button onClick={handleSavePlan} disabled={isSaving} className="bg-accent text-accent-foreground rounded-full gap-2">
                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    Save Plan
+                    {t('save')} Plan
                   </Button>
                 </div>
               </div>
@@ -457,7 +459,7 @@ export default function AICoachPage() {
                     <CardHeader className="bg-accent/5 rounded-t-lg">
                       <CardTitle className="text-xl flex items-center gap-2">
                         <Target className="h-5 w-5 text-accent" />
-                        Priority Topics
+                        {t('priorityTopics')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
@@ -476,7 +478,7 @@ export default function AICoachPage() {
                     <CardHeader className="bg-yellow-500/10 rounded-t-lg">
                       <CardTitle className="text-xl flex items-center gap-2 text-foreground">
                         <Lightbulb className="h-5 w-5 text-yellow-600" />
-                        Study Aid: Concept Breakdowns
+                        Study Aid: {t('conceptBreakdowns')}
                       </CardTitle>
                       <CardDescription>Key principles to help you study the topics you're weak in.</CardDescription>
                     </CardHeader>
@@ -494,7 +496,7 @@ export default function AICoachPage() {
                     <CardHeader className="bg-primary/5 rounded-t-lg">
                       <CardTitle className="text-xl flex items-center gap-2 text-foreground">
                         <Calendar className="h-5 w-5" />
-                        Weekly Schedule
+                        {t('weeklySchedule')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 prose prose-sm max-w-none prose-p:text-muted-foreground prose-headings:text-accent-foreground prose-strong:text-foreground">
@@ -508,7 +510,7 @@ export default function AICoachPage() {
                     <CardHeader className="bg-accent/5 rounded-t-lg">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <GraduationCap className="h-5 w-5 text-accent" />
-                        Study Strategy
+                        {t('strategy')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
@@ -524,7 +526,7 @@ export default function AICoachPage() {
                       <CardHeader className="bg-red-500/5 rounded-t-lg">
                         <CardTitle className="text-lg flex items-center gap-2 text-foreground">
                           <Youtube className="h-5 w-5 text-red-600" />
-                          Visual Resources
+                          {t('visualResources')}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-4 space-y-3">
@@ -545,7 +547,7 @@ export default function AICoachPage() {
 
                   <Card className="border-none shadow-sm bg-card">
                     <CardHeader>
-                      <CardTitle className="text-lg">Next Steps</CardTitle>
+                      <CardTitle className="text-lg">{t('nextSteps')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {plan.actionableSteps.map((step, i) => (

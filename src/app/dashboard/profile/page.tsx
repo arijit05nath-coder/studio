@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useI18n } from "@/lib/i18n-store"
 
 const THEMES = [
   { id: 'default', name: 'Default Light', icon: Sun, class: '' },
@@ -28,6 +29,7 @@ export default function ProfilePage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const { t } = useI18n()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const profileDocRef = useMemoFirebase(() => {
@@ -156,7 +158,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile & Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('profile')} & Settings</h1>
         <p className="text-muted-foreground">Manage your identity and app appearance.</p>
       </div>
 
@@ -237,12 +239,12 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold">{formData.firstName} {formData.lastName}</h2>
             <p className="text-sm text-muted-foreground mb-4">{profile?.role || 'Student'}</p>
             <Badge variant="secondary" className="bg-primary/20 text-accent-foreground px-4">
-              Level {profile?.level || 1} Scholar
+              {t('level')} {profile?.level || 1} {t('scholar')}
             </Badge>
           </Card>
 
           <Card className="border-none shadow-sm p-6 space-y-4 bg-card">
-            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Account Info</h3>
+            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{t('accountInfo')}</h3>
             <div className="flex items-center gap-3 text-sm">
               <Mail className="h-4 w-4 text-accent" />
               <span className="truncate">{formData.email}</span>
@@ -259,14 +261,14 @@ export default function ProfilePage() {
         <div className="md:col-span-2 space-y-8">
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
-              <CardTitle>Personal Details</CardTitle>
+              <CardTitle>{t('personalDetails')}</CardTitle>
               <CardDescription>Update your name and primary email address.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName">{t('firstName')}</Label>
                     <Input 
                       id="firstName" 
                       value={formData.firstName} 
@@ -275,7 +277,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName">{t('lastName')}</Label>
                     <Input 
                       id="lastName" 
                       value={formData.lastName} 
@@ -285,7 +287,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input 
                     id="email" 
                     type="email"
@@ -296,7 +298,7 @@ export default function ProfilePage() {
                 </div>
                 {profile?.role === 'Student' && (
                   <div className="space-y-2">
-                    <Label htmlFor="qualification">Educational Qualification</Label>
+                    <Label htmlFor="qualification">{t('qualification')}</Label>
                     <Input 
                       id="qualification" 
                       value={formData.educationalQualification} 
@@ -308,7 +310,7 @@ export default function ProfilePage() {
                 )}
                 <Button disabled={loading} className="bg-accent text-accent-foreground rounded-xl px-8 shadow-sm hover:shadow-md transition-all">
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  Save Changes
+                  {t('save')} Changes
                 </Button>
               </form>
             </CardContent>
@@ -316,7 +318,7 @@ export default function ProfilePage() {
 
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
-              <CardTitle>Study Environments</CardTitle>
+              <CardTitle>{t('studyEnvironments')}</CardTitle>
               <CardDescription>Choose a visual theme that matches your focus style.</CardDescription>
             </CardHeader>
             <CardContent>

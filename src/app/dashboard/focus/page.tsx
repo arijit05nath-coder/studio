@@ -15,10 +15,12 @@ import { cn } from "@/lib/utils"
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { useI18n } from "@/lib/i18n-store"
 
 export default function FocusPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const { t } = useI18n()
   
   const [timerMode, setTimerMode] = useState<'pomodoro' | 'custom'>('pomodoro')
   const [customWorkMinutes, setCustomWorkMinutes] = useState(25)
@@ -162,7 +164,7 @@ export default function FocusPage() {
       )}
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Focus Mode</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('focusMode')}</h1>
         <p className="text-muted-foreground">Boost your productivity with custom timers and strict tracking.</p>
       </div>
 
@@ -176,8 +178,8 @@ export default function FocusPage() {
               <div className="flex justify-center mb-4">
                 <Tabs value={timerMode} onValueChange={(v) => setTimerMode(v as any)} className="w-auto">
                   <TabsList className="grid w-48 grid-cols-2 rounded-full h-8 p-1">
-                    <TabsTrigger value="pomodoro" className="rounded-full text-xs" disabled={isActive}>Pomodoro</TabsTrigger>
-                    <TabsTrigger value="custom" className="rounded-full text-xs" disabled={isActive}>Custom</TabsTrigger>
+                    <TabsTrigger value="pomodoro" className="rounded-full text-xs" disabled={isActive}>{t('pomodoro')}</TabsTrigger>
+                    <TabsTrigger value="custom" className="rounded-full text-xs" disabled={isActive}>{t('custom')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -216,7 +218,7 @@ export default function FocusPage() {
               <CardHeader className="pb-4">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Settings2 className="h-4 w-4 text-accent" />
-                  Timer Settings
+                  {t('timerSettings')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -258,7 +260,7 @@ export default function FocusPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-accent fill-accent/20" />
-                Strict Mode
+                {t('strictMode')}
               </CardTitle>
               <CardDescription>
                 Locks the UI during sessions to prevent distractions.
@@ -278,7 +280,7 @@ export default function FocusPage() {
 
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
-              <CardTitle>Session History</CardTitle>
+              <CardTitle>{t('sessionHistory')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

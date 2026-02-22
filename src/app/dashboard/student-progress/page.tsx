@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -26,10 +27,12 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog"
+import { useI18n } from "@/lib/i18n-store"
 
 export default function StudentProgressPage() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
+  const { t } = useI18n()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
 
@@ -75,7 +78,7 @@ export default function StudentProgressPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Student Progress</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('studentProgress')}</h1>
         <p className="text-muted-foreground">Track engagement and performance across your students.</p>
       </div>
 
@@ -83,7 +86,7 @@ export default function StudentProgressPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search students..." 
+            placeholder={t('searchStudents')} 
             className="pl-10 rounded-full bg-card border-none shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

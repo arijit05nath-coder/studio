@@ -20,11 +20,13 @@ import { cn } from "@/lib/utils"
 import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, updateDoc, arrayUnion, arrayRemove, getDocs, setDoc } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useToast } from "@/hooks/use-toast"
+import { useI18n } from "@/lib/i18n-store"
 
 export default function GroupsPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const { t } = useI18n()
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [message, setMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -83,7 +85,7 @@ export default function GroupsPage() {
       setLoadingLeaderboard(true);
       try {
         const startOfWeek = new Date();
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDate() % 7);
         startOfWeek.setHours(0, 0, 0, 0);
 
         const memberStats = await Promise.all(
@@ -165,7 +167,6 @@ export default function GroupsPage() {
     setSelectedGroupId(customId);
     toast({ title: "Group created!", description: `Share ID: ${customId}` });
     
-    // Refresh the webpage after a short delay to ensure clean state and rules sync
     setTimeout(() => {
       window.location.reload();
     }, 800);
@@ -192,7 +193,6 @@ export default function GroupsPage() {
       setSelectedGroupId(groupSnap.id);
       toast({ title: "Joined group successfully!" });
       
-      // Refresh the webpage to ensure proper rules synchronization for subcollections
       setTimeout(() => {
         window.location.reload();
       }, 800);
@@ -238,7 +238,7 @@ export default function GroupsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Groups</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('groups')}</h1>
           <p className="text-muted-foreground">Collaborate with your peers and build healthy competition.</p>
         </div>
         
@@ -247,12 +247,12 @@ export default function GroupsPage() {
             <DialogTrigger asChild>
               <Button variant="outline" className="rounded-full gap-2">
                 <LogIn className="h-4 w-4" />
-                Join Group
+                {t('joinGroup')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Join a Study Group</DialogTitle>
+                <DialogTitle>{t('joinGroup')}</DialogTitle>
                 <DialogDescription>Enter the 6-character Group ID to join your peers.</DialogDescription>
               </DialogHeader>
               <div className="py-4">
@@ -278,12 +278,12 @@ export default function GroupsPage() {
             <DialogTrigger asChild>
               <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
-                Create Group
+                {t('createGroup')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Create Study Group</DialogTitle>
+                <DialogTitle>{t('createGroup')}</DialogTitle>
                 <DialogDescription>A unique 6-character code will be generated for your group.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -438,10 +438,10 @@ export default function GroupsPage() {
               <Tabs defaultValue="chat" className="w-full">
                 <TabsList className="bg-card rounded-full p-1 border">
                   <TabsTrigger value="chat" className="rounded-full gap-2 px-6">
-                    <MessageSquare className="h-4 w-4" /> Chat
+                    <MessageSquare className="h-4 w-4" /> {t('chat')}
                   </TabsTrigger>
                   <TabsTrigger value="leaderboard" className="rounded-full gap-2 px-6">
-                    <Medal className="h-4 w-4" /> Leaderboard
+                    <Medal className="h-4 w-4" /> {t('leaderboard')}
                   </TabsTrigger>
                 </TabsList>
 
@@ -574,8 +574,8 @@ export default function GroupsPage() {
                 Join a group using an ID from a classmate, or create your own to start collaborating and competing.
               </p>
               <div className="flex gap-4 mt-8">
-                <Button variant="outline" className="rounded-full px-8" onClick={() => setIsJoinDialogOpen(true)}>Join Group</Button>
-                <Button className="bg-accent text-accent-foreground rounded-full px-8" onClick={() => setIsCreateDialogOpen(true)}>Create New</Button>
+                <Button variant="outline" className="rounded-full px-8" onClick={() => setIsJoinDialogOpen(true)}>{t('joinGroup')}</Button>
+                <Button className="bg-accent text-accent-foreground rounded-full px-8" onClick={() => setIsCreateDialogOpen(true)}>{t('createGroup')}</Button>
               </div>
             </div>
           )}

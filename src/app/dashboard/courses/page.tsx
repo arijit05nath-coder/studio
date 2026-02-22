@@ -15,11 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n-store"
 
 export default function CurriculumPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const { t } = useI18n()
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -150,7 +152,7 @@ export default function CurriculumPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Curriculum & Resources</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('curriculum')}</h1>
           <p className="text-muted-foreground">Manage subjects and explore study materials in one place.</p>
         </div>
 
@@ -398,7 +400,7 @@ export default function CurriculumPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedSubject(null)} className="rounded-xl">Close</Button>
+            <Button variant="outline" onClick={() => setSelectedSubject(null)} className="rounded-xl">{t('cancel')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
