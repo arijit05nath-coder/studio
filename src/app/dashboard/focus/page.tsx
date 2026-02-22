@@ -149,7 +149,7 @@ export default function FocusPage() {
             size="lg" 
             className="rounded-full px-12"
             onClick={() => {
-                const confirmed = confirm("End session early? This will be logged as an interruption.")
+                const confirmed = confirm(t('confirmEndSession'))
                 if (confirmed) {
                     setInterruptionCount(prev => prev + 1);
                     saveSession('Interrupted');
@@ -263,7 +263,7 @@ export default function FocusPage() {
                 {t('strictMode')}
               </CardTitle>
               <CardDescription>
-                Locks the UI during sessions to prevent distractions.
+                {t('strictModeDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -298,7 +298,7 @@ export default function FocusPage() {
                         </p>
                       </div>
                       <Badge variant={log.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
-                        {log.status}
+                        {log.status === 'Completed' ? t('statusCompleted') : log.status === 'Interrupted' ? t('statusInterrupted') : t('statusAbandoned')}
                       </Badge>
                     </div>
                   ))
