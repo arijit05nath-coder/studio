@@ -19,7 +19,6 @@ import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { Progress } from "@/components/ui/progress"
 import { useI18n } from "@/lib/i18n-store"
 
 type Step = 'intro' | 'subjects' | 'ratings' | 'preferences' | 'generating' | 'result';
@@ -208,9 +207,9 @@ export default function AICoachPage() {
           {step === 'intro' && (
             <Card className="border-none shadow-xl p-10 text-center space-y-6 bg-card">
               <div className="space-y-4">
-                <h2 className="text-4xl font-bold text-accent-foreground">Ready to level up?</h2>
+                <h2 className="text-4xl font-bold text-accent-foreground">{t('readyToLevelUp')}</h2>
                 <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-                  I'll analyze your goals and learning style to create a plan that actually works for you.
+                  {t('readyToLevelUpDesc')}
                 </p>
               </div>
               <Button onClick={() => setStep('subjects')} className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8 py-6 h-auto text-lg gap-2 shadow-lg">
@@ -222,14 +221,14 @@ export default function AICoachPage() {
           {step === 'subjects' && (
             <Card className="border-none shadow-xl bg-card">
               <CardHeader>
-                <CardTitle className="text-2xl">What are we focusing on?</CardTitle>
-                <CardDescription>Select your subjects and specific topics you're struggling with.</CardDescription>
+                <CardTitle className="text-2xl">{t('whatFocusingOn')}</CardTitle>
+                <CardDescription>{t('subjectsDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <Label className="text-lg font-bold">Subjects</Label>
-                    <Badge variant="outline">{assessment.subjects.length} selected</Badge>
+                    <Label className="text-lg font-bold">{t('subjectsLabel')}</Label>
+                    <Badge variant="outline">{assessment.subjects.length} {t('edit')}</Badge>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {commonSubjects.map(subj => (
@@ -250,7 +249,7 @@ export default function AICoachPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="text-lg font-bold">Add Other Subjects</Label>
+                  <Label className="text-lg font-bold">{t('addOtherSubjects')}</Label>
                   <div className="flex gap-2">
                     <Input 
                       placeholder="e.g. Psychology, Art History..." 
@@ -263,21 +262,12 @@ export default function AICoachPage() {
                       <Plus className="h-4 w-4 mr-2" /> Add
                     </Button>
                   </div>
-                  {assessment.subjects.filter(s => !commonSubjects.includes(s)).length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {assessment.subjects.filter(s => !commonSubjects.includes(s)).map(subj => (
-                        <Badge key={subj} variant="secondary" className="px-3 py-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive" onClick={() => toggleSubject(subj)}>
-                          {subj} ×
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 
                 <div className="space-y-3">
-                  <Label className="text-lg font-bold">Specific Topics</Label>
+                  <Label className="text-lg font-bold">{t('topicsLabel')}</Label>
                   <Textarea 
-                    placeholder="e.g. Integration techniques, Thermodynamics laws, Cell division..."
+                    placeholder={t('topicsPlaceholder')}
                     value={assessment.topics}
                     onChange={e => setAssessment({...assessment, topics: e.target.value})}
                     className="min-h-[120px] rounded-2xl"
@@ -285,13 +275,13 @@ export default function AICoachPage() {
                 </div>
 
                 <div className="flex justify-between pt-4">
-                  <Button variant="ghost" onClick={() => setStep('intro')}>Back</Button>
+                  <Button variant="ghost" onClick={() => setStep('intro')}>{t('cancel')}</Button>
                   <Button 
                     disabled={assessment.subjects.length === 0} 
                     onClick={() => setStep('ratings')}
                     className="bg-accent text-accent-foreground"
                   >
-                    Next Step
+                    {t('nextSteps')}
                   </Button>
                 </div>
               </CardContent>
@@ -301,14 +291,14 @@ export default function AICoachPage() {
           {step === 'ratings' && (
             <Card className="border-none shadow-xl bg-card">
               <CardHeader>
-                <CardTitle className="text-2xl">How are you feeling about these?</CardTitle>
-                <CardDescription>Rate your current status on a scale of 1 to 5.</CardDescription>
+                <CardTitle className="text-2xl">{t('howFeeling')}</CardTitle>
+                <CardDescription>{t('rateStatus')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-10">
                 {[
-                  { id: 'conceptClarity', label: 'Concept Clarity', desc: 'How well do you understand the theory?' },
-                  { id: 'problemSolving', label: 'Problem Solving', desc: 'How confident are you in applying knowledge?' },
-                  { id: 'examReadiness', label: 'Exam Readiness', desc: 'How prepared do you feel for a test right now?' }
+                  { id: 'conceptClarity', label: t('conceptClarity'), desc: t('conceptClarityDesc') },
+                  { id: 'problemSolving', label: t('problemSolving'), desc: t('problemSolvingDesc') },
+                  { id: 'examReadiness', label: t('examReadiness'), desc: t('examReadinessDesc') }
                 ].map((rating) => (
                   <div key={rating.id} className="space-y-4">
                     <div className="flex justify-between items-end">
@@ -332,8 +322,8 @@ export default function AICoachPage() {
                 ))}
 
                 <div className="flex justify-between pt-4">
-                  <Button variant="ghost" onClick={() => setStep('subjects')}>Back</Button>
-                  <Button onClick={() => setStep('preferences')} className="bg-accent text-accent-foreground">Next Step</Button>
+                  <Button variant="ghost" onClick={() => setStep('subjects')}>{t('edit')}</Button>
+                  <Button onClick={() => setStep('preferences')} className="bg-accent text-accent-foreground">{t('nextSteps')}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -342,13 +332,13 @@ export default function AICoachPage() {
           {step === 'preferences' && (
             <Card className="border-none shadow-xl bg-card">
               <CardHeader>
-                <CardTitle className="text-2xl">Preferences & Schedule</CardTitle>
-                <CardDescription>Help me tailor the plan to your daily life.</CardDescription>
+                <CardTitle className="text-2xl">{t('preferencesSchedule')}</CardTitle>
+                <CardDescription>{t('tailorPlan')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <Label>Learning Style</Label>
+                    <Label>{t('learningStyle')}</Label>
                     <Select value={assessment.learningStyle} onValueChange={v => setAssessment({...assessment, learningStyle: v})}>
                       <SelectTrigger className="rounded-xl">
                         <SelectValue />
@@ -364,7 +354,7 @@ export default function AICoachPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <Label>Preferred Study Time</Label>
+                    <Label>{t('preferredTime')}</Label>
                     <Select value={assessment.studyTime.preferredTime} onValueChange={v => setAssessment({...assessment, studyTime: {...assessment.studyTime, preferredTime: v}})}>
                       <SelectTrigger className="rounded-xl">
                         <SelectValue />
@@ -381,8 +371,8 @@ export default function AICoachPage() {
 
                 <div className="space-y-4">
                   <div className="flex justify-between">
-                    <Label className="font-bold">Available Study Time</Label>
-                    <Badge variant="outline">{assessment.studyTime.hoursPerDay} hours/day</Badge>
+                    <Label className="font-bold">{t('availableTime')}</Label>
+                    <Badge variant="outline">{assessment.studyTime.hoursPerDay} {t('hours')}/day</Badge>
                   </div>
                   <Slider 
                     value={[assessment.studyTime.hoursPerDay]}
@@ -391,22 +381,12 @@ export default function AICoachPage() {
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Upcoming Deadlines (Optional)</Label>
-                  <Input 
-                    placeholder="e.g. Midterms in 2 weeks, Math quiz Friday..." 
-                    value={assessment.deadlines}
-                    onChange={e => setAssessment({...assessment, deadlines: e.target.value})}
-                    className="rounded-xl"
-                  />
-                </div>
-
                 <div className="bg-primary/20 p-4 rounded-2xl flex items-center justify-between border border-primary/30">
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-accent-foreground" />
                     <div className="text-sm text-foreground">
-                      <p className="font-bold">Use Focus Mode Data?</p>
-                      <p className="text-muted-foreground text-xs">Adapt study load to your real focus consistency.</p>
+                      <p className="font-bold">{t('useFocusData')}</p>
+                      <p className="text-muted-foreground text-xs">{t('useFocusDataDesc')}</p>
                     </div>
                   </div>
                   <Switch 
@@ -416,8 +396,8 @@ export default function AICoachPage() {
                 </div>
 
                 <div className="flex justify-between pt-4">
-                  <Button variant="ghost" onClick={() => setStep('ratings')}>Back</Button>
-                  <Button onClick={handleGeneratePlan} className="bg-accent text-accent-foreground px-8">Generate My Plan</Button>
+                  <Button variant="ghost" onClick={() => setStep('ratings')}>{t('edit')}</Button>
+                  <Button onClick={handleGeneratePlan} className="bg-accent text-accent-foreground px-8">{t('generatePlan')}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -430,9 +410,9 @@ export default function AICoachPage() {
                 <Sparkles className="h-6 w-6 text-accent absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fill-current" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold">Crafting your roadmap...</h2>
+                <h2 className="text-2xl font-bold">{t('craftingRoadmap')}</h2>
                 <p className="text-muted-foreground max-w-xs mx-auto">
-                  Analyzing your weaknesses and balancing your schedule for maximum efficiency.
+                  {t('analyzingWeaknesses')}
                 </p>
               </div>
             </div>
@@ -441,14 +421,14 @@ export default function AICoachPage() {
           {step === 'result' && plan && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold">Your Personalized Plan</h2>
+                <h2 className="text-3xl font-bold">{t('yourPersonalizedPlan')}</h2>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={() => setStep('subjects')} className="rounded-full">
-                    Edit Assessment
+                    {t('editAssessment')}
                   </Button>
                   <Button onClick={handleSavePlan} disabled={isSaving} className="bg-accent text-accent-foreground rounded-full gap-2">
                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    {t('save')} Plan
+                    {t('savePlan')}
                   </Button>
                 </div>
               </div>
@@ -473,14 +453,12 @@ export default function AICoachPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Concept Breakdowns */}
                   <Card className="border-none shadow-sm bg-card">
                     <CardHeader className="bg-yellow-500/10 rounded-t-lg">
                       <CardTitle className="text-xl flex items-center gap-2 text-foreground">
                         <Lightbulb className="h-5 w-5 text-yellow-600" />
-                        Study Aid: {t('conceptBreakdowns')}
+                        {t('studyAid')}: {t('conceptBreakdowns')}
                       </CardTitle>
-                      <CardDescription>Key principles to help you study the topics you're weak in.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
                       {plan.conceptBreakdowns.map((item, i) => (
@@ -520,34 +498,9 @@ export default function AICoachPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Visual Resources */}
-                  {plan.visualResources && plan.visualResources.length > 0 && (
-                    <Card className="border-none shadow-sm bg-card">
-                      <CardHeader className="bg-red-500/5 rounded-t-lg">
-                        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-                          <Youtube className="h-5 w-5 text-red-600" />
-                          {t('visualResources')}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4 space-y-3">
-                        {plan.visualResources.map((res, i) => (
-                          <Button key={i} variant="outline" className="w-full justify-between h-auto py-3 px-4 rounded-xl group" asChild>
-                            <a href={res.url} target="_blank" rel="noopener noreferrer">
-                              <div className="flex flex-col items-start gap-1 overflow-hidden">
-                                <span className="text-sm font-bold group-hover:text-red-600 truncate w-full">{res.title}</span>
-                                <span className="text-[10px] text-muted-foreground uppercase">{res.platform}</span>
-                              </div>
-                              <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-red-600 shrink-0" />
-                            </a>
-                          </Button>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  )}
-
                   <Card className="border-none shadow-sm bg-card">
                     <CardHeader>
-                      <CardTitle className="text-lg">{t('nextSteps')}</CardTitle>
+                      <CardTitle className="text-lg">{t('nextStepTasks')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {plan.actionableSteps.map((step, i) => (
@@ -565,7 +518,7 @@ export default function AICoachPage() {
                     className="w-full bg-accent text-accent-foreground py-6 rounded-2xl gap-2 font-bold shadow-lg"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                    Regenerate Plan
+                    {t('regeneratePlan')}
                   </Button>
                 </div>
               </div>
@@ -580,13 +533,13 @@ export default function AICoachPage() {
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <ClipboardCheck className="h-6 w-6 text-accent" />
-                    Submit for Analysis
+                    {t('submitForAnalysis')}
                   </CardTitle>
-                  <CardDescription>Get expert feedback based on specific rubric criteria.</CardDescription>
+                  <CardDescription>{t('expertFeedback')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="asSubject">Subject</Label>
+                    <Label htmlFor="asSubject">{t('curriculum')}</Label>
                     <Input 
                       id="asSubject"
                       placeholder="e.g. History, Biology..."
@@ -596,20 +549,20 @@ export default function AICoachPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="asText">Assignment Content</Label>
+                    <Label htmlFor="asText">{t('assignmentContent')}</Label>
                     <Textarea 
                       id="asText"
-                      placeholder="Paste your assignment text here..."
+                      placeholder={t('assignmentContentPlaceholder')}
                       className="min-h-[300px] rounded-2xl"
                       value={assignmentText}
                       onChange={e => setAssignmentText(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="asRubric">Custom Rubric / Criteria (Optional)</Label>
+                    <Label htmlFor="asRubric">{t('customRubric')}</Label>
                     <Textarea 
                       id="asRubric"
-                      placeholder="Paste specific rubric points here or leave blank for standard criteria..."
+                      placeholder={t('customRubricPlaceholder')}
                       className="min-h-[100px] rounded-2xl"
                       value={customRubric}
                       onChange={e => setCustomRubric(e.target.value)}
@@ -621,7 +574,7 @@ export default function AICoachPage() {
                     className="w-full bg-accent text-accent-foreground py-6 rounded-2xl gap-2 font-bold"
                   >
                     {isAnalyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-                    Analyze Assignment
+                    {t('analyzeAssignment')}
                   </Button>
                 </CardContent>
               </Card>
@@ -631,8 +584,8 @@ export default function AICoachPage() {
               {isAnalyzing && (
                 <div className="flex flex-col items-center justify-center py-40 text-center space-y-4">
                   <Loader2 className="h-12 w-12 text-accent animate-spin" />
-                  <p className="font-bold">Evaluating your work...</p>
-                  <p className="text-sm text-muted-foreground">Checking against rubric standards.</p>
+                  <p className="font-bold">{t('evaluatingWork')}</p>
+                  <p className="text-sm text-muted-foreground">{t('checkingRubric')}</p>
                 </div>
               )}
 
@@ -642,7 +595,7 @@ export default function AICoachPage() {
                     <CardHeader className="bg-primary/10">
                       <CardTitle className="text-xl flex items-center gap-2">
                         <BarChart className="h-5 w-5 text-primary" />
-                        Analysis Results
+                        {t('analysisResults')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
@@ -651,7 +604,7 @@ export default function AICoachPage() {
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Criterion Breakdown</Label>
+                        <Label className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{t('criterionBreakdown')}</Label>
                         {analysisResult.rubricScores.map((item, i) => (
                           <div key={i} className="space-y-2 p-4 rounded-2xl bg-muted/20 border">
                             <div className="flex justify-between items-center mb-1">
@@ -667,7 +620,7 @@ export default function AICoachPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <h4 className="font-bold text-xs uppercase text-green-600 flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" /> Strengths
+                            <CheckCircle2 className="h-3 w-3" /> {t('strengths')}
                           </h4>
                           <ul className="space-y-1">
                             {analysisResult.strengths.map((s, i) => (
@@ -677,7 +630,7 @@ export default function AICoachPage() {
                         </div>
                         <div className="space-y-2">
                           <h4 className="font-bold text-xs uppercase text-destructive flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" /> Growth Areas
+                            <AlertCircle className="h-3 w-3" /> {t('growthAreas')}
                           </h4>
                           <ul className="space-y-1">
                             {analysisResult.areasForImprovement.map((a, i) => (
@@ -688,7 +641,7 @@ export default function AICoachPage() {
                       </div>
 
                       <div className="space-y-3 pt-4 border-t">
-                        <h4 className="font-bold text-sm">Recommended Revision Plan</h4>
+                        <h4 className="font-bold text-sm">{t('recommendedRevision')}</h4>
                         <div className="space-y-2">
                           {analysisResult.suggestedRevisionSteps.map((step, i) => (
                             <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10">
@@ -706,8 +659,8 @@ export default function AICoachPage() {
               {!analysisResult && !isAnalyzing && (
                 <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-card rounded-3xl border-2 border-dashed opacity-40 py-40">
                   <FileText className="h-16 w-16 mb-4" />
-                  <p className="font-medium">No Analysis Performed</p>
-                  <p className="text-sm">Submit your assignment text to see the AI's deep evaluation.</p>
+                  <p className="font-medium">{t('noAnalysisPerformed')}</p>
+                  <p className="text-sm">{t('submitPrompt')}</p>
                 </div>
               )}
             </div>

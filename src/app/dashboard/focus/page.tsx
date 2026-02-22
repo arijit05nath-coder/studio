@@ -137,9 +137,9 @@ export default function FocusPage() {
       {isStrict && isActive && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
           <ShieldAlert className="h-16 w-16 text-destructive mb-6 animate-pulse fill-destructive/20" />
-          <h2 className="text-4xl font-bold mb-4">Strict Focus Mode Active</h2>
+          <h2 className="text-4xl font-bold mb-4">{t('strictFocusActive')}</h2>
           <p className="text-xl text-muted-foreground mb-12 max-w-md">
-            Stay focused on your task. Navigating away will be logged as an interruption.
+            {t('stayFocused')}
           </p>
           <div className="text-8xl font-mono font-bold text-accent-foreground mb-12 tracking-tighter">
             {formatTime(timeLeft)}
@@ -158,7 +158,7 @@ export default function FocusPage() {
                 }
             }}
           >
-            End Session
+            {t('endSessionEarly')}
           </Button>
         </div>
       )}
@@ -184,7 +184,7 @@ export default function FocusPage() {
                 </Tabs>
               </div>
               <div className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-2">
-                {sessionType === 'work' ? "Focus Session" : "Short Break"}
+                {sessionType === 'work' ? t('todaysFocus') : t('rewards')}
               </div>
               <div className="text-7xl font-mono font-bold text-accent-foreground">
                 {formatTime(timeLeft)}
@@ -209,7 +209,7 @@ export default function FocusPage() {
                 </Button>
               </div>
               <Progress value={100 - progress} className="h-2 bg-primary mb-2" />
-              <p className="text-xs text-muted-foreground">{Math.round(100-progress)}% complete</p>
+              <p className="text-xs text-muted-foreground">{Math.round(100-progress)}% {t('completed')}</p>
             </CardContent>
           </Card>
 
@@ -224,8 +224,8 @@ export default function FocusPage() {
               <CardContent className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs font-medium">
-                    <span>Focus Duration</span>
-                    <span>{customWorkMinutes} mins</span>
+                    <span>{t('focusDuration')}</span>
+                    <span>{customWorkMinutes} {t('minutes')}</span>
                   </div>
                   <Slider 
                     value={[customWorkMinutes]} 
@@ -238,8 +238,8 @@ export default function FocusPage() {
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs font-medium">
-                    <span>Break Duration</span>
-                    <span>{customBreakMinutes} mins</span>
+                    <span>{t('breakDuration')}</span>
+                    <span>{customBreakMinutes} {t('minutes')}</span>
                   </div>
                   <Slider 
                     value={[customBreakMinutes]} 
@@ -273,7 +273,7 @@ export default function FocusPage() {
                   checked={isStrict} 
                   onCheckedChange={setIsStrict} 
                 />
-                <Label htmlFor="strict-mode">Enable Strict Focus</Label>
+                <Label htmlFor="strict-mode">{t('enableStrict')}</Label>
               </div>
             </CardContent>
           </Card>
@@ -303,7 +303,7 @@ export default function FocusPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center">No recent sessions found.</p>
+                  <p className="text-sm text-muted-foreground text-center">{t('noSessionsFound')}</p>
                 )}
               </div>
             </CardContent>

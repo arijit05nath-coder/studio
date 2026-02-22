@@ -33,21 +33,10 @@ export default function GroupsPage() {
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
   const [joinId, setJoinId] = useState("")
   const [newGroup, setNewGroup] = useState({ name: "", description: "" })
-  const [userRole, setUserRole] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (user && db) {
-        const snap = await getDoc(doc(db, "userProfiles", user.uid));
-        if (snap.exists()) setUserRole(snap.data().role);
-      }
-    };
-    checkRole();
-  }, [user, db]);
 
   const groupsQuery = useMemoFirebase(() => {
     if (!user || !db) return null;
@@ -103,7 +92,7 @@ export default function GroupsPage() {
             
             return {
               id: memberId,
-              name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Student",
+              name: profile ? `${profile.firstName} ${profile.lastName}` : t('scholar'),
               firstName: profile?.firstName || "",
               lastName: profile?.lastName || "",
               photoUrl: profile?.photoUrl || "",
@@ -123,14 +112,14 @@ export default function GroupsPage() {
     if (selectedGroupId && selectedGroup) {
       fetchLeaderboard();
     }
-  }, [selectedGroupId, selectedGroup, db]);
+  }, [selectedGroupId, selectedGroup, db, t]);
 
   const handleSendMessage = () => {
     if (!message.trim() || !selectedGroupId || !user || !selectedGroup || !db) return;
 
     addDocumentNonBlocking(collection(db, "studyGroups", selectedGroupId, "messages"), {
       senderId: user.uid,
-      senderName: user.email?.split('@')[0] || "User",
+      senderName: user.email?.split('@')[0] || t('student'),
       text: message.trim(),
       timestamp: serverTimestamp()
     });
@@ -228,7 +217,7 @@ export default function GroupsPage() {
       navigator.clipboard.writeText(selectedGroupId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast({ title: "ID copied to clipboard" });
+      toast({ title: t('copyId') });
     }
   }
 
@@ -239,7 +228,7 @@ export default function GroupsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('groups')}</h1>
-          <p className="text-muted-foreground">Collaborate with your peers and build healthy competition.</p>
+          <p className="text-muted-foreground">{t('collaborateDesc')}</p>
         </div>
         
         <div className="flex gap-2">
@@ -256,7 +245,7 @@ export default function GroupsPage() {
                 <DialogDescription>Enter the 6-character Group ID to join your peers.</DialogDescription>
               </DialogHeader>
               <div className="py-4">
-                <Label htmlFor="joinId">Group ID</Label>
+                <Label htmlFor="joinId">{t('groupId')}</Label>
                 <Input
                   id="joinId"
                   placeholder="e.g. A1B2C3"
@@ -268,7 +257,7 @@ export default function GroupsPage() {
               </div>
               <DialogFooter>
                 <Button onClick={handleJoinGroup} disabled={!joinId.trim()} className="bg-accent text-accent-foreground">
-                  Join Now
+                  {t('joinGroup')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -297,7 +286,7 @@ export default function GroupsPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     placeholder="What is this group focusing on?"
@@ -308,7 +297,7 @@ export default function GroupsPage() {
               </div>
               <DialogFooter>
                 <Button onClick={handleCreateGroup} disabled={!newGroup.name} className="bg-accent text-accent-foreground">
-                  Create Group
+                  {t('createGroup')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -320,7 +309,7 @@ export default function GroupsPage() {
         <div className="lg:col-span-1 space-y-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Users className="h-5 w-5 text-accent" />
-            Your Groups
+            {t('yourGroups')}
           </h2>
           {groupsLoading ? (
             <div className="flex justify-center p-8">
@@ -343,15 +332,12 @@ export default function GroupsPage() {
                       {group.memberIds?.length || 0} Members
                     </Badge>
                   </div>
-                  <CardDescription className="text-xs truncate">
-                    {group.description || "No description"}
-                  </CardDescription>
                 </CardHeader>
               </Card>
             ))
           ) : (
             <div className="text-center p-8 border-2 border-dashed rounded-3xl opacity-50">
-              <p className="text-sm">No groups yet.</p>
+              <p className="text-sm">{t('noGroupsYet')}</p>
             </div>
           )}
         </div>
@@ -363,74 +349,17 @@ export default function GroupsPage() {
                 <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1 overflow-hidden">
                     <CardTitle className="text-2xl truncate">{selectedGroup.name}</CardTitle>
-                    <CardDescription className="truncate">{selectedGroup.description}</CardDescription>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Group ID</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('groupId')}</span>
                       <div className="flex items-center gap-1">
                         <code className="text-[14px] bg-muted px-3 py-1 rounded font-mono font-bold tracking-wider">{selectedGroupId}</code>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={copyGroupId}>
-                                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Copy ID</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={copyGroupId}>
+                          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                        </Button>
                       </div>
                     </div>
-                    
-                    {isCreator ? (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="rounded-full text-destructive hover:bg-destructive/10 border-destructive/20" title="Delete Group">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="flex items-center gap-2">
-                              <AlertTriangle className="h-5 w-5 text-destructive" />
-                              Delete Study Group?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. All messages and rankings for this group will be permanently deleted.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteGroup} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Delete Group
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    ) : (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="rounded-full hover:bg-destructive/10 hover:text-destructive border-border" title="Leave Group">
-                            <LogOut className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Leave Study Group?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              You will no longer be able to see messages or rankings for this group. You can rejoin later using the Group ID.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleLeaveGroup} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Leave Group
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
                   </div>
                 </CardHeader>
               </Card>
@@ -473,7 +402,7 @@ export default function GroupsPage() {
                           ) : (
                             <div className="flex flex-col items-center justify-center h-full text-center space-y-2 opacity-50 py-20">
                               <MessageSquare className="h-8 w-8" />
-                              <p className="text-sm italic">Start the conversation!</p>
+                              <p className="text-sm italic">{t('startConversation')}</p>
                             </div>
                           )}
                           <div ref={scrollRef} />
@@ -481,7 +410,7 @@ export default function GroupsPage() {
                       </ScrollArea>
                       <div className="p-4 border-t bg-muted/10 flex gap-2">
                         <Input 
-                          placeholder="Type a message..." 
+                          placeholder={t('typeMessage')} 
                           className="bg-background" 
                           value={message}
                           onChange={e => setMessage(e.target.value)}
@@ -500,9 +429,9 @@ export default function GroupsPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Trophy className="h-5 w-5 text-yellow-500" />
-                        Weekly Focus Rankings
+                        {t('weeklyRankings')}
                       </CardTitle>
-                      <CardDescription>Healthy competition build habits. Who focused the most this week?</CardDescription>
+                      <CardDescription>{t('healthyCompetition')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       {loadingLeaderboard ? (
@@ -524,38 +453,23 @@ export default function GroupsPage() {
                                 <div className="flex items-center gap-4">
                                   <div className={cn(
                                     "h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
-                                    index === 0 ? "bg-yellow-500 text-white" : 
-                                    index === 1 ? "bg-slate-300 text-slate-700" :
-                                    index === 2 ? "bg-amber-600/80 text-white" : "bg-muted text-muted-foreground"
+                                    index === 0 ? "bg-yellow-500 text-white" : "bg-muted text-muted-foreground"
                                   )}>
                                     {index + 1}
                                   </div>
-                                  <Avatar className="h-10 w-10 border shrink-0">
-                                    {item.photoUrl && <AvatarImage src={item.photoUrl} />}
-                                    <AvatarFallback className="bg-accent text-accent-foreground font-bold">
-                                      {item.firstName?.[0] || '?'}{item.lastName?.[0] || ''}
-                                    </AvatarFallback>
-                                  </Avatar>
                                   <div className="flex flex-col">
                                     <span className="font-bold text-sm truncate max-w-[150px]">{item.name}</span>
-                                    {item.id === user?.uid && <span className="text-[10px] text-accent font-bold uppercase tracking-wider">You</span>}
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end shrink-0">
                                   <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3 text-muted-foreground" />
-                                    <span className="font-bold">{Math.floor(item.totalMinutes / 60)}h {item.totalMinutes % 60}min</span>
+                                    <span className="font-bold">{Math.floor(item.totalMinutes / 60)}h {item.totalMinutes % 60}m</span>
                                   </div>
-                                  <span className="text-[10px] text-muted-foreground">This week</span>
+                                  <span className="text-[10px] text-muted-foreground">{t('thisWeek')}</span>
                                 </div>
                               </div>
                             ))}
-                            {leaderboard.length === 0 && (
-                              <div className="text-center py-20 opacity-50">
-                                <Trophy className="h-10 w-10 mx-auto mb-2" />
-                                <p>No focus sessions recorded yet.</p>
-                              </div>
-                            )}
                           </div>
                         </ScrollArea>
                       )}
@@ -566,13 +480,8 @@ export default function GroupsPage() {
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-card rounded-3xl border-2 border-dashed border-muted min-h-[500px]">
-              <div className="bg-muted p-6 rounded-full mb-6">
-                <Users className="h-16 w-16 text-muted-foreground" />
-              </div>
-              <h3 className="text-2xl font-bold">Select a group or join one</h3>
-              <p className="text-muted-foreground max-w-sm mt-3">
-                Join a group using an ID from a classmate, or create your own to start collaborating and competing.
-              </p>
+              <Users className="h-16 w-16 text-muted-foreground mb-6" />
+              <h3 className="text-2xl font-bold">{t('selectGroupPrompt')}</h3>
               <div className="flex gap-4 mt-8">
                 <Button variant="outline" className="rounded-full px-8" onClick={() => setIsJoinDialogOpen(true)}>{t('joinGroup')}</Button>
                 <Button className="bg-accent text-accent-foreground rounded-full px-8" onClick={() => setIsCreateDialogOpen(true)}>{t('createGroup')}</Button>

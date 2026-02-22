@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -35,7 +36,6 @@ export default function StudentDashboard() {
   const router = useRouter()
   const { t } = useI18n()
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<any>(null)
 
   const profileRef = useMemoFirebase(() => {
     if (!user || !db) return null;
@@ -52,9 +52,7 @@ export default function StudentDashboard() {
   const startOfPreviousWeek = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    // Find current Sunday
     d.setDate(d.getDate() - d.getDay());
-    // Go back 7 more days to start of previous week
     d.setDate(d.getDate() - 7);
     return d.toISOString();
   }, []);
@@ -85,16 +83,6 @@ export default function StudentDashboard() {
     return collection(db, "subjects");
   }, [db, user, isUserLoading]);
   const { data: subjects, isLoading: subjectsLoading } = useCollection(subjectsQuery);
-
-  const plansQuery = useMemoFirebase(() => {
-    if (!db || !user || isUserLoading) return null;
-    return query(
-      collection(db, "userProfiles", user.uid, "studyPlans"),
-      orderBy("createdAt", "desc"),
-      limit(5)
-    );
-  }, [db, user, isUserLoading]);
-  const { data: savedPlans, isLoading: plansLoading } = useCollection(plansQuery);
 
   const totalMinutesToday = useMemo(() => {
     if (!todaySessions) return 0;
@@ -156,7 +144,7 @@ export default function StudentDashboard() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground">{t('dashboard')}</h1>
-          <p className="text-muted-foreground">{t('welcomeBack')}, {profile?.firstName || 'Student'}!</p>
+          <p className="text-muted-foreground">{t('welcomeMessage').replace('{name}', profile?.firstName || t('scholar'))}</p>
         </div>
         <div className="hidden md:block">
           <TooltipProvider>
@@ -169,13 +157,10 @@ export default function StudentDashboard() {
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[300px] text-center p-4">
                 <div className="space-y-2">
-                  <p className="font-bold text-accent">How to Level Up:</p>
-                  <ul className="text-xs text-left list-disc list-inside space-y-1">
-                    <li>Complete focus sessions in Focus Mode.</li>
-                    <li>Achieve 100% of your daily focus goal.</li>
-                    <li>Maintain a daily study streak.</li>
-                    <li>Every 10 hours of focused study grants level progress.</li>
-                  </ul>
+                  <p className="font-bold text-accent">{t('howToLevelUp')}</p>
+                  <p className="text-xs text-left leading-relaxed">
+                    {t('levelUpRules')}
+                  </p>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -205,7 +190,7 @@ export default function StudentDashboard() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>{t('dailyGoal')}</CardTitle>
-                <CardDescription>Track your progress against your daily target.</CardDescription>
+                <CardDescription>{t('dailyGoalDesc')}</CardDescription>
               </div>
               <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
                 <DialogTrigger asChild>
@@ -215,15 +200,14 @@ export default function StudentDashboard() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Set Daily Goal</DialogTitle>
+                    <DialogTitle>{t('dailyGoal')}</DialogTitle>
                   </DialogHeader>
                   <div className="py-6 space-y-6">
                     <div className="flex justify-between items-center">
-                      <Label className="text-lg font-bold" htmlFor="goal-input">Target Hours</Label>
+                      <Label className="text-lg font-bold">Target Hours</Label>
                       <Badge variant="secondary" className="text-lg px-4 py-1">{currentGoalHours}h</Badge>
                     </div>
                     <Input 
-                      id="goal-input"
                       type="number"
                       value={currentGoalHours}
                       min={0.5}
@@ -244,7 +228,7 @@ export default function StudentDashboard() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-accent-foreground">{progressPercent}% of daily goal</span>
+                  <span className="font-medium text-accent-foreground">{progressPercent}% {t('completed')}</span>
                   <span className="text-muted-foreground">{todayTimeFormatted} / {currentGoalHours}h</span>
                 </div>
                 <Progress value={progressPercent} className="h-3 bg-primary/20" />
@@ -283,7 +267,7 @@ export default function StudentDashboard() {
         <div className="space-y-6">
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
-              <CardTitle>Today's Sessions</CardTitle>
+              <CardTitle>{t('todaysSessions')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -297,7 +281,7 @@ export default function StudentDashboard() {
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm">{session.type}</span>
                         <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.actualDurationMinutes || 0} mins
+                          {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.actualDurationMinutes || 0} {t('minutes')}
                         </span>
                       </div>
                       <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px] px-2 py-0">
@@ -307,7 +291,7 @@ export default function StudentDashboard() {
                   ))
                 ) : (
                   <div className="text-center py-10 px-4 bg-muted/10 rounded-2xl border-2 border-dashed">
-                    <p className="text-sm text-muted-foreground">No sessions recorded today.</p>
+                    <p className="text-sm text-muted-foreground">{t('noSessionsToday')}</p>
                   </div>
                 )}
               </div>

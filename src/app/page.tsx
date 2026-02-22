@@ -57,7 +57,6 @@ export default function LandingPage() {
   const { user, isUserLoading } = useUser()
   const { toast } = useToast()
 
-  // Apply theme to landing page for preview
   useEffect(() => {
     const body = document.body;
     const themeClasses = ['dark', 'theme-midnight', 'theme-forest', 'theme-sunrise'];
@@ -118,8 +117,8 @@ export default function LandingPage() {
         setPassword("");
         
         toast({ 
-          title: "Account created successfully!", 
-          description: "Please log in with your new credentials." 
+          title: t('createAccount'), 
+          description: "Account created successfully!" 
         });
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -130,7 +129,7 @@ export default function LandingPage() {
         } else {
           router.push("/dashboard/student");
         }
-        toast({ title: "Welcome back!" });
+        toast({ title: t('welcomeBack') });
       }
     } catch (error: any) {
       toast({
@@ -154,7 +153,6 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background transition-colors duration-500">
       <div className="absolute top-4 right-4 flex gap-2">
-        {/* Theme Switcher */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-full bg-card shadow-sm">
@@ -178,7 +176,6 @@ export default function LandingPage() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Language Switcher */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="rounded-full bg-card shadow-sm">
@@ -206,13 +203,13 @@ export default function LandingPage() {
         <div className="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-[#E6E6FA] shadow-sm border-2 border-[#A0D6B4]">
           <Sparkles className="h-10 w-10 text-[#6A5ACD] fill-current" />
         </div>
-        <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+        <div>
           <h1 className="text-4xl font-bold tracking-tight text-accent-foreground">{t('appName')}</h1>
           <p className="mt-2 text-muted-foreground max-w-sm mx-auto">{t('tagline')}</p>
         </div>
       </div>
 
-      <Card className="w-full max-w-md border-none shadow-2xl bg-card animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <Card className="w-full max-w-md border-none shadow-2xl bg-card">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
             {isSignUp ? t('createAccount') : t('welcomeBack')}
@@ -227,11 +224,11 @@ export default function LandingPage() {
                     <TabsList className="grid w-full grid-cols-2 rounded-lg bg-muted p-1">
                       <TabsTrigger value="student" className="flex items-center gap-2 rounded-md">
                         <GraduationCap className="h-4 w-4" />
-                        Student
+                        {t('student')}
                       </TabsTrigger>
                       <TabsTrigger value="teacher" className="flex items-center gap-2 rounded-md">
                         <School className="h-4 w-4" />
-                        Teacher
+                        {t('teacher')}
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>

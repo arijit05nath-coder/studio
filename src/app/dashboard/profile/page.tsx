@@ -84,7 +84,7 @@ export default function ProfilePage() {
         } catch (e) {}
       }
 
-      toast({ title: "Profile updated successfully!" })
+      toast({ title: t('save') })
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -99,15 +99,6 @@ export default function ProfilePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 1024 * 1024) { // 1MB limit for Firestore storage (Base64 is ~33% larger)
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please select an image smaller than 1MB."
-        });
-        return;
-      }
-
       const reader = new FileReader();
       reader.onloadend = () => {
         setTempPhotoUrl(reader.result as string);
@@ -124,19 +115,7 @@ export default function ProfilePage() {
       })
     }
     setIsAvatarDialogOpen(false)
-    toast({ title: "Profile picture updated!" })
-  }
-
-  const handleDeleteAvatar = () => {
-    setFormData(prev => ({ ...prev, photoUrl: "" }))
-    setTempPhotoUrl("")
-    if (user && db) {
-      updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
-        photoUrl: "",
-      })
-    }
-    setIsAvatarDialogOpen(false)
-    toast({ title: "Profile picture removed" })
+    toast({ title: t('updateProfilePic') })
   }
 
   const handleThemeChange = (themeId: string) => {
@@ -144,7 +123,7 @@ export default function ProfilePage() {
     updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
       theme: themeId
     })
-    toast({ title: `Theme changed to ${THEMES.find(t => t.id === themeId)?.name}` })
+    toast({ title: t('theme') })
   }
 
   if (profileResult.isLoading) {
@@ -158,8 +137,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t('profile')} & Settings</h1>
-        <p className="text-muted-foreground">Manage your identity and app appearance.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('profile')}</h1>
+        <p className="text-muted-foreground">{t('manageIdentity')}</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
@@ -168,76 +147,45 @@ export default function ProfilePage() {
             <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
               <DialogTrigger asChild>
                 <div className="relative inline-block mb-4 cursor-pointer group">
-                  <Avatar className="h-24 w-24 border-4 border-accent shadow-lg group-hover:opacity-80 transition-opacity">
+                  <Avatar className="h-24 w-24 border-4 border-accent shadow-lg">
                     {formData.photoUrl && <AvatarImage src={formData.photoUrl} />}
                     <AvatarFallback className="text-2xl font-bold bg-accent text-accent-foreground">
                       {formData.firstName?.[0]}{formData.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-background group-hover:scale-110 transition-transform">
+                  <div className="absolute bottom-0 right-0 p-1.5 bg-accent text-accent-foreground rounded-full border-2 border-background">
                     <Camera className="h-4 w-4" />
                   </div>
                 </div>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Update Profile Picture</DialogTitle>
-                  <DialogDescription>
-                    Upload an image file from your device.
-                  </DialogDescription>
+                  <DialogTitle>{t('updateProfilePic')}</DialogTitle>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                   <div className="flex flex-col items-center gap-4">
                     <div 
-                      className="w-full h-40 border-2 border-dashed border-muted-foreground/20 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/30 transition-colors overflow-hidden relative"
+                      className="w-full h-40 border-2 border-dashed border-muted-foreground/20 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       {tempPhotoUrl ? (
-                        <img src={tempPhotoUrl} alt="Preview" className="w-full h-full object-cover" />
+                        <img src={tempPhotoUrl} alt="Preview" className="w-full h-full object-cover rounded-xl" />
                       ) : (
                         <>
                           <Upload className="h-8 w-8 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">Click to select image</span>
+                          <span className="text-sm text-muted-foreground">Click to select</span>
                         </>
                       )}
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileChange} 
-                        accept="image/*" 
-                        className="hidden" 
-                      />
+                      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                     </div>
-                    {tempPhotoUrl && (
-                      <Button variant="ghost" size="sm" onClick={() => setTempPhotoUrl("")}>
-                        Clear Selection
-                      </Button>
-                    )}
                   </div>
                 </div>
-                <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                  {formData.photoUrl && (
-                    <Button 
-                      variant="outline" 
-                      onClick={handleDeleteAvatar}
-                      className="w-full sm:w-auto text-destructive hover:bg-destructive/10 border-destructive/20 gap-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Remove Current
-                    </Button>
-                  )}
-                  <Button 
-                    onClick={handleUpdateAvatar} 
-                    disabled={!tempPhotoUrl || tempPhotoUrl === formData.photoUrl} 
-                    className="bg-accent text-accent-foreground w-full sm:w-auto"
-                  >
-                    Save Photo
-                  </Button>
+                <DialogFooter>
+                  <Button onClick={handleUpdateAvatar} className="bg-accent text-accent-foreground">{t('savePhoto')}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
             <h2 className="text-xl font-bold">{formData.firstName} {formData.lastName}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{profile?.role || 'Student'}</p>
             <Badge variant="secondary" className="bg-primary/20 text-accent-foreground px-4">
               {t('level')} {profile?.level || 1} {t('scholar')}
             </Badge>
@@ -249,12 +197,6 @@ export default function ProfilePage() {
               <Mail className="h-4 w-4 text-accent" />
               <span className="truncate">{formData.email}</span>
             </div>
-            {profile?.role === 'Student' && profile?.educationalQualification && (
-              <div className="flex items-center gap-3 text-sm">
-                <GraduationCap className="h-4 w-4 text-accent" />
-                <span className="truncate">{profile.educationalQualification}</span>
-              </div>
-            )}
           </Card>
         </div>
 
@@ -262,55 +204,27 @@ export default function ProfilePage() {
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
               <CardTitle>{t('personalDetails')}</CardTitle>
-              <CardDescription>Update your name and primary email address.</CardDescription>
+              <CardDescription>{t('personalDetailsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">{t('firstName')}</Label>
-                    <Input 
-                      id="firstName" 
-                      value={formData.firstName} 
-                      onChange={e => setFormData({...formData, firstName: e.target.value})}
-                      className="rounded-xl"
-                    />
+                    <Input id="firstName" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">{t('lastName')}</Label>
-                    <Input 
-                      id="lastName" 
-                      value={formData.lastName} 
-                      onChange={e => setFormData({...formData, lastName: e.target.value})}
-                      className="rounded-xl"
-                    />
+                    <Input id="lastName" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">{t('email')}</Label>
-                  <Input 
-                    id="email" 
-                    type="email"
-                    value={formData.email} 
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                    className="rounded-xl"
-                  />
+                  <Input id="email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="rounded-xl" />
                 </div>
-                {profile?.role === 'Student' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="qualification">{t('qualification')}</Label>
-                    <Input 
-                      id="qualification" 
-                      value={formData.educationalQualification} 
-                      onChange={e => setFormData({...formData, educationalQualification: e.target.value})}
-                      placeholder="e.g. High School Senior, Undergraduate"
-                      className="rounded-xl"
-                    />
-                  </div>
-                )}
-                <Button disabled={loading} className="bg-accent text-accent-foreground rounded-xl px-8 shadow-sm hover:shadow-md transition-all">
+                <Button disabled={loading} className="bg-accent text-accent-foreground rounded-xl px-8 shadow-sm">
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  {t('save')} Changes
+                  {t('save')}
                 </Button>
               </form>
             </CardContent>
@@ -319,7 +233,7 @@ export default function ProfilePage() {
           <Card className="border-none shadow-sm bg-card">
             <CardHeader>
               <CardTitle>{t('studyEnvironments')}</CardTitle>
-              <CardDescription>Choose a visual theme that matches your focus style.</CardDescription>
+              <CardDescription>{t('studyEnvironmentsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -329,15 +243,10 @@ export default function ProfilePage() {
                     onClick={() => handleThemeChange(theme.id)}
                     className={cn(
                       "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all group",
-                      profile?.theme === theme.id 
-                        ? "border-accent bg-accent/5 ring-2 ring-accent/20" 
-                        : "border-muted hover:border-accent/40 hover:bg-muted/30"
+                      profile?.theme === theme.id ? "border-accent bg-accent/5" : "border-muted"
                     )}
                   >
-                    <div className={cn(
-                      "p-3 rounded-xl bg-muted group-hover:scale-110 transition-transform",
-                      profile?.theme === theme.id ? "bg-accent text-accent-foreground" : ""
-                    )}>
+                    <div className={cn("p-3 rounded-xl bg-muted", profile?.theme === theme.id ? "bg-accent text-accent-foreground" : "")}>
                       <theme.icon className="h-6 w-6" />
                     </div>
                     <span className="text-xs font-bold">{theme.name}</span>
