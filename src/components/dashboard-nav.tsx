@@ -294,6 +294,39 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" className="w-56 rounded-2xl mb-4 bg-popover/80 backdrop-blur-xl border-border/50 shadow-xl" align="center" sideOffset={12}>
             <DropdownMenuGroup>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  <span>{t('theme')}</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="p-1 min-w-[140px] rounded-xl bg-popover/90 backdrop-blur-xl border-border/50">
+                    {THEMES.map((theme) => (
+                      <DropdownMenuItem key={theme.id} onClick={() => handleThemeChange(theme.id)}>
+                        <theme.icon className="mr-2 h-4 w-4" />
+                        <span>{theme.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+              
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Languages className="mr-2 h-4 w-4" />
+                  <span>{t('language')}</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="p-1 min-w-[140px] rounded-xl bg-popover/90 backdrop-blur-xl border-border/50">
+                    {languages.map((lang) => (
+                      <DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code as any)}>
+                        <span>{lang.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/profile">
                   <User className="mr-2 h-4 w-4" />
