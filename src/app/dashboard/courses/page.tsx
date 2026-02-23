@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -203,7 +204,7 @@ export default function CurriculumPage() {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-accent text-xs h-8 rounded-full px-6" 
+                    className="text-accent text-xs h-8 rounded-full px-10 min-w-[120px]" 
                     onClick={() => setSelectedSubject(subject)}
                   >
                     {t('viewDetails')}
