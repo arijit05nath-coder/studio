@@ -225,7 +225,7 @@ export default function CurriculumPage() {
                   <Button 
                     variant="secondary" 
                     size="sm" 
-                    className="bg-accent/10 text-accent hover:bg-accent/20 text-xs h-8 rounded-full px-10 min-w-[120px] font-bold" 
+                    className="bg-accent/10 text-accent hover:bg-accent/20 text-xs h-8 rounded-full px-6 font-bold" 
                     onClick={() => setSelectedSubject(subject)}
                   >
                     {t('viewDetails')}
