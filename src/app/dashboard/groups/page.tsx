@@ -325,6 +325,9 @@ export default function GroupsPage() {
                 <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1 overflow-hidden">
                     <CardTitle className="text-2xl truncate">{selectedGroup.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {selectedGroup.description}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end">
