@@ -61,7 +61,7 @@ const languages = [
   { code: 'hi', name: 'हिन्दी' },
   { code: 'bn', name: 'বাংলা' },
   { code: 'ta', name: 'தமிழ்' },
-  { code: 'ml', name: 'മലയാളം' },
+  { code: 'ml', name: 'മലയാളம்' },
 ]
 
 export function DashboardNav({ role, profile }: DashboardNavProps) {
@@ -168,7 +168,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
-                  <item.icon className={cn("relative z-10 size-5", pathname === item.href && "fill-current")} />
+                  <item.icon className={cn("relative z-10 size-4", pathname === item.href && "fill-current")} />
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={20}>
@@ -275,7 +275,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
-            <item.icon className={cn("relative z-10 size-5", pathname === item.href && "fill-current")} />
+            <item.icon className={cn("relative z-10 size-4", pathname === item.href && "fill-current")} />
           </Link>
         ))}
         
