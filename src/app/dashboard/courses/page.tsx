@@ -1,13 +1,12 @@
-
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
+import { useState, useEffect } from "react"
+import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking, useStorage } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, AlertCircle, FileText } from "lucide-react"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Upload } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -23,12 +22,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 import { useI18n } from "@/lib/i18n-store"
 
 export default function CurriculumPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const storage = useStorage()
   const { toast } = useToast()
   const { t } = useI18n()
   const [search, setSearch] = useState("")
@@ -38,7 +37,8 @@ export default function CurriculumPage() {
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
 
-  const [newResource, setNewResource] = useState({ title: "", url: "", type: "PDF" })
+  const [newResource, setNewResource] = useState({ title: "", type: "PDF" })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isAddingResource, setIsAddingResource] = useState(false)
 
   useEffect(() => {
@@ -90,23 +90,45 @@ export default function CurriculumPage() {
     toast({ title: "Material deleted" });
   }
 
-  const handleAddResourceToCourse = () => {
-    if (!db || !user || !selectedSubject || !newResource.title || !newResource.url) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  }
+
+  const handleAddResourceToCourse = async () => {
+    if (!db || !user || !selectedSubject || !newResource.title || !selectedFile) return;
     setIsAddingResource(true);
-    addDocumentNonBlocking(collection(db, "materials"), {
-      title: newResource.title,
-      linkUrl: newResource.url,
-      type: newResource.type,
-      subjectId: selectedSubject.id,
-      teacherId: user.uid,
-      author: user.email?.split('@')[0] || "Teacher",
-      uploadDate: new Date().toISOString()
-    });
-    setTimeout(() => {
-      setNewResource({ title: "", url: "", type: "PDF" });
-      setIsAddingResource(false);
+
+    try {
+      // 1. Upload file to Storage
+      const fileRef = ref(storage, `materials/${selectedSubject.id}/${Date.now()}_${selectedFile.name}`);
+      const uploadResult = await uploadBytes(fileRef, selectedFile);
+      const downloadUrl = await getDownloadURL(uploadResult.ref);
+
+      // 2. Add metadata to Firestore
+      addDocumentNonBlocking(collection(db, "materials"), {
+        title: newResource.title,
+        linkUrl: downloadUrl,
+        type: newResource.type,
+        subjectId: selectedSubject.id,
+        teacherId: user.uid,
+        author: user.email?.split('@')[0] || "Teacher",
+        uploadDate: new Date().toISOString()
+      });
+
+      setNewResource({ title: "", type: "PDF" });
+      setSelectedFile(null);
       toast({ title: "Resource added" });
-    }, 500);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error.message
+      });
+    } finally {
+      setIsAddingResource(false);
+    }
   }
 
   return (
@@ -293,7 +315,7 @@ export default function CurriculumPage() {
               <div className="pt-6 border-t space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-6 w-1 bg-accent rounded-full" />
-                  <h4 className="font-bold text-sm">Add New Resource</h4>
+                  <h4 className="font-bold text-sm">Upload New Document</h4>
                 </div>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
@@ -307,14 +329,15 @@ export default function CurriculumPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="resUrl" className="text-xs">URL / Link</Label>
-                    <Input 
-                      id="resUrl" 
-                      placeholder="https://..." 
-                      value={newResource.url} 
-                      onChange={e => setNewResource({...newResource, url: e.target.value})} 
-                      className="rounded-xl h-9"
-                    />
+                    <Label htmlFor="resFile" className="text-xs">Select Document</Label>
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        id="resFile" 
+                        type="file"
+                        onChange={handleFileChange} 
+                        className="rounded-xl h-9 p-1 flex-1"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -325,18 +348,23 @@ export default function CurriculumPage() {
                         onChange={e => setNewResource({...newResource, type: e.target.value})}
                       >
                         <option value="PDF">PDF Document</option>
-                        <option value="Video">Video Link</option>
-                        <option value="Link">Web Resource</option>
+                        <option value="Video">Video File</option>
                         <option value="Notes">Study Notes</option>
+                        <option value="Other">Other Document</option>
                       </select>
                     </div>
                     <div className="flex items-end">
                       <Button 
                         onClick={handleAddResourceToCourse} 
-                        disabled={isAddingResource || !newResource.title || !newResource.url}
-                        className="w-full bg-accent text-accent-foreground h-9 rounded-xl"
+                        disabled={isAddingResource || !newResource.title || !selectedFile}
+                        className="w-full bg-accent text-accent-foreground h-9 rounded-xl gap-2"
                       >
-                        {isAddingResource ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add Resource"}
+                        {isAddingResource ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        Upload
                       </Button>
                     </div>
                   </div>
