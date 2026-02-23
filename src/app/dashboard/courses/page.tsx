@@ -145,7 +145,7 @@ export default function CurriculumPage() {
             <DialogTrigger asChild>
               <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm h-9">
                 <Plus className="h-4 w-4" />
-                {t('createGroup')}
+                {t('create')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
