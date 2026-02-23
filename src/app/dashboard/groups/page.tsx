@@ -21,6 +21,7 @@ import { collection, query, where, serverTimestamp, orderBy, getDoc, doc, or, up
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useToast } from "@/hooks/use-toast"
 import { useI18n } from "@/lib/i18n-store"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function GroupsPage() {
   const { user } = useUser()
@@ -28,6 +29,7 @@ export default function GroupsPage() {
   const { toast } = useToast()
   const { t } = useI18n()
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("chat")
   const [message, setMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
@@ -66,7 +68,7 @@ export default function GroupsPage() {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, activeTab]);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -109,10 +111,10 @@ export default function GroupsPage() {
       }
     };
 
-    if (selectedGroupId && selectedGroup) {
+    if (selectedGroupId && selectedGroup && activeTab === "leaderboard") {
       fetchLeaderboard();
     }
-  }, [selectedGroupId, selectedGroup, db, t]);
+  }, [selectedGroupId, selectedGroup, db, t, activeTab]);
 
   const handleSendMessage = () => {
     if (!message.trim() || !selectedGroupId || !user || !selectedGroup || !db) return;
@@ -155,10 +157,6 @@ export default function GroupsPage() {
     setIsCreateDialogOpen(false);
     setSelectedGroupId(customId);
     toast({ title: "Group created!", description: `Share ID: ${customId}` });
-    
-    setTimeout(() => {
-      window.location.reload();
-    }, 800);
   }
 
   const handleJoinGroup = async () => {
@@ -181,10 +179,6 @@ export default function GroupsPage() {
       setIsJoinDialogOpen(false);
       setSelectedGroupId(groupSnap.id);
       toast({ title: "Joined group successfully!" });
-      
-      setTimeout(() => {
-        window.location.reload();
-      }, 800);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Failed to join", description: error.message });
     }
@@ -198,6 +192,11 @@ export default function GroupsPage() {
       toast({ title: t('copyId') });
     }
   }
+
+  const tabItems = [
+    { id: "chat", label: t('chat'), icon: MessageSquare },
+    { id: "leaderboard", label: t('leaderboard'), icon: Medal },
+  ]
 
   return (
     <div className="space-y-8">
@@ -343,18 +342,34 @@ export default function GroupsPage() {
                 </CardHeader>
               </Card>
 
-              <Tabs defaultValue="chat" className="w-full">
-                <TabsList className="bg-card rounded-full p-1 border">
-                  <TabsTrigger value="chat" className="rounded-full gap-2 px-6">
-                    <MessageSquare className="h-4 w-4" /> {t('chat')}
-                  </TabsTrigger>
-                  <TabsTrigger value="leaderboard" className="rounded-full gap-2 px-6">
-                    <Medal className="h-4 w-4" /> {t('leaderboard')}
-                  </TabsTrigger>
-                </TabsList>
+              <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-full border w-fit">
+                {tabItems.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "relative flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all duration-300",
+                      activeTab === tab.id ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="pill-active"
+                        className="absolute inset-0 bg-accent rounded-full"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      <tab.icon className="h-4 w-4" />
+                      {tab.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
 
-                <TabsContent value="chat" className="mt-4">
-                  <Card className="border-none shadow-sm overflow-hidden flex flex-col h-[500px] bg-card">
+              <div className="mt-0">
+                {activeTab === "chat" && (
+                  <Card className="border-none shadow-sm overflow-hidden flex flex-col h-[500px] bg-card animate-in fade-in duration-300">
                     <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
                       <ScrollArea className="flex-1 p-4">
                         <div className="space-y-4">
@@ -401,11 +416,11 @@ export default function GroupsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                </TabsContent>
+                )}
 
-                <TabsContent value="leaderboard" className="mt-4">
-                  <Card className="border-none shadow-sm bg-card h-[500px]">
-                    <CardHeader>
+                {activeTab === "leaderboard" && (
+                  <Card className="border-none shadow-sm bg-card h-[500px] animate-in fade-in duration-300">
+                    <CardHeader className="pb-2">
                       <CardTitle className="flex items-center gap-2">
                         <Trophy className="h-5 w-5 text-yellow-500" />
                         {t('weeklyRankings')}
@@ -454,8 +469,8 @@ export default function GroupsPage() {
                       )}
                     </CardContent>
                   </Card>
-                </TabsContent>
-              </Tabs>
+                )}
+              </div>
             </div>
           ) : groups && groups.length > 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-card rounded-3xl border border-muted/50 min-h-[500px] opacity-40">
