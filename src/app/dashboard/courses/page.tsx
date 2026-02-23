@@ -202,9 +202,9 @@ export default function CurriculumPage() {
                     {allMaterials?.filter(m => m.subjectId === subject.id).length || 0} Materials
                   </span>
                   <Button 
-                    variant="ghost" 
+                    variant="secondary" 
                     size="sm" 
-                    className="text-accent text-xs h-8 rounded-full px-10 min-w-[120px]" 
+                    className="bg-accent/10 text-accent-foreground hover:bg-accent/20 text-xs h-8 rounded-full px-10 min-w-[120px] font-bold" 
                     onClick={() => setSelectedSubject(subject)}
                   >
                     {t('viewDetails')}
