@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useI18n } from "@/lib/i18n-store"
 
 const chartConfig = {
@@ -147,24 +146,10 @@ export default function StudentDashboard() {
           <p className="text-muted-foreground">{t('welcomeMessage').replace('{name}', profile?.firstName || t('scholar'))}</p>
         </div>
         <div className="hidden md:block">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="px-4 py-2 rounded-full bg-accent cursor-help border-accent text-accent-foreground flex items-center gap-2 font-bold shadow-sm">
-                  <GraduationCap className="h-4 w-4" />
-                  {t('level')} {profile?.level || 1} {t('scholar')}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[300px] text-center p-4">
-                <div className="space-y-2">
-                  <p className="font-bold text-accent">{t('howToLevelUp')}</p>
-                  <p className="text-xs text-left leading-relaxed">
-                    {t('levelUpRules')}
-                  </p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Badge variant="outline" className="px-4 py-2 rounded-full bg-accent border-accent text-accent-foreground flex items-center gap-2 font-bold shadow-sm">
+            <GraduationCap className="h-4 w-4" />
+            {t('level')} {profile?.level || 1} {t('scholar')}
+          </Badge>
         </div>
       </div>
 
