@@ -18,7 +18,8 @@ import {
   Trees,
   Coffee,
   Trophy,
-  Languages
+  Languages,
+  BrainCircuit
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth, useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase"
@@ -112,7 +113,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
     {
       title: t('aiCoach'),
       href: "/dashboard/ai-coach",
-      icon: Sparkles,
+      icon: BrainCircuit,
       hideFor: 'Teacher' as const,
     },
   ]
