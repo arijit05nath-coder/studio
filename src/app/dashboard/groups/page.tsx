@@ -190,28 +190,6 @@ export default function GroupsPage() {
     }
   }
 
-  const handleLeaveGroup = () => {
-    if (!user || !db || !selectedGroupId) return;
-    
-    const groupRef = doc(db, "studyGroups", selectedGroupId);
-    updateDocumentNonBlocking(groupRef, {
-      memberIds: arrayRemove(user.uid)
-    });
-    
-    setSelectedGroupId(null);
-    toast({ title: "Left group", description: "You are no longer a member of this group." });
-  }
-
-  const handleDeleteGroup = () => {
-    if (!user || !db || !selectedGroupId) return;
-    
-    const groupRef = doc(db, "studyGroups", selectedGroupId);
-    deleteDocumentNonBlocking(groupRef);
-    
-    setSelectedGroupId(null);
-    toast({ title: "Group deleted", description: "The study group has been permanently removed." });
-  }
-
   const copyGroupId = () => {
     if (selectedGroupId) {
       navigator.clipboard.writeText(selectedGroupId);
@@ -220,8 +198,6 @@ export default function GroupsPage() {
       toast({ title: t('copyId') });
     }
   }
-
-  const isCreator = selectedGroup && user && selectedGroup.teacherId === user.uid;
 
   return (
     <div className="space-y-8">
@@ -478,14 +454,23 @@ export default function GroupsPage() {
                 </TabsContent>
               </Tabs>
             </div>
-          ) : (
+          ) : groups && groups.length > 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-card rounded-3xl border border-muted/50 min-h-[500px] opacity-40">
+              <Users className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-bold">{t('selectGroupPrompt')}</h3>
+            </div>
+          ) : !groupsLoading ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-card rounded-3xl border-2 border-dashed border-muted min-h-[500px]">
               <Users className="h-16 w-16 text-muted-foreground mb-6" />
-              <h3 className="text-2xl font-bold">{t('selectGroupPrompt')}</h3>
+              <h3 className="text-2xl font-bold">{t('noGroupsYet')}</h3>
               <div className="flex gap-4 mt-8">
                 <Button variant="outline" className="rounded-full px-8" onClick={() => setIsJoinDialogOpen(true)}>{t('joinGroup')}</Button>
                 <Button className="bg-accent text-accent-foreground rounded-full px-8" onClick={() => setIsCreateDialogOpen(true)}>{t('createGroup')}</Button>
               </div>
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center min-h-[500px]">
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           )}
         </div>
