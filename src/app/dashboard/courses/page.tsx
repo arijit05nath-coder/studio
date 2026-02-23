@@ -2,12 +2,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking, useStorage } from "@/firebase"
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useStorage } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Upload } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -76,7 +76,7 @@ export default function CurriculumPage() {
     });
     setNewCourseName("");
     setIsCreateCourseOpen(false);
-    toast({ title: "Subject created" });
+    toast({ title: t('save') });
   }
 
   const handleDeleteSubject = (subjectId: string) => {
@@ -102,12 +102,10 @@ export default function CurriculumPage() {
     setIsAddingResource(true);
 
     try {
-      // 1. Upload file to Storage
       const fileRef = ref(storage, `materials/${selectedSubject.id}/${Date.now()}_${selectedFile.name}`);
       const uploadResult = await uploadBytes(fileRef, selectedFile);
       const downloadUrl = await getDownloadURL(uploadResult.ref);
 
-      // 2. Add metadata to Firestore
       addDocumentNonBlocking(collection(db, "materials"), {
         title: newResource.title,
         linkUrl: downloadUrl,
