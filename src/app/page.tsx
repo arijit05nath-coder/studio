@@ -121,21 +121,27 @@ export default function LandingPage() {
           description: "Account created successfully!" 
         });
       } else {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const docSnap = await getDoc(doc(db, "userProfiles", userCredential.user.uid));
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          router.push(userData.role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student");
-        } else {
-          router.push("/dashboard/student");
-        }
+        await signInWithEmailAndPassword(auth, email, password);
+        // Redirect handled by useEffect
         toast({ title: t('welcomeBack') });
       }
     } catch (error: any) {
+      let errorMessage = error.message;
+      
+      // Provide generic message for common login errors
+      if (!isSignUp && (
+        error.code === 'auth/invalid-credential' || 
+        error.code === 'auth/user-not-found' || 
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-email'
+      )) {
+        errorMessage = t('invalidCredentials');
+      }
+
       toast({
         variant: "destructive",
         title: isSignUp ? "Registration failed" : "Login failed",
-        description: error.message || "An error occurred.",
+        description: errorMessage || "An error occurred.",
       })
     } finally {
       setLoading(false)
