@@ -143,56 +143,56 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
   return (
     <TooltipProvider delayDuration={0}>
       {/* Desktop Vertical Pill Nav - Frosted Glass Effect */}
-      <nav className="hidden md:flex flex-col items-center gap-4 p-3 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-[2.5rem] fixed left-6 top-1/2 -translate-y-1/2 z-50 py-8 min-w-[72px]">
-        <div className="mb-6">
+      <nav className="hidden md:flex flex-col items-center gap-3 p-2 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-[2rem] fixed left-5 top-1/2 -translate-y-1/2 z-50 py-6 min-w-[60px]">
+        <div className="mb-4">
           <Link href={role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student"}>
-            <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-primary/20 backdrop-blur-sm text-accent-foreground border border-accent/20 shadow-sm transition-transform hover:scale-110 active:scale-95">
+            <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-primary/20 backdrop-blur-sm text-accent-foreground border border-accent/20 shadow-sm transition-transform hover:scale-110 active:scale-95">
               <Sparkles className="size-4 fill-current" />
             </div>
           </Link>
         </div>
 
-        <div className="flex flex-col gap-2 flex-1">
+        <div className="flex flex-col gap-1.5 flex-1">
           {filteredItems.map((item) => (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
                 <Link 
                   href={item.href}
                   className={cn(
-                    "relative p-3 rounded-2xl transition-all duration-300 group",
+                    "relative p-2.5 rounded-xl transition-all duration-300 group",
                     pathname === item.href ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {pathname === item.href && (
                     <motion.div
                       layoutId="desktop-nav-pill"
-                      className="absolute inset-0 bg-accent rounded-2xl"
+                      className="absolute inset-0 bg-accent rounded-xl"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
                   <item.icon className={cn("relative z-10 size-4", pathname === item.href && "fill-current")} />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={20}>
+              <TooltipContent side="right" sideOffset={15}>
                 {item.title}
               </TooltipContent>
             </Tooltip>
           ))}
         </div>
 
-        <div className="mt-auto flex flex-col gap-4 pt-4 border-t border-border/50">
+        <div className="mt-auto flex flex-col gap-3 pt-3 border-t border-border/50">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="relative transition-transform hover:scale-105 active:scale-95">
-                <Avatar className="h-10 w-10 border-2 border-transparent hover:border-accent">
+                <Avatar className="h-9 w-9 border-2 border-transparent hover:border-accent">
                   {profile?.photoUrl && <AvatarImage src={profile.photoUrl} />}
-                  <AvatarFallback className="rounded-xl bg-accent text-accent-foreground font-bold">
+                  <AvatarFallback className="rounded-xl bg-accent text-accent-foreground font-bold text-xs">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" className="w-56 rounded-2xl mb-4 bg-popover/80 backdrop-blur-xl border-border/50 shadow-xl" align="end" sideOffset={20}>
+            <DropdownMenuContent side="right" className="w-56 rounded-2xl mb-4 bg-popover/80 backdrop-blur-xl border-border/50 shadow-xl" align="end" sideOffset={15}>
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
@@ -260,7 +260,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
       </nav>
 
       {/* Mobile Bottom Pill Nav - Frosted Glass Effect */}
-      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm h-16 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-full flex items-center justify-around px-4">
+      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm h-14 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-full flex items-center justify-around px-4">
         {filteredItems.map((item) => (
           <Link 
             key={item.href}
@@ -284,9 +284,9 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="relative">
-              <Avatar className="h-10 w-10 border-2 border-transparent hover:border-accent">
+              <Avatar className="h-9 w-9 border-2 border-transparent hover:border-accent">
                 {profile?.photoUrl && <AvatarImage src={profile.photoUrl} />}
-                <AvatarFallback className="rounded-full bg-accent text-accent-foreground font-bold">
+                <AvatarFallback className="rounded-full bg-accent text-accent-foreground font-bold text-xs">
                   {initials}
                 </AvatarFallback>
               </Avatar>

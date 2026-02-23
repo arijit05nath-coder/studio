@@ -121,7 +121,7 @@ export default function StudentDashboard() {
   }, [weeklySessions]);
 
   const currentGoalHours = profile?.focusGoal || 4;
-  const todayTimeFormatted = `${Math.floor(totalMinutesToday / 60)}h ${totalMinutesToday % 60}min`;
+  const todayTimeFormatted = `${Math.floor(totalMinutesToday / 60)}h ${totalMinutesToday % 60}m`;
   const progressPercent = Math.min(Math.round(((totalMinutesToday / 60) / currentGoalHours) * 100), 100);
 
   const handleUpdateGoal = (newGoal: number) => {
@@ -139,15 +139,15 @@ export default function StudentDashboard() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">{t('dashboard')}</h1>
-          <p className="text-muted-foreground">{t('welcomeMessage').replace('{name}', profile?.firstName || t('scholar'))}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{t('dashboard')}</h1>
+          <p className="text-muted-foreground text-sm">{t('welcomeMessage').replace('{name}', profile?.firstName || t('scholar'))}</p>
         </div>
         <div className="hidden md:block">
-          <Badge variant="outline" className="px-4 py-2 rounded-full bg-accent border-accent text-accent-foreground flex items-center gap-2 font-bold shadow-sm">
-            <GraduationCap className="h-4 w-4" />
+          <Badge variant="outline" className="px-3 py-1.5 rounded-full bg-accent border-accent text-accent-foreground flex items-center gap-2 font-bold shadow-sm text-xs">
+            <GraduationCap className="h-3.5 w-3.5" />
             {t('level')} {profile?.level || 1} {t('scholar')}
           </Badge>
         </div>
@@ -156,12 +156,12 @@ export default function StudentDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title} className="border-none shadow-sm bg-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className={cn("h-4 w-4 fill-current", stat.color)} />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-4">
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.title}</CardTitle>
+              <stat.icon className={cn("h-3.5 w-3.5 fill-current", stat.color)} />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="pb-4">
+              <div className="text-xl font-bold">
                 {stat.value}
               </div>
             </CardContent>
@@ -169,13 +169,13 @@ export default function StudentDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           <Card className="border-none shadow-sm overflow-hidden bg-card">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between py-4">
               <div>
-                <CardTitle>{t('dailyGoal')}</CardTitle>
-                <CardDescription>{t('dailyGoalDesc')}</CardDescription>
+                <CardTitle className="text-lg">{t('dailyGoal')}</CardTitle>
+                <CardDescription className="text-xs">{t('dailyGoalDesc')}</CardDescription>
               </div>
               <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
                 <DialogTrigger asChild>
@@ -210,25 +210,25 @@ export default function StudentDashboard() {
                 </DialogContent>
               </Dialog>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 pb-6">
               <div className="space-y-2">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-accent-foreground">{progressPercent}% {t('completed')}</span>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="font-bold text-accent-foreground">{progressPercent}% {t('completed')}</span>
                   <span className="text-muted-foreground">{todayTimeFormatted} / {currentGoalHours}h</span>
                 </div>
-                <Progress value={progressPercent} className="h-3 bg-primary/20" />
+                <Progress value={progressPercent} className="h-2.5 bg-primary/20" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-none shadow-sm bg-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-accent" />
+            <CardHeader className="py-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <TrendingUp className="h-4 w-4 text-accent" />
                 {t('weeklyTrends')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px] w-full pt-4">
+            <CardContent className="h-[240px] w-full pt-2 pb-6">
               {weeklyLoading ? (
                 <div className="flex h-full items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -237,11 +237,11 @@ export default function StudentDashboard() {
                 <ChartContainer config={chartConfig} className="h-full w-full">
                   <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line type="monotone" dataKey="current" stroke="var(--color-current)" strokeWidth={2} dot={{ r: 4, fill: "var(--color-current)" }} activeDot={{ r: 6 }} />
-                    <Line type="monotone" dataKey="previous" stroke="var(--color-previous)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4, fill: "var(--color-previous)" }} />
+                    <Line type="monotone" dataKey="current" stroke="var(--color-current)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-current)" }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="previous" stroke="var(--color-previous)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: "var(--color-previous)" }} />
                   </LineChart>
                 </ChartContainer>
               )}
@@ -249,34 +249,34 @@ export default function StudentDashboard() {
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm bg-card">
-            <CardHeader>
-              <CardTitle>{t('todaysSessions')}</CardTitle>
+        <div className="space-y-4">
+          <Card className="border-none shadow-sm bg-card h-full">
+            <CardHeader className="py-4">
+              <CardTitle className="text-lg">{t('todaysSessions')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pb-6">
+              <div className="space-y-3">
                 {sessionsLoading ? (
                   <div className="flex justify-center p-4">
                     <Loader2 className="h-6 w-6 animate-spin text-accent" />
                   </div>
                 ) : todaySessions && todaySessions.length > 0 ? (
                   todaySessions.map((session: any) => (
-                    <div key={session.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-transparent hover:border-border transition-colors">
+                    <div key={session.id} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 border border-transparent hover:border-border transition-colors">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-sm">{session.type}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                        <span className="font-bold text-xs">{session.type}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-tight">
                           {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.actualDurationMinutes || 0} {t('minutes')}
                         </span>
                       </div>
-                      <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px] px-2 py-0">
+                      <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[9px] px-1.5 py-0 h-4 font-bold">
                         {session.status}
                       </Badge>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-10 px-4 bg-muted/10 rounded-2xl border-2 border-dashed">
-                    <p className="text-sm text-muted-foreground">{t('noSessionsToday')}</p>
+                  <div className="text-center py-8 px-4 bg-muted/10 rounded-2xl border-2 border-dashed">
+                    <p className="text-xs text-muted-foreground">{t('noSessionsToday')}</p>
                   </div>
                 )}
               </div>

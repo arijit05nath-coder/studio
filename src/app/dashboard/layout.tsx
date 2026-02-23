@@ -73,8 +73,8 @@ export default function DashboardLayout({
     <div className={cn("min-h-screen", getThemeClass())}>
       <div className="flex min-h-screen w-full bg-background text-foreground transition-colors duration-500">
         <DashboardNav role={profile?.role as any} profile={profile} />
-        <main className="flex-1 w-full pb-32 md:pb-8 md:pl-28">
-          <div className="max-w-6xl mx-auto p-4 md:p-8">
+        <main className="flex-1 w-full pb-24 md:pb-6 md:pl-24">
+          <div className="max-w-5xl mx-auto p-4 md:p-6">
             {children}
           </div>
         </main>
