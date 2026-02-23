@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, AlertCircle } from "lucide-react"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, AlertCircle, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -204,7 +203,7 @@ export default function CurriculumPage() {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-accent text-xs h-8 rounded-full" 
+                    className="text-accent text-xs h-8 rounded-full px-6" 
                     onClick={() => setSelectedSubject(subject)}
                   >
                     {t('viewDetails')}
@@ -352,28 +351,5 @@ export default function CurriculumPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-function FileText(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-      <path d="M9 9h6" />
-      <path d="M9 13h6" />
-      <path d="M9 17h6" />
-    </svg>
   )
 }
