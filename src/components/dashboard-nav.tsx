@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -61,7 +62,7 @@ const languages = [
   { code: 'hi', name: 'हिन्दी' },
   { code: 'bn', name: 'বাংলা' },
   { code: 'ta', name: 'தமிழ்' },
-  { code: 'ml', name: 'മലയാളம்' },
+  { code: 'ml', name: 'മലയാളം' },
 ]
 
 export function DashboardNav({ role, profile }: DashboardNavProps) {
@@ -140,12 +141,12 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      {/* Desktop Vertical Pill Nav */}
-      <nav className="hidden md:flex flex-col items-center gap-4 p-3 bg-card/80 backdrop-blur-md border border-border shadow-2xl rounded-[2.5rem] fixed left-6 top-1/2 -translate-y-1/2 z-50 py-8 min-w-[72px]">
+      {/* Desktop Vertical Pill Nav - Frosted Glass Effect */}
+      <nav className="hidden md:flex flex-col items-center gap-4 p-3 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-[2.5rem] fixed left-6 top-1/2 -translate-y-1/2 z-50 py-8 min-w-[72px]">
         <div className="mb-6">
           <Link href={role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student"}>
-            <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-primary text-accent-foreground border border-accent/20 shadow-sm transition-transform hover:scale-110 active:scale-95">
-              <Sparkles className="size-5 fill-current" />
+            <div className="flex aspect-square size-10 items-center justify-center rounded-2xl bg-primary/20 backdrop-blur-sm text-accent-foreground border border-accent/20 shadow-sm transition-transform hover:scale-110 active:scale-95">
+              <Sparkles className="size-4 fill-current" />
             </div>
           </Link>
         </div>
@@ -178,7 +179,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
           ))}
         </div>
 
-        <div className="mt-auto flex flex-col gap-4 pt-4 border-t">
+        <div className="mt-auto flex flex-col gap-4 pt-4 border-t border-border/50">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="relative transition-transform hover:scale-105 active:scale-95">
@@ -190,7 +191,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" className="w-56 rounded-2xl mb-4" align="end" sideOffset={20}>
+            <DropdownMenuContent side="right" className="w-56 rounded-2xl mb-4 bg-popover/80 backdrop-blur-xl border-border/50 shadow-xl" align="end" sideOffset={20}>
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
@@ -213,7 +214,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                     <span>{t('theme')}</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
-                    <DropdownMenuSubContent className="p-1 min-w-[140px] rounded-xl">
+                    <DropdownMenuSubContent className="p-1 min-w-[140px] rounded-xl bg-popover/90 backdrop-blur-xl border-border/50">
                       {THEMES.map((theme) => (
                         <DropdownMenuItem key={theme.id} onClick={() => handleThemeChange(theme.id)}>
                           <theme.icon className="mr-2 h-4 w-4" />
@@ -230,7 +231,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
                     <span>{t('language')}</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
-                    <DropdownMenuSubContent className="p-1 min-w-[140px] rounded-xl">
+                    <DropdownMenuSubContent className="p-1 min-w-[140px] rounded-xl bg-popover/90 backdrop-blur-xl border-border/50">
                       {languages.map((lang) => (
                         <DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code as any)}>
                           <span>{lang.name}</span>
@@ -257,8 +258,8 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
         </div>
       </nav>
 
-      {/* Mobile Bottom Pill Nav */}
-      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm h-16 bg-card/80 backdrop-blur-md border border-border shadow-2xl rounded-full flex items-center justify-around px-4">
+      {/* Mobile Bottom Pill Nav - Frosted Glass Effect */}
+      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm h-16 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-full flex items-center justify-around px-4">
         {filteredItems.map((item) => (
           <Link 
             key={item.href}
@@ -290,7 +291,7 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
               </Avatar>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" className="w-56 rounded-2xl mb-4" align="center" sideOffset={12}>
+          <DropdownMenuContent side="top" className="w-56 rounded-2xl mb-4 bg-popover/80 backdrop-blur-xl border-border/50 shadow-xl" align="center" sideOffset={12}>
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/profile">
