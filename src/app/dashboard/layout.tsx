@@ -7,12 +7,6 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { DashboardNav } from "@/components/dashboard-nav"
 import { doc } from "firebase/firestore"
 import { Loader2 } from "lucide-react"
-import { 
-  SidebarProvider, 
-  SidebarInset, 
-  SidebarTrigger 
-} from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 export default function DashboardLayout({
@@ -65,7 +59,6 @@ export default function DashboardLayout({
   }, [profile?.theme]);
 
   // Show global loader if auth or initial profile is loading
-  // We check profile data availability if the user is authenticated
   const isInitialLoading = isUserLoading || (user && isProfileLoading && !profile);
 
   if (isInitialLoading) {
@@ -78,22 +71,14 @@ export default function DashboardLayout({
 
   return (
     <div className={cn("min-h-screen", getThemeClass())}>
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-background text-foreground transition-colors duration-500">
-          <DashboardNav role={profile?.role as any} profile={profile} />
-          <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 bg-background/95 backdrop-blur z-40">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-            </header>
-            <main className="flex-1">
-              <div className="max-w-6xl mx-auto p-4 md:p-8">
-                {children}
-              </div>
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background text-foreground transition-colors duration-500">
+        <DashboardNav role={profile?.role as any} profile={profile} />
+        <main className="flex-1 w-full pb-32 md:pb-8 md:pl-28">
+          <div className="max-w-6xl mx-auto p-4 md:p-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
