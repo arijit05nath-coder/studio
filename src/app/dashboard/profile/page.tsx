@@ -120,10 +120,11 @@ export default function ProfilePage() {
 
   const handleThemeChange = (themeId: string) => {
     if (!user || !db) return
+    const themeName = THEMES.find(t => t.id === themeId)?.name || themeId
     updateDocumentNonBlocking(firestoreDoc(db, "userProfiles", user.uid), {
       theme: themeId
     })
-    toast({ title: t('theme') })
+    toast({ title: `Theme changed to ${themeName}` })
   }
 
   if (profileResult.isLoading) {

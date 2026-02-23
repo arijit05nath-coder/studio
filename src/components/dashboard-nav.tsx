@@ -131,10 +131,11 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
 
   const handleThemeChange = (themeId: string) => {
     if (!user || !db) return
+    const themeName = THEMES.find(t => t.id === themeId)?.name || themeId
     updateDocumentNonBlocking(doc(db, "userProfiles", user.uid), {
       theme: themeId
     })
-    toast({ title: t('theme') })
+    toast({ title: `Theme changed to ${themeName}` })
   }
 
   const userName = profile ? `${profile.firstName} ${profile.lastName}` : (user?.email?.split('@')[0] || "User")
