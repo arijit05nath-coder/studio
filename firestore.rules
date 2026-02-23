@@ -12,14 +12,16 @@ service cloud.firestore {
     }
 
     function isTeacher() {
+      let profilePath = /databases/$(database)/documents/userProfiles/$(request.auth.uid);
       return isSignedIn() && 
-        exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'Teacher';
+        exists(profilePath) && 
+        get(profilePath).data.role == 'Teacher';
     }
 
     match /userProfiles/{userId} {
       // Basic profile reading allowed for everyone signed in (to show names in groups/leaderboards)
       allow get: if isSignedIn();
+      // Teachers can list students, students can only list themselves
       allow list: if isSignedIn() && (request.auth.uid == userId || isTeacher());
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
@@ -54,10 +56,13 @@ service cloud.firestore {
     }
 
     match /studyGroups/{groupId} {
-      // Helper to check if user is member or teacher of the group
+      // Optimized helper to check if user is member or teacher of the group
       function canAccessGroup() {
         let group = get(/databases/$(database)/documents/studyGroups/$(groupId)).data;
-        return isTeacher() || (request.auth.uid in group.memberIds) || (request.auth.uid == group.teacherId);
+        // Check local membership/ownership first as it's more direct
+        return (request.auth.uid in group.memberIds) || 
+               (request.auth.uid == group.teacherId) || 
+               isTeacher();
       }
 
       allow read: if isSignedIn();
