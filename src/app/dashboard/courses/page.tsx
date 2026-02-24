@@ -2,10 +2,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useStorage } from "@/firebase"
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Upload } from "lucide-react"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -28,7 +27,6 @@ import { useI18n } from "@/lib/i18n-store"
 export default function CurriculumPage() {
   const { user } = useUser()
   const db = useFirestore()
-  const storage = useStorage()
   const { toast } = useToast()
   const { t } = useI18n()
   const [search, setSearch] = useState("")
@@ -38,8 +36,7 @@ export default function CurriculumPage() {
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
 
-  const [newResource, setNewResource] = useState({ title: "", type: "PDF" })
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [newResource, setNewResource] = useState({ title: "", type: "PDF", linkUrl: "" })
   const [isAddingResource, setIsAddingResource] = useState(false)
 
   useEffect(() => {
@@ -91,24 +88,14 @@ export default function CurriculumPage() {
     toast({ title: "Material deleted" });
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  }
-
   const handleAddResourceToCourse = async () => {
-    if (!db || !user || !selectedSubject || !newResource.title || !selectedFile) return;
+    if (!db || !user || !selectedSubject || !newResource.title || !newResource.linkUrl) return;
     setIsAddingResource(true);
 
     try {
-      const fileRef = ref(storage, `materials/${selectedSubject.id}/${Date.now()}_${selectedFile.name}`);
-      const uploadResult = await uploadBytes(fileRef, selectedFile);
-      const downloadUrl = await getDownloadURL(uploadResult.ref);
-
       addDocumentNonBlocking(collection(db, "materials"), {
         title: newResource.title,
-        linkUrl: downloadUrl,
+        linkUrl: newResource.linkUrl,
         type: newResource.type,
         subjectId: selectedSubject.id,
         teacherId: user.uid,
@@ -116,13 +103,12 @@ export default function CurriculumPage() {
         uploadDate: new Date().toISOString()
       });
 
-      setNewResource({ title: "", type: "PDF" });
-      setSelectedFile(null);
+      setNewResource({ title: "", type: "PDF", linkUrl: "" });
       toast({ title: "Resource added" });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Upload failed",
+        title: "Error",
         description: error.message
       });
     } finally {
@@ -314,7 +300,7 @@ export default function CurriculumPage() {
               <div className="pt-6 border-t space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-6 w-1 bg-accent rounded-full" />
-                  <h4 className="font-bold text-sm">Upload New Document</h4>
+                  <h4 className="font-bold text-sm">Add New Resource</h4>
                 </div>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
@@ -328,15 +314,14 @@ export default function CurriculumPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="resFile" className="text-xs">Select Document</Label>
-                    <div className="flex items-center gap-2">
-                      <Input 
-                        id="resFile" 
-                        type="file"
-                        onChange={handleFileChange} 
-                        className="rounded-xl h-9 p-1 flex-1"
-                      />
-                    </div>
+                    <Label htmlFor="resUrl" className="text-xs">Resource Link</Label>
+                    <Input 
+                      id="resUrl" 
+                      placeholder="https://..." 
+                      value={newResource.linkUrl} 
+                      onChange={e => setNewResource({...newResource, linkUrl: e.target.value})} 
+                      className="rounded-xl h-9"
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -355,15 +340,15 @@ export default function CurriculumPage() {
                     <div className="flex items-end">
                       <Button 
                         onClick={handleAddResourceToCourse} 
-                        disabled={isAddingResource || !newResource.title || !selectedFile}
+                        disabled={isAddingResource || !newResource.title || !newResource.linkUrl}
                         className="w-full bg-accent text-accent-foreground h-9 rounded-xl gap-2"
                       >
                         {isAddingResource ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Upload className="h-4 w-4" />
+                          <Plus className="h-4 w-4" />
                         )}
-                        Upload
+                        Add Link
                       </Button>
                     </div>
                   </div>
