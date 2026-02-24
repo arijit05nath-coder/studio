@@ -36,7 +36,7 @@ export default function CurriculumPage() {
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
 
-  const [newResource, setNewResource] = useState({ title: "", type: "PDF", linkUrl: "" })
+  const [newResource, setNewResource] = useState({ title: "", type: "Link", linkUrl: "" })
   const [isAddingResource, setIsAddingResource] = useState(false)
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function CurriculumPage() {
         uploadDate: new Date().toISOString()
       });
 
-      setNewResource({ title: "", type: "PDF", linkUrl: "" });
+      setNewResource({ title: "", type: "Link", linkUrl: "" });
       toast({ title: "Resource added" });
     } catch (error: any) {
       toast({
@@ -323,35 +323,18 @@ export default function CurriculumPage() {
                       className="rounded-xl h-9"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label className="text-xs">Type</Label>
-                      <select 
-                        className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                        value={newResource.type}
-                        onChange={e => setNewResource({...newResource, type: e.target.value})}
-                      >
-                        <option value="PDF">PDF Document</option>
-                        <option value="Video">Video File</option>
-                        <option value="Notes">Study Notes</option>
-                        <option value="Other">Other Document</option>
-                      </select>
-                    </div>
-                    <div className="flex items-end">
-                      <Button 
-                        onClick={handleAddResourceToCourse} 
-                        disabled={isAddingResource || !newResource.title || !newResource.linkUrl}
-                        className="w-full bg-accent text-accent-foreground h-9 rounded-xl gap-2"
-                      >
-                        {isAddingResource ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Plus className="h-4 w-4" />
-                        )}
-                        Add Link
-                      </Button>
-                    </div>
-                  </div>
+                  <Button 
+                    onClick={handleAddResourceToCourse} 
+                    disabled={isAddingResource || !newResource.title || !newResource.linkUrl}
+                    className="w-full bg-accent text-accent-foreground h-9 rounded-xl gap-2 mt-2"
+                  >
+                    {isAddingResource ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                    Add Link
+                  </Button>
                 </div>
               </div>
             )}
