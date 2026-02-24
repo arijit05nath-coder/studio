@@ -257,7 +257,7 @@ export default function CurriculumPage() {
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium truncate">{m.title}</span>
                           <span className="text-[10px] text-muted-foreground line-clamp-1">
-                            {m.description || m.type}
+                            {m.description}
                           </span>
                         </div>
                       </div>
