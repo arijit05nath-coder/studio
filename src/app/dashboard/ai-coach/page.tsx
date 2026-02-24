@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
 import { generatePersonalizedStudyPlan, type PersonalizedStudyPlanOutput } from "@/ai/flows/personalized-study-recommendations"
 import { analyzeAssignment, type AssignmentAnalysisOutput } from "@/ai/flows/assignment-analysis-flow"
 import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase"
@@ -152,7 +153,7 @@ export default function AICoachPage() {
     });
 
     setTimeout(() => {
-      setIsSavingCourse(false);
+      setIsSaving(false);
       toast({
         title: "Plan Saved!",
         description: "You can view your saved study plans in your dashboard."
