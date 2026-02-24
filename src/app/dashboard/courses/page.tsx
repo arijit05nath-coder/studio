@@ -134,12 +134,12 @@ export default function CurriculumPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>New Subject</DialogTitle>
-                <DialogDescription>Add a new subject category to the curriculum.</DialogDescription>
+                <DialogTitle>{t('addNewResource')}</DialogTitle>
+                <DialogDescription>{t('subjectsDescription')}</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Subject Name</Label>
+                  <Label htmlFor="name">{t('resourceTitle')}</Label>
                   <Input 
                     id="name"
                     placeholder="e.g. Organic Chemistry"
@@ -188,13 +188,13 @@ export default function CurriculumPage() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Subject?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('deleteSubjectTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will remove "{subject.name}" from the curriculum. Existing study materials will remain in the database but will no longer be linked to this subject.
+                          {t('deleteSubjectConfirm').replace('{name}', subject.name)}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => handleDeleteSubject(subject.id)} className="bg-destructive text-destructive-foreground">
                           Delete
                         </AlertDialogAction>
@@ -206,7 +206,7 @@ export default function CurriculumPage() {
               <CardContent className="pb-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">
-                    {allMaterials?.filter(m => m.subjectId === subject.id).length || 0} Materials
+                    {allMaterials?.filter(m => m.subjectId === subject.id).length || 0} {t('materials')}
                   </span>
                   <Button 
                     variant="secondary" 
@@ -243,7 +243,7 @@ export default function CurriculumPage() {
           
           <div className="space-y-6 py-4">
             <div className="space-y-3">
-              <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Resources</Label>
+              <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('resources')}</Label>
               <div className="space-y-2">
                 {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
                   <div key={m.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl group transition-all hover:bg-muted/50">
@@ -271,13 +271,13 @@ export default function CurriculumPage() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Resource?</AlertDialogTitle>
+                              <AlertDialogTitle>{t('deleteResourceTitle')}</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete "{m.title}"? This action cannot be undone.
+                                {t('deleteResourceConfirm').replace('{name}', m.title)}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                               <AlertDialogAction onClick={() => handleDeleteMaterial(m.id)} className="bg-destructive text-destructive-foreground">
                                 Delete
                               </AlertDialogAction>
@@ -300,11 +300,11 @@ export default function CurriculumPage() {
               <div className="pt-6 border-t space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-6 w-1 bg-accent rounded-full" />
-                  <h4 className="font-bold text-sm">Add New Resource</h4>
+                  <h4 className="font-bold text-sm">{t('addNewResource')}</h4>
                 </div>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="resTitle" className="text-xs">Title</Label>
+                    <Label htmlFor="resTitle" className="text-xs">{t('resourceTitle')}</Label>
                     <Input 
                       id="resTitle" 
                       placeholder="e.g. Chapter 1 Summary" 
@@ -314,7 +314,7 @@ export default function CurriculumPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="resUrl" className="text-xs">Resource Link</Label>
+                    <Label htmlFor="resUrl" className="text-xs">{t('resourceLink')}</Label>
                     <Input 
                       id="resUrl" 
                       placeholder="https://..." 
@@ -333,7 +333,7 @@ export default function CurriculumPage() {
                     ) : (
                       <Plus className="h-4 w-4" />
                     )}
-                    Add Link
+                    {t('addLink')}
                   </Button>
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function CurriculumPage() {
           </div>
           <DialogFooter className="sticky bottom-0 bg-background pt-2 border-t mt-4">
             <Button variant="outline" onClick={() => setSelectedSubject(null)} className="rounded-xl px-8">
-              Close
+              {t('close')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -170,7 +170,18 @@ export const translations = {
     statusAbandoned: "Abandoned",
     confirmEndSession: "End session early? This will be logged as an interruption.",
     completed: "Completed",
-    invalidCredentials: "Invalid email or password."
+    invalidCredentials: "Invalid email or password.",
+    materials: "Materials",
+    resources: "Resources",
+    addNewResource: "Add New Resource",
+    resourceTitle: "Title",
+    resourceLink: "Resource Link",
+    addLink: "Add Link",
+    close: "Close",
+    deleteSubjectTitle: "Delete Subject?",
+    deleteSubjectConfirm: "This will remove \"{name}\" from the curriculum. Existing study materials will remain in the database but will no longer be linked to this subject.",
+    deleteResourceTitle: "Delete Resource?",
+    deleteResourceConfirm: "Are you sure you want to delete \"{name}\"? This action cannot be undone."
   },
   hi: {
     appName: "StudyNest",
@@ -342,7 +353,18 @@ export const translations = {
     statusAbandoned: "छोड़ दिया गया",
     confirmEndSession: "सत्र जल्दी समाप्त करें? इसे एक रुकावट के रूप में दर्ज किया जाएगा।",
     completed: "पूरा हुआ",
-    invalidCredentials: "अमान्य ईमेल या पासवर्ड।"
+    invalidCredentials: "अमान्य ईमेल या पासवर्ड।",
+    materials: "सामग्री",
+    resources: "संसाधन",
+    addNewResource: "नया संसाधन जोड़ें",
+    resourceTitle: "शीर्षक",
+    resourceLink: "संसाधन लिंक",
+    addLink: "लिंक जोड़ें",
+    close: "बंद करें",
+    deleteSubjectTitle: "विषय हटाएं?",
+    deleteSubjectConfirm: "यह पाठ्यक्रम से \"{name}\" को हटा देगा। मौजूदा अध्ययन सामग्री डेटाबेस में रहेगी लेकिन अब इस विषय से जुड़ी नहीं होगी।",
+    deleteResourceTitle: "संसाधन हटाएं?",
+    deleteResourceConfirm: "क्या आप वाकई \"{name}\" को हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।"
   },
   bn: {
     appName: "StudyNest",
@@ -514,7 +536,18 @@ export const translations = {
     statusAbandoned: "পরিত্যক্ত",
     confirmEndSession: "সেশন কি তাড়াতাড়ি শেষ করবেন? এটি বিঘ্ন হিসেবে রেকর্ড করা হবে।",
     completed: "সম্পন্ন",
-    invalidCredentials: "অবৈধ ইমেল বা পাসওয়ার্ড।"
+    invalidCredentials: "অবৈধ ইমেল বা পাসওয়ার্ড।",
+    materials: "উপকরণ",
+    resources: "রিসোর্স",
+    addNewResource: "নতুন রিসোর্স যুক্ত করুন",
+    resourceTitle: "শিরোনাম",
+    resourceLink: "রিসোর্স লিঙ্ক",
+    addLink: "লিঙ্ক যুক্ত করুন",
+    close: "বন্ধ করুন",
+    deleteSubjectTitle: "বিষয় মুছে ফেলবেন?",
+    deleteSubjectConfirm: "এটি কারিকুলাম থেকে \"{name}\" সরিয়ে দেবে। বিদ্যমান অধ্যয়নের উপকরণগুলি ডেটাবেসে থাকবে কিন্তু এই বিষয়ের সাথে আর লিঙ্ক করা হবে না।",
+    deleteResourceTitle: "রিসোর্স মুছে ফেলবেন?",
+    deleteResourceConfirm: "আপনি কি নিশ্চিত যে আপনি \"{name}\" মুছে ফেলতে চান? এই কাজটি আর ফিরিয়ে আনা যাবে না।"
   },
   ta: {
     appName: "StudyNest",
@@ -686,7 +719,18 @@ export const translations = {
     statusAbandoned: "கைவிடப்பட்டது",
     confirmEndSession: "அமர்வை சீக்கிரம் முடிக்க வேண்டுமா? இது இடையூறாக பதிவு செய்யப்படும்.",
     completed: "முடிந்தது",
-    invalidCredentials: "அவசியமான மின்னஞ்சல் அல்லது கடவுச்சொல்."
+    invalidCredentials: "அவசியமான மின்னஞ்சல் அல்லது கடவுச்சொல்.",
+    materials: "ஆதாரங்கள்",
+    resources: "ஆதாரங்கள்",
+    addNewResource: "புதிய ஆதாரத்தைச் சேர்",
+    resourceTitle: "தலைப்பு",
+    resourceLink: "ஆதார இணைப்பு",
+    addLink: "இணைப்பைச் சேர்",
+    close: "மூடு",
+    deleteSubjectTitle: "பாடத்தை நீக்கவா?",
+    deleteSubjectConfirm: "இது பாடத்திட்டத்திலிருந்து \"{name}\" ஐ அகற்றும். இருக்கும் ஆய்வுப் பொருட்கள் தரவுத்தளத்தில் இருக்கும், ஆனால் இந்த பாடத்துடன் இணைக்கப்படாது.",
+    deleteResourceTitle: "ஆதாரத்தை நீக்கவா?",
+    deleteResourceConfirm: "\"{name}\" ஐ நீக்க விரும்புகிறீர்கள் என்பதில் உறுதியாக இருக்கிறீர்களா? இந்தச் செயலை மாற்ற முடியாது."
   },
   ml: {
     appName: "StudyNest",
@@ -858,6 +902,17 @@ export const translations = {
     statusAbandoned: "ഉപേക്ഷിച്ചു",
     confirmEndSession: "സെഷൻ നേരത്തെ അവസാനിപ്പിക്കണോ? ഇത് ഒരു തടസ്സമായി രേഖപ്പെടുത്തും.",
     completed: "പൂർത്തിയായി",
-    invalidCredentials: "അസാധുവായ ഇമെയിൽ അല്ലെങ്കിൽ പാസ്‌വേഡ്."
+    invalidCredentials: "അസാധുവായ ഇമെയിൽ അല്ലെങ്കിൽ പാസ്‌വേഡ്.",
+    materials: "സാമഗ്രികൾ",
+    resources: "വിഭവങ്ങൾ",
+    addNewResource: "പുതിയ വിഭവം ചേർക്കുക",
+    resourceTitle: "തലക്കെട്ട്",
+    resourceLink: "റിസോഴ്സ് ലിങ്ക്",
+    addLink: "ലിങ്ക് ചേർക്കുക",
+    close: "അടയ്ക്കുക",
+    deleteSubjectTitle: "വിഷയം ഒഴിവാക്കണോ?",
+    deleteSubjectConfirm: "ഇത് കരിക്കുലത്തിൽ നിന്ന് \"{name}\" ഒഴിവാക്കും. നിലവിലുള്ള പഠന സാമഗ്രികൾ ഡാറ്റാബേസിൽ തുടരും, എന്നാൽ ഈ വിഷയവുമായി ബന്ധിപ്പിക്കില്ല.",
+    deleteResourceTitle: "റിസോഴ്സ് ഒഴിവാക്കണോ?",
+    deleteResourceConfirm: "\"{name}\" ഒഴിവാക്കാൻ ആഗ്രഹിക്കുന്നുവെന്ന് ഉറപ്പാണോ? ഈ പ്രവർത്തനം മാറ്റാൻ കഴിയില്ല."
   }
 };
