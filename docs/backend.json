@@ -83,6 +83,7 @@
       "properties": {
         "id": { "type": "string" },
         "title": { "type": "string" },
+        "description": { "type": "string" },
         "type": { "type": "string" },
         "linkUrl": { "type": "string" },
         "subjectId": { "type": "string" },

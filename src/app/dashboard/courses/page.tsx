@@ -4,12 +4,13 @@
 import { useState, useEffect } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
 import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText } from "lucide-react"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Info } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +37,7 @@ export default function CurriculumPage() {
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
 
-  const [newResource, setNewResource] = useState({ title: "", type: "Link", linkUrl: "" })
+  const [newResource, setNewResource] = useState({ title: "", type: "Link", linkUrl: "", description: "" })
   const [isAddingResource, setIsAddingResource] = useState(false)
 
   useEffect(() => {
@@ -95,6 +96,7 @@ export default function CurriculumPage() {
     try {
       addDocumentNonBlocking(collection(db, "materials"), {
         title: newResource.title,
+        description: newResource.description,
         linkUrl: newResource.linkUrl,
         type: newResource.type,
         subjectId: selectedSubject.id,
@@ -103,7 +105,7 @@ export default function CurriculumPage() {
         uploadDate: new Date().toISOString()
       });
 
-      setNewResource({ title: "", type: "Link", linkUrl: "" });
+      setNewResource({ title: "", type: "Link", linkUrl: "", description: "" });
       toast({ title: t('resourceAdded') });
     } catch (error: any) {
       toast({
@@ -246,46 +248,54 @@ export default function CurriculumPage() {
               <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('resources')}</Label>
               <div className="space-y-2">
                 {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
-                  <div key={m.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl group transition-all hover:bg-muted/50">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="bg-background p-2 rounded-lg shrink-0">
-                        <FileText className="h-4 w-4 text-accent" />
+                  <div key={m.id} className="flex flex-col p-3 bg-muted/30 rounded-xl group transition-all hover:bg-muted/50 gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="bg-background p-2 rounded-lg shrink-0">
+                          <FileText className="h-4 w-4 text-accent" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-medium truncate">{m.title}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase">{m.type}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-medium truncate">{m.title}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{m.type}</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" asChild className="h-8 w-8 rounded-full">
+                          <a href={m.linkUrl} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                        {isTeacher && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t('deleteResourceTitle')}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t('deleteResourceConfirm').replace('{name}', m.title)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteMaterial(m.id)} className="bg-destructive text-destructive-foreground">
+                                  {t('delete')}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button variant="ghost" size="icon" asChild className="h-8 w-8 rounded-full">
-                        <a href={m.linkUrl} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                      {isTeacher && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{t('deleteResourceTitle')}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {t('deleteResourceConfirm').replace('{name}', m.title)}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteMaterial(m.id)} className="bg-destructive text-destructive-foreground">
-                                {t('delete')}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
+                    {m.description && (
+                      <div className="flex items-start gap-2 bg-background/50 p-2 rounded-lg ml-9">
+                        <Info className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                        <p className="text-xs text-muted-foreground leading-relaxed">{m.description}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {(allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
@@ -323,10 +333,20 @@ export default function CurriculumPage() {
                       className="rounded-xl h-9"
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="resDesc" className="text-xs">{t('resourceDescription')}</Label>
+                    <Textarea 
+                      id="resDesc" 
+                      placeholder={t('resourceDescriptionPlaceholder')} 
+                      value={newResource.description} 
+                      onChange={e => setNewResource({...newResource, description: e.target.value})} 
+                      className="rounded-xl min-h-[80px]"
+                    />
+                  </div>
                   <Button 
                     onClick={handleAddResourceToCourse} 
                     disabled={isAddingResource || !newResource.title || !newResource.linkUrl}
-                    className="w-full bg-accent text-accent-foreground h-9 rounded-xl gap-2 mt-2"
+                    className="w-full bg-accent text-accent-foreground h-10 rounded-xl gap-2 mt-2 font-bold"
                   >
                     {isAddingResource ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
