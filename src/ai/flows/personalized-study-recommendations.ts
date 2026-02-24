@@ -1,8 +1,6 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for generating personalized study plans based on student self-assessment.
- *
- * - generatePersonalizedStudyPlan - A function that provides a personalized study roadmap.
+ * @fileOverview A Genkit flow for generating personalized study plans with a conversational coach persona.
  */
 
 import { ai } from '@/ai/genkit';
@@ -32,19 +30,19 @@ const PersonalizedStudyPlanInputSchema = z.object({
 export type PersonalizedStudyPlanInput = z.infer<typeof PersonalizedStudyPlanInputSchema>;
 
 const PersonalizedStudyPlanOutputSchema = z.object({
-  priorityTopics: z.array(z.string()).describe('Top topics to focus on based on low confidence.'),
-  strategy: z.string().describe('Personalized study strategy tailored to learning style.'),
-  weeklyPlan: z.string().describe('A structured weekly plan in Markdown format.'),
-  actionableSteps: z.array(z.string()).describe('Specific, actionable tasks for the student.'),
+  priorityTopics: z.array(z.string()).describe('The topics I want you to focus on first.'),
+  strategy: z.string().describe('My personalized strategy for how you should approach your studies.'),
+  weeklyPlan: z.string().describe('A structured weekly plan I created for you in Markdown format.'),
+  actionableSteps: z.array(z.string()).describe('Specific tasks I want you to complete.'),
   conceptBreakdowns: z.array(z.object({
     topic: z.string(),
-    explanation: z.string().describe('A simple, helpful explanation of the core concept.'),
-  })).describe('Brief explanations for the topics the student is weak in.'),
+    explanation: z.string().describe('My simple, helpful explanation of the core concept just for you.'),
+  })).describe('My brief explanations for the topics you mentioned struggling with.'),
   visualResources: z.array(z.object({
     title: z.string(),
-    url: z.string().describe('A direct YouTube search link or educational video URL.'),
+    url: z.string().describe('A direct link I found for you.'),
     platform: z.string().default('YouTube'),
-  })).optional().describe('Suggested visual resources, especially for visual or mixed learners.'),
+  })).optional().describe('Suggested visual resources I picked for you.'),
 });
 
 export type PersonalizedStudyPlanOutput = z.infer<typeof PersonalizedStudyPlanOutputSchema>;
@@ -53,34 +51,34 @@ const personalizedStudyPlanPrompt = ai.definePrompt({
   name: 'personalizedStudyPlanPrompt',
   input: { schema: PersonalizedStudyPlanInputSchema },
   output: { schema: PersonalizedStudyPlanOutputSchema },
-  prompt: `You are an expert AI Study Coach. Your goal is to not only plan a routine but also actively help the student understand the concepts they find difficult.
+  prompt: `I am your AI Study Coach. I've been looking over your profile, and I'm ready to help you build a plan that truly clicks for you.
 
-**Student Profile:**
-- Subjects: {{#each subjects}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-- Weak Topics: {{{topics}}}
-- Confidence Ratings (1-5):
-  - Concept Clarity: {{{ratings.conceptClarity}}}
-  - Problem Solving: {{{ratings.problemSolving}}}
-  - Exam Readiness: {{{ratings.examReadiness}}}
-- Learning Style: {{{learningStyle}}}
-- Availability: {{{studyTime.hoursPerDay}}} hours/day during {{{studyTime.preferredTime}}}
-{{#if deadlines}}- Deadlines: {{{deadlines}}}{{/if}}
+**What I know about you:**
+- You're balancing: {{#each subjects}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+- You've mentioned these are tricky: {{{topics}}}
+- Your current confidence levels:
+  - Concept Clarity: {{{ratings.conceptClarity}}}/5
+  - Problem Solving: {{{ratings.problemSolving}}}/5
+  - Exam Readiness: {{{ratings.examReadiness}}}/5
+- You learn best through: {{{learningStyle}}}
+- You have {{{studyTime.hoursPerDay}}} hours/day during the {{{studyTime.preferredTime}}}
+{{#if deadlines}}- And we have these deadlines to meet: {{{deadlines}}}{{/if}}
 
 {{#if focusMetrics}}
-**Real Focus Data:**
-- Average Focus Duration: {{{focusMetrics.avgSessionDuration}}} minutes
-- Total Sessions: {{{focusMetrics.totalSessions}}}
+**What I see from your actual focus sessions:**
+- You usually stay in the zone for {{{focusMetrics.avgSessionDuration}}} minutes.
+- You've already completed {{{focusMetrics.totalSessions}}} sessions—great job!
 {{/if}}
 
-**Instructions:**
-1. **Identify Priority Topics**: Based on the lowest confidence ratings.
-2. **Personalized Strategy**: Tailor this to their learning style.
-3. **Concept Breakdowns**: For the weak topics mentioned, provide a brief, high-impact explanation of the core principles to help them study immediately.
-4. **Visual Resources**: If the learning style is "visual" or "mixed", you MUST provide educational YouTube search links (format: https://www.youtube.com/results?search_query=TOPIC+NAME) or specific reputable channel suggestions (e.g., Khan Academy, Crash Course) related to their weak topics.
-5. **Weekly Plan**: A structured weekly plan in Markdown. If focus metrics are available, adapt session lengths to match their average focus duration.
-6. **Actionable Steps**: Specific tasks including Focus Mode suggestions.
+**My Plan for You:**
+1. **Your Priorities**: I'll identify exactly which topics we should tackle first.
+2. **Our Strategy**: I'll tailor my advice to your {{{learningStyle}}} learning style.
+3. **Breaking it Down**: I'll explain those difficult concepts to you simply.
+4. **Resources**: If you need visuals, I'll find specific YouTube guides for you.
+5. **Your Schedule**: I'll build a weekly Markdown plan that fits your focus patterns.
+6. **Next Steps**: I'll give you clear tasks to start Focus Mode right now.
 
-Ensure the tone is encouraging and focused on helping them bridge their knowledge gaps.`,
+Speak directly to the student as their mentor and coach. Use "I" and "you" to create a partnership. Keep the tone encouraging, high-energy, and focused on growth.`,
 });
 
 const personalizedStudyPlanFlow = ai.defineFlow(

@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for analyzing student assignments based on standard or custom rubrics.
+ * @fileOverview A Genkit flow for analyzing student assignments with a conversational mentor persona.
  */
 
 import { ai } from '@/ai/genkit';
@@ -18,12 +18,12 @@ const AssignmentAnalysisOutputSchema = z.object({
   rubricScores: z.array(z.object({
     criterion: z.string().describe('The rubric criterion name.'),
     score: z.number().describe('Score from 1 to 5.'),
-    feedback: z.string().describe('Detailed feedback for this specific criterion.'),
+    feedback: z.string().describe('Detailed feedback for this specific criterion, spoken directly to the student.'),
   })),
-  overallFeedback: z.string().describe('General overview of the assignment quality.'),
-  strengths: z.array(z.string()).describe('Key strengths of the work.'),
-  areasForImprovement: z.array(z.string()).describe('Specific parts that need more work.'),
-  suggestedRevisionSteps: z.array(z.string()).describe('Step-by-step plan to improve the grade.'),
+  overallFeedback: z.string().describe('My general thoughts on your work, spoken directly to you.'),
+  strengths: z.array(z.string()).describe('What I think you did exceptionally well.'),
+  areasForImprovement: z.array(z.string()).describe('Where I think we can push your work further.'),
+  suggestedRevisionSteps: z.array(z.string()).describe('My step-by-step roadmap for you to improve this assignment.'),
 });
 
 export type AssignmentAnalysisOutput = z.infer<typeof AssignmentAnalysisOutputSchema>;
@@ -32,22 +32,21 @@ const assignmentAnalysisPrompt = ai.definePrompt({
   name: 'assignmentAnalysisPrompt',
   input: { schema: AssignmentAnalysisInputSchema },
   output: { schema: AssignmentAnalysisOutputSchema },
-  prompt: `You are an expert academic evaluator. Analyze the following assignment based on the provided rubric. If no rubric is provided, use standard academic criteria for the subject (e.g., clarity, argument strength, evidence, structure, grammar).
+  prompt: `I am your AI Study Mentor. I've taken a close look at the work you've shared for {{{subject}}}. 
 
-**Subject:** {{{subject}}}
-**Rubric/Criteria:** {{#if rubric}}{{{rubric}}}{{else}}Standard Academic Quality{{/if}}
+I'm evaluating your progress based on: {{#if rubric}}{{{rubric}}}{{else}}Standard Academic Excellence{{/if}}.
 
-**Assignment Text:**
+Here is the work you've submitted:
 {{{assignmentText}}}
 
-**Instructions:**
-1. Evaluate the assignment objectively against each rubric criterion.
-2. Provide a score from 1-5 for each (1: Poor, 5: Excellent).
-3. Be specific and constructive in your feedback.
-4. Identify 2-3 key strengths and 2-3 specific areas for improvement.
-5. Provide a step-by-step revision plan.
+**My Mentor Instructions:**
+1. I will evaluate your work against each criterion.
+2. I'll give you a score from 1-5 (1: We need more focus here, 5: You've mastered this!).
+3. I'll speak directly to you in my feedback—no third-person academic jargon.
+4. I'll highlight your biggest wins and where I see your next growth opportunity.
+5. I'll lay out a clear, actionable revision roadmap just for you.
 
-Maintain a professional, academic, yet encouraging tone.`,
+Speak directly to the student. Use a supportive, conversational, and mentorship-oriented tone. Use "I" when referring to myself and "you" when referring to the student. My goal is to make you feel empowered to improve.`,
 });
 
 const assignmentAnalysisFlow = ai.defineFlow(
