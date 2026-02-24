@@ -181,7 +181,14 @@ export const translations = {
     deleteSubjectTitle: "Delete Subject?",
     deleteSubjectConfirm: "This will remove \"{name}\" from the curriculum. Existing study materials will remain in the database but will no longer be linked to this subject.",
     deleteResourceTitle: "Delete Resource?",
-    deleteResourceConfirm: "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    deleteResourceConfirm: "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    subjectDeleted: "Subject deleted",
+    resourceDeleted: "Resource deleted",
+    resourceAdded: "Resource added",
+    noSubjectsFound: "No subjects found.",
+    subjectResourcesDesc: "Educational resources for this subject.",
+    noResourcesFound: "No resources uploaded for this subject yet.",
+    delete: "Delete"
   },
   hi: {
     appName: "StudyNest",
@@ -364,7 +371,14 @@ export const translations = {
     deleteSubjectTitle: "विषय हटाएं?",
     deleteSubjectConfirm: "यह पाठ्यक्रम से \"{name}\" को हटा देगा। मौजूदा अध्ययन सामग्री डेटाबेस में रहेगी लेकिन अब इस विषय से जुड़ी नहीं होगी।",
     deleteResourceTitle: "संसाधन हटाएं?",
-    deleteResourceConfirm: "क्या आप वाकई \"{name}\" को हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।"
+    deleteResourceConfirm: "क्या आप वाकई \"{name}\" को हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+    subjectDeleted: "विषय हटा दिया गया",
+    resourceDeleted: "संसाधन हटा दिया गया",
+    resourceAdded: "संसाधन जोड़ा गया",
+    noSubjectsFound: "कोई विषय नहीं मिला।",
+    subjectResourcesDesc: "इस विषय के लिए शैक्षिक संसाधन।",
+    noResourcesFound: "इस विषय के लिए अभी तक कोई संसाधन अपलोड नहीं किया गया है।",
+    delete: "मिटाएँ"
   },
   bn: {
     appName: "StudyNest",
@@ -547,7 +561,14 @@ export const translations = {
     deleteSubjectTitle: "বিষয় মুছে ফেলবেন?",
     deleteSubjectConfirm: "এটি কারিকুলাম থেকে \"{name}\" সরিয়ে দেবে। বিদ্যমান অধ্যয়নের উপকরণগুলি ডেটাবেসে থাকবে কিন্তু এই বিষয়ের সাথে আর লিঙ্ক করা হবে না।",
     deleteResourceTitle: "রিসোর্স মুছে ফেলবেন?",
-    deleteResourceConfirm: "আপনি কি নিশ্চিত যে আপনি \"{name}\" মুছে ফেলতে চান? এই কাজটি আর ফিরিয়ে আনা যাবে না।"
+    deleteResourceConfirm: "আপনি কি নিশ্চিত যে আপনি \"{name}\" মুছে ফেলতে চান? এই কাজটি আর ফিরিয়ে আনা যাবে না।",
+    subjectDeleted: "বিষয় মুছে ফেলা হয়েছে",
+    resourceDeleted: "রিসোর্স মুছে ফেলা হয়েছে",
+    resourceAdded: "রিসোর্স যুক্ত করা হয়েছে",
+    noSubjectsFound: "কোনো বিষয় পাওয়া যায়নি।",
+    subjectResourcesDesc: "এই বিষয়ের জন্য শিক্ষামূলক সংস্থান।",
+    noResourcesFound: "এই বিষয়ের জন্য এখনো কোনো রিসোর্স আপলোড করা হয়নি।",
+    delete: "মুছে ফেলুন"
   },
   ta: {
     appName: "StudyNest",
@@ -730,7 +751,14 @@ export const translations = {
     deleteSubjectTitle: "பாடத்தை நீக்கவா?",
     deleteSubjectConfirm: "இது பாடத்திட்டத்திலிருந்து \"{name}\" ஐ அகற்றும். இருக்கும் ஆய்வுப் பொருட்கள் தரவுத்தளத்தில் இருக்கும், ஆனால் இந்த பாடத்துடன் இணைக்கப்படாது.",
     deleteResourceTitle: "ஆதாரத்தை நீக்கவா?",
-    deleteResourceConfirm: "\"{name}\" ஐ நீக்க விரும்புகிறீர்கள் என்பதில் உறுதியாக இருக்கிறீர்களா? இந்தச் செயலை மாற்ற முடியாது."
+    deleteResourceConfirm: "\"{name}\" ஐ நீக்க விரும்புகிறீர்கள் என்பதில் உறுதியாக இருக்கிறீர்களா? இந்தச் செயலை மாற்ற முடியாது.",
+    subjectDeleted: "பாடம் நீக்கப்பட்டது",
+    resourceDeleted: "ஆதாரம் நீக்கப்பட்டது",
+    resourceAdded: "ஆதாரம் சேர்க்கப்பட்டது",
+    noSubjectsFound: "பாடங்கள் எதுவும் காணப்படவில்லை.",
+    subjectResourcesDesc: "இந்த பாடத்திற்கான கல்வி ஆதாரங்கள்.",
+    noResourcesFound: "இந்த பாடத்திற்கு இன்னும் ஆதாரங்கள் எதுவும் பதிவேற்றப்படவில்லை.",
+    delete: "நீக்கு"
   },
   ml: {
     appName: "StudyNest",
@@ -913,6 +941,13 @@ export const translations = {
     deleteSubjectTitle: "വിഷയം ഒഴിവാക്കണോ?",
     deleteSubjectConfirm: "ഇത് കരിക്കുലത്തിൽ നിന്ന് \"{name}\" ഒഴിവാക്കും. നിലവിലുള്ള പഠന സാമഗ്രികൾ ഡാറ്റാബേസിൽ തുടരും, എന്നാൽ ഈ വിഷയവുമായി ബന്ധിപ്പിക്കില്ല.",
     deleteResourceTitle: "റിസോഴ്സ് ഒഴിവാക്കണോ?",
-    deleteResourceConfirm: "\"{name}\" ഒഴിവാക്കാൻ ആഗ്രഹിക്കുന്നുവെന്ന് ഉറപ്പാണോ? ഈ പ്രവർത്തനം മാറ്റാൻ കഴിയില്ല."
+    deleteResourceConfirm: "\"{name}\" ഒഴിവാക്കാൻ ആഗ്രഹിക്കുന്നുവെന്ന് ഉറപ്പാണോ? ഈ പ്രവർത്തനം മാറ്റാൻ കഴിയില്ല.",
+    subjectDeleted: "വിഷയം നീക്കം ചെയ്തു",
+    resourceDeleted: "വിഭവം നീക്കം ചെയ്തു",
+    resourceAdded: "വിഭവം ചേർത്തു",
+    noSubjectsFound: "വിഷയങ്ങൾ ഒന്നും കണ്ടെത്തിയില്ല.",
+    subjectResourcesDesc: "ഈ വിഷയത്തിനായുള്ള വിദ്യാഭ്യാസ വിഭവങ്ങൾ.",
+    noResourcesFound: "ഈ വിഷയത്തിനായി ഇതുവരെ വിഭവങ്ങളൊന്നും അപ്‌ലോഡ് ചെയ്തിട്ടില്ല.",
+    delete: "നീക്കം ചെയ്യുക"
   }
 };

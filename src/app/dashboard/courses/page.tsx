@@ -28,7 +28,7 @@ export default function CurriculumPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const [search, setSearch] = useState("")
   const [isTeacher, setIsTeacher] = useState(false)
   
@@ -79,13 +79,13 @@ export default function CurriculumPage() {
   const handleDeleteSubject = (subjectId: string) => {
     if (!db) return;
     deleteDocumentNonBlocking(doc(db, "subjects", subjectId));
-    toast({ title: "Subject deleted" });
+    toast({ title: t('subjectDeleted') });
   }
 
   const handleDeleteMaterial = (materialId: string) => {
     if (!db) return;
     deleteDocumentNonBlocking(doc(db, "materials", materialId));
-    toast({ title: "Material deleted" });
+    toast({ title: t('resourceDeleted') });
   }
 
   const handleAddResourceToCourse = async () => {
@@ -104,7 +104,7 @@ export default function CurriculumPage() {
       });
 
       setNewResource({ title: "", type: "Link", linkUrl: "" });
-      toast({ title: "Resource added" });
+      toast({ title: t('resourceAdded') });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -196,7 +196,7 @@ export default function CurriculumPage() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => handleDeleteSubject(subject.id)} className="bg-destructive text-destructive-foreground">
-                          Delete
+                          {t('delete')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -223,7 +223,7 @@ export default function CurriculumPage() {
           {filteredSubjects.length === 0 && (
             <div className="col-span-full text-center py-20 bg-muted/10 rounded-3xl border-2 border-dashed">
               <Book className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" />
-              <p className="text-sm text-muted-foreground">No subjects found.</p>
+              <p className="text-sm text-muted-foreground">{t('noSubjectsFound')}</p>
             </div>
           )}
         </div>
@@ -237,7 +237,7 @@ export default function CurriculumPage() {
               {selectedSubject?.name}
             </DialogTitle>
             <DialogDescription>
-              Educational resources for this subject.
+              {t('subjectResourcesDesc')}
             </DialogDescription>
           </DialogHeader>
           
@@ -279,7 +279,7 @@ export default function CurriculumPage() {
                             <AlertDialogFooter>
                               <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                               <AlertDialogAction onClick={() => handleDeleteMaterial(m.id)} className="bg-destructive text-destructive-foreground">
-                                Delete
+                                {t('delete')}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -290,7 +290,7 @@ export default function CurriculumPage() {
                 ))}
                 {(allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
                   <div className="text-center py-8 text-muted-foreground italic text-xs">
-                    No resources uploaded for this subject yet.
+                    {t('noResourcesFound')}
                   </div>
                 )}
               </div>
