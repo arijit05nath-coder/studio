@@ -256,7 +256,9 @@ export default function CurriculumPage() {
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium truncate">{m.title}</span>
-                          <span className="text-[10px] text-muted-foreground uppercase">{m.type}</span>
+                          <span className="text-[10px] text-muted-foreground line-clamp-1">
+                            {m.description || m.type}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
@@ -290,12 +292,6 @@ export default function CurriculumPage() {
                         )}
                       </div>
                     </div>
-                    {m.description && (
-                      <div className="flex items-start gap-2 bg-background/50 p-2 rounded-lg ml-9">
-                        <Info className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
-                        <p className="text-xs text-muted-foreground leading-relaxed">{m.description}</p>
-                      </div>
-                    )}
                   </div>
                 ))}
                 {(allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
