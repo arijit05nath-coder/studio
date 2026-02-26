@@ -201,7 +201,10 @@ export const translations = {
     studyBlock: "Study Block",
     totalTime: "Total Time",
     sessionDetails: "Session Details",
-    segments: "Segments"
+    segments: "Segments",
+    deleteSessionTitle: "Delete session history?",
+    deleteSessionConfirm: "This will permanently remove this study block from your logs.",
+    sessionDeleted: "Session deleted"
   },
   hi: {
     appName: "StudyNest",
@@ -404,7 +407,10 @@ export const translations = {
     studyBlock: "स्टडी ब्लॉक",
     totalTime: "कुल समय",
     sessionDetails: "सत्र विवरण",
-    segments: "खंड"
+    segments: "खंड",
+    deleteSessionTitle: "सत्र इतिहास हटाएं?",
+    deleteSessionConfirm: "यह आपके लॉग से इस अध्ययन ब्लॉक को स्थायी रूप से हटा देगा।",
+    sessionDeleted: "सत्र हटा दिया गया"
   },
   bn: {
     appName: "StudyNest",
@@ -607,7 +613,10 @@ export const translations = {
     studyBlock: "স্টাডি ব্লক",
     totalTime: "মোট সময়",
     sessionDetails: "সেশন বিবরণ",
-    segments: "অংশ"
+    segments: "অংশ",
+    deleteSessionTitle: "সেশন ইতিহাস মুছুন?",
+    deleteSessionConfirm: "এটি আপনার লগ থেকে এই অধ্যয়ন ব্লকটি স্থায়ীভাবে সরিয়ে দেবে।",
+    sessionDeleted: "সেশন মুছে ফেলা হয়েছে"
   },
   ta: {
     appName: "StudyNest",
@@ -810,7 +819,10 @@ export const translations = {
     studyBlock: "ஆய்வுத் தொகுதி",
     totalTime: "மொத்த நேரம்",
     sessionDetails: "அமர்வு விவரங்கள்",
-    segments: "பிரிவுகள்"
+    segments: "பிரிவுகள்",
+    deleteSessionTitle: "அமர்வு வரலாற்றை நீக்கவா?",
+    deleteSessionConfirm: "இது உங்கள் பதிவுகளிலிருந்து இந்த ஆய்வுத் தொகுதியை நிரந்தரமாக அகற்றும்.",
+    sessionDeleted: "அமர்வு நீக்கப்பட்டது"
   },
   ml: {
     appName: "StudyNest",
@@ -938,7 +950,7 @@ export const translations = {
     enableStrict: "സ്ട്രിക്റ്റ് ഫോക്കസ് സജ്ജമാക്കുക",
     strictModeDesc: "ശ്രദ്ധ തിരിക്കുന്നത് ഒഴിവാക്കാൻ സെഷനുകളിൽ യുഐ ലോക്ക് ചെയ്യുന്നു.",
     sessionLogs: "സമീപകാല സെഷനുകൾ.",
-    noSessionsFound: "സെഷനുകൾ ഒന്നും കണ്ടെത്തിയില്ല.",
+    noSessionsFound: "സമീപകാല സെഷനുകൾ ഒന്നും കണ്ടെത്തിയില്ല.",
     yourGroups: "നിങ്ങളുടെ ഗ്രൂപ്പുകൾ",
     groupId: "ഗ്രൂപ്പ് ഐഡി",
     copyId: "ഐഡി കോപ്പി ചെയ്യുക",
@@ -1013,6 +1025,9 @@ export const translations = {
     studyBlock: "സ്റ്റഡി ബ്ലോക്ക്",
     totalTime: "ആകെ സമയം",
     sessionDetails: "സെഷൻ വിവരങ്ങൾ",
-    segments: "ഭാഗങ്ങൾ"
+    segments: "ഭാഗങ്ങൾ",
+    deleteSessionTitle: "സെഷൻ ചരിത്രം ഇല്ലാതാക്കണോ?",
+    deleteSessionConfirm: "ഇത് നിങ്ങളുടെ ലോഗുകളിൽ നിന്ന് ഈ പഠന ബ്ലോക്കിനെ ശാശ്വതമായി നീക്കം ചെയ്യും.",
+    sessionDeleted: "സെഷൻ ഇല്ലാതാക്കി"
   }
 };

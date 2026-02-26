@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from "react"
-import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash, Clock, ChevronRight, ListOrdered } from "lucide-react"
+import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash, Clock, ChevronRight, ListOrdered, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -12,17 +12,30 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore"
+import { useUser, useFirestore, useCollection, useMemoFirebase, deleteDocumentNonBlocking } from "@/firebase"
+import { collection, query, orderBy, limit, serverTimestamp, doc } from "firebase/firestore"
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { useI18n } from "@/lib/i18n-store"
+import { useToast } from "@/hooks/use-toast"
 
 export default function FocusPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { t } = useI18n()
+  const { toast } = useToast()
   
   const [timerMode, setTimerMode] = useState<'pomodoro' | 'custom'>('pomodoro')
   const [customWorkHours, setCustomWorkHours] = useState(0)
@@ -47,7 +60,7 @@ export default function FocusPage() {
     return query(
       collection(db, "userProfiles", user.uid, "focusSessions"),
       orderBy("startTime", "desc"),
-      limit(50)
+      limit(100)
     );
   }, [user, db]);
 
@@ -60,26 +73,31 @@ export default function FocusPage() {
     if (!sessions) return [];
     
     const blocks: any[][] = [];
-    sessions.forEach((session) => {
+    // sessions are desc by startTime
+    const sorted = [...sessions].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    
+    sorted.forEach((session) => {
       if (blocks.length === 0) {
         blocks.push([session]);
         return;
       }
       
       const lastBlock = blocks[blocks.length - 1];
-      const lastSession = lastBlock[0]; // blocks are sorted desc, so [0] is most recent in block
-      const lastStart = new Date(lastSession.startTime).getTime();
-      const currentEnd = new Date(session.endTime).getTime();
-      const diffMinutes = (lastStart - currentEnd) / 60000;
+      const lastSession = lastBlock[lastBlock.length - 1];
+      const lastEnd = new Date(lastSession.endTime).getTime();
+      const currentStart = new Date(session.startTime).getTime();
+      const diffMinutes = (currentStart - lastEnd) / 60000;
 
-      // If gap is less than 15 minutes, group them
-      if (diffMinutes < 15) {
+      // If gap is less than 15 minutes, group them into the same study block
+      if (diffMinutes >= 0 && diffMinutes < 15) {
         lastBlock.push(session);
       } else {
         blocks.push([session]);
       }
     });
-    return blocks;
+    
+    // return blocks in desc order of their start time
+    return blocks.reverse();
   }, [sessions]);
 
   useEffect(() => {
@@ -89,7 +107,7 @@ export default function FocusPage() {
         : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes);
       setTimeLeft(mins * 60);
     }
-  }, [timerMode, totalWorkMinutes, customBreakMinutes, sessionType]);
+  }, [timerMode, totalWorkHours, totalWorkMinutes, customBreakMinutes, sessionType, isActive]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -181,6 +199,14 @@ export default function FocusPage() {
     startTimeRef.current = null;
     const mins = timerMode === 'pomodoro' ? 25 : totalWorkMinutes;
     setTimeLeft(mins * 60);
+  }
+
+  const handleDeleteBlock = (block: any[]) => {
+    if (!db || !user) return;
+    block.forEach(session => {
+      deleteDocumentNonBlocking(doc(db, "userProfiles", user.uid, "focusSessions", session.id));
+    });
+    toast({ title: t('sessionDeleted') });
   }
 
   const totalSecondsForMode = timerMode === 'pomodoro'
@@ -401,7 +427,7 @@ export default function FocusPage() {
                   ) : groupedBlocks && groupedBlocks.length > 0 ? (
                     groupedBlocks.map((block, idx) => {
                       const totalMins = block.reduce((acc, s) => acc + (s.actualDurationMinutes || 0), 0);
-                      const latest = block[0];
+                      const latest = block[block.length - 1];
                       const status = block.every(s => s.status === 'Completed') ? 'Completed' : 'Mixed';
                       
                       return (
@@ -428,7 +454,39 @@ export default function FocusPage() {
                                 {status === 'Completed' ? t('statusCompleted') : status}
                               </Badge>
                             </div>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                            <div className="flex items-center gap-1">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 rounded-full"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>{t('deleteSessionTitle')}</AlertDialogTitle>
+                                    <AlertDialogDescription>{t('deleteSessionConfirm')}</AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t('cancel')}</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteBlock(block);
+                                      }}
+                                      className="bg-destructive text-destructive-foreground"
+                                    >
+                                      {t('delete')}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                            </div>
                           </div>
                         </div>
                       )
