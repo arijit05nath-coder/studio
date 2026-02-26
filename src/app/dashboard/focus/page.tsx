@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash, Clock } from "lucide-react"
+import { useState, useEffect, useRef, useMemo } from "react"
+import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash, Clock, ChevronRight, ListOrdered } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore"
@@ -35,6 +37,8 @@ export default function FocusPage() {
   const [isStrict, setIsStrict] = useState(false)
   const [interruptionCount, setInterruptionCount] = useState(0)
   
+  const [selectedBlock, setSelectedBlock] = useState<any[] | null>(null)
+  
   const startTimeRef = useRef<Date | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -43,7 +47,7 @@ export default function FocusPage() {
     return query(
       collection(db, "userProfiles", user.uid, "focusSessions"),
       orderBy("startTime", "desc"),
-      limit(10)
+      limit(50)
     );
   }, [user, db]);
 
@@ -51,7 +55,33 @@ export default function FocusPage() {
 
   const totalWorkMinutes = (customWorkHours * 60) + customWorkMinutes;
 
-  // Initialize time when settings change, but ONLY if timer is not active (paused/reset)
+  // Grouping logic for history
+  const groupedBlocks = useMemo(() => {
+    if (!sessions) return [];
+    
+    const blocks: any[][] = [];
+    sessions.forEach((session) => {
+      if (blocks.length === 0) {
+        blocks.push([session]);
+        return;
+      }
+      
+      const lastBlock = blocks[blocks.length - 1];
+      const lastSession = lastBlock[0]; // blocks are sorted desc, so [0] is most recent in block
+      const lastStart = new Date(lastSession.startTime).getTime();
+      const currentEnd = new Date(session.endTime).getTime();
+      const diffMinutes = (lastStart - currentEnd) / 60000;
+
+      // If gap is less than 15 minutes, group them
+      if (diffMinutes < 15) {
+        lastBlock.push(session);
+      } else {
+        blocks.push([session]);
+      }
+    });
+    return blocks;
+  }, [sessions]);
+
   useEffect(() => {
     if (!isActive) {
       const mins = timerMode === 'pomodoro' 
@@ -61,7 +91,6 @@ export default function FocusPage() {
     }
   }, [timerMode, totalWorkMinutes, customBreakMinutes, sessionType]);
 
-  // Main ticker logic
   useEffect(() => {
     if (isActive && timeLeft > 0) {
       if (!startTimeRef.current) startTimeRef.current = new Date();
@@ -216,7 +245,7 @@ export default function FocusPage() {
               sessionType === 'work' ? "bg-primary/20" : "bg-accent/20"
             )}>
               <div className="flex justify-center mb-4">
-                <Tabs value={timerMode} onValueChange={(v) => { setTimerMode(v as any); resetTimer(); }} className="w-auto">
+                <Tabs value={timerMode} onValueChange={(v) => { if(!isActive) setTimerMode(v as any); }} className="w-auto">
                   <TabsList className="grid w-48 grid-cols-2 rounded-full h-8 p-1">
                     <TabsTrigger value="pomodoro" className="rounded-full text-xs" disabled={isActive}>{t('pomodoro')}</TabsTrigger>
                     <TabsTrigger value="custom" className="rounded-full text-xs" disabled={isActive}>{t('custom')}</TabsTrigger>
@@ -363,33 +392,106 @@ export default function FocusPage() {
               <CardTitle>{t('sessionHistory')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {sessionsLoading ? (
-                  <div className="flex justify-center p-4">
-                    <Loader2 className="h-6 w-6 animate-spin text-accent" />
-                  </div>
-                ) : sessions && sessions.length > 0 ? (
-                  sessions.map((log) => (
-                    <div key={log.id} className="flex items-center justify-between text-sm border-b pb-2 last:border-0">
-                      <div>
-                        <p className="font-medium text-foreground">{log.type}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(log.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {log.actualDurationMinutes}m
-                        </p>
-                      </div>
-                      <Badge variant={log.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[10px]">
-                        {log.status === 'Completed' ? t('statusCompleted') : log.status === 'Interrupted' ? t('statusInterrupted') : t('statusAbandoned')}
-                      </Badge>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-4 pr-4">
+                  {sessionsLoading ? (
+                    <div className="flex justify-center p-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-accent" />
                     </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center">{t('noSessionsFound')}</p>
-                )}
-              </div>
+                  ) : groupedBlocks && groupedBlocks.length > 0 ? (
+                    groupedBlocks.map((block, idx) => {
+                      const totalMins = block.reduce((acc, s) => acc + (s.actualDurationMinutes || 0), 0);
+                      const latest = block[0];
+                      const status = block.every(s => s.status === 'Completed') ? 'Completed' : 'Mixed';
+                      
+                      return (
+                        <div 
+                          key={idx} 
+                          className="flex items-center justify-between p-3 rounded-2xl bg-muted/20 border hover:bg-muted/40 transition-colors cursor-pointer group"
+                          onClick={() => setSelectedBlock(block)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
+                              <ListOrdered className="h-5 w-5 text-accent" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm">{t('studyBlock')}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                                {new Date(latest.startTime).toLocaleDateString()} • {block.length} {t('segments')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="text-sm font-bold">{totalMins}m</p>
+                              <Badge variant={status === 'Completed' ? 'secondary' : 'outline'} className="text-[8px] h-4 py-0">
+                                {status === 'Completed' ? t('statusCompleted') : status}
+                              </Badge>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center">{t('noSessionsFound')}</p>
+                  )}
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <Dialog open={!!selectedBlock} onOpenChange={(o) => !o && setSelectedBlock(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-accent" />
+              {t('sessionDetails')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('studyBlock')}: {selectedBlock && new Date(selectedBlock[0].startTime).toLocaleDateString()}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-accent/5 p-4 rounded-2xl border">
+                <p className="text-xs text-muted-foreground uppercase font-bold">{t('totalTime')}</p>
+                <p className="text-2xl font-bold">{selectedBlock?.reduce((acc, s) => acc + (s.actualDurationMinutes || 0), 0)}m</p>
+              </div>
+              <div className="bg-primary/5 p-4 rounded-2xl border">
+                <p className="text-xs text-muted-foreground uppercase font-bold">{t('segments')}</p>
+                <p className="text-2xl font-bold">{selectedBlock?.length}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-xs uppercase font-bold text-muted-foreground">{t('segments')}</Label>
+              <ScrollArea className="h-[300px]">
+                <div className="space-y-2 pr-4">
+                  {selectedBlock?.map((session, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl border bg-muted/10">
+                      <div>
+                        <p className="text-sm font-bold">{session.type}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {session.actualDurationMinutes}m
+                        </p>
+                      </div>
+                      <Badge variant={session.status === 'Completed' ? 'secondary' : 'destructive'} className="text-[9px]">
+                        {session.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+          <Button onClick={() => setSelectedBlock(null)} className="w-full rounded-xl bg-accent text-accent-foreground">
+            {t('close')}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -197,7 +197,11 @@ export const translations = {
     set: "Set",
     hours: "Hours",
     minutes: "Minutes",
-    breakTime: "Break Time"
+    breakTime: "Break Time",
+    studyBlock: "Study Block",
+    totalTime: "Total Time",
+    sessionDetails: "Session Details",
+    segments: "Segments"
   },
   hi: {
     appName: "StudyNest",
@@ -396,7 +400,11 @@ export const translations = {
     set: "सेट",
     hours: "घंटे",
     minutes: "मिनट",
-    breakTime: "ब्रेक का समय"
+    breakTime: "ब्रेक का समय",
+    studyBlock: "स्टडी ब्लॉक",
+    totalTime: "कुल समय",
+    sessionDetails: "सत्र विवरण",
+    segments: "खंड"
   },
   bn: {
     appName: "StudyNest",
@@ -462,7 +470,7 @@ export const translations = {
     scholarRank: "শিক্ষার্থী র‍্যাঙ্ক",
     dailyMilestone: "দৈনিক মাইলফলক",
     rewards: "পুরস্কার",
-    personalDetails: "ব্যক্তিগত বিবরণ",
+    personalDetails: "ব্যগত বিবরণ",
     studyEnvironments: "অধ্যয়ন পরিবেশ",
     accountInfo: "অ্যাকাউন্ট তথ্য",
     student: "ছাত্র",
@@ -562,7 +570,7 @@ export const translations = {
     studentProgressDesc: "আপনার ছাত্রদের ব্যস্ততা এবং পারফরম্যান্স ট্র্যাক করুন।",
     manageCurriculum: "বিষয় এবং অন্বেষণ উপকরণ পরিচালনা करें।",
     teacherDashboardDesc: "রিয়েল-টাইমে ক্লাসের ক্রিয়াকলাপ পর্যবেক্ষণ করুন।",
-    aiCoachDesc: "ব্যক্তিগত রোডമ্যাপ এবং বিশেষজ্ঞ অ্যাসাইনমেন্ট প্রতিক্রিয়া।",
+    aiCoachDesc: "ব্যক্তিগত রোডম্যাপ এবং বিশেষজ্ঞ অ্যাসাইনমেন্ট প্রতিক্রিয়া।",
     statusCompleted: "সম্পন্ন",
     statusInterrupted: "বিঘ্নিত",
     statusAbandoned: "পরিত্যক্ত",
@@ -595,7 +603,11 @@ export const translations = {
     set: "সেট",
     hours: "ঘণ্টা",
     minutes: "মিনিট",
-    breakTime: "বিরতির সময়"
+    breakTime: "বিরতির সময়",
+    studyBlock: "স্টাডি ব্লক",
+    totalTime: "মোট সময়",
+    sessionDetails: "সেশন বিবরণ",
+    segments: "অংশ"
   },
   ta: {
     appName: "StudyNest",
@@ -794,7 +806,11 @@ export const translations = {
     set: "செட்",
     hours: "மணிநேரம்",
     minutes: "நிமிடங்கள்",
-    breakTime: "ஓய்வு நேரம்"
+    breakTime: "ஓய்வு நேரம்",
+    studyBlock: "ஆய்வுத் தொகுதி",
+    totalTime: "மொத்த நேரம்",
+    sessionDetails: "அமர்வு விவரங்கள்",
+    segments: "பிரிவுகள்"
   },
   ml: {
     appName: "StudyNest",
@@ -841,7 +857,7 @@ export const translations = {
     studyPlanner: "സ്റ്റഡി പ്ലാനർ",
     assignmentAnalysis: "അസൈൻമെന്റ് അനാലിസിസ്",
     letBuildPlan: "നിങ്ങളുടെ പ്ലാൻ നിർമ്മിക്കാം",
-    priorityTopics: "നിങ്ങൾക്കായുള്ള എന്റെ മുൻഗണനാ വിഷയങ്ങൾ",
+    priorityTopics: "നിങ്ങൾക്കായുള്ള എന്റെ മുൻഗണനാ विषयोंങ്ങൾ",
     strategy: "നിങ്ങളുടെ വിജയത്തിനായി എന്റെ തന്ത്രം",
     weeklySchedule: "നമ്മുടെ പ്രതിവാര റോഡ്‌മാപ്പ്",
     actionableSteps: "നിങ്ങളുടെ ഉടനടിയുള്ള നടപടികൾ",
@@ -993,6 +1009,10 @@ export const translations = {
     set: "സെറ്റ്",
     hours: "മണിക്കൂർ",
     minutes: "മിനിറ്റ്",
-    breakTime: "വിശ്രമ സമയം"
+    breakTime: "വിശ്രമ സമയം",
+    studyBlock: "സ്റ്റഡി ബ്ലോക്ക്",
+    totalTime: "ആകെ സമയം",
+    sessionDetails: "സെഷൻ വിവരങ്ങൾ",
+    segments: "ഭാഗങ്ങൾ"
   }
 };
