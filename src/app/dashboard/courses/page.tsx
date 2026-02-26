@@ -2,15 +2,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
-import { collection, query, orderBy, doc, getDoc } from "firebase/firestore"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Info } from "lucide-react"
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useDoc } from "@/firebase"
+import { collection, query, orderBy, doc, where, getDocs } from "firebase/firestore"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,8 +32,17 @@ export default function CurriculumPage() {
   const { toast } = useToast()
   const { t, language } = useI18n()
   const [search, setSearch] = useState("")
-  const [isTeacher, setIsTeacher] = useState(false)
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>("all")
   
+  const profileRef = useMemoFirebase(() => {
+    if (!user || !db) return null;
+    return doc(db, "userProfiles", user.uid);
+  }, [user, db]);
+  const { data: profile } = useDoc(profileRef);
+
+  const isTeacher = profile?.role === 'Teacher';
+  const isStudent = profile?.role === 'Student';
+
   const [newCourseName, setNewCourseName] = useState("")
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<any>(null)
@@ -40,15 +50,16 @@ export default function CurriculumPage() {
   const [newResource, setNewResource] = useState({ title: "", type: "Link", linkUrl: "", description: "" })
   const [isAddingResource, setIsAddingResource] = useState(false)
 
-  useEffect(() => {
-    const checkRole = async () => {
-      if (user && db) {
-        const snap = await getDoc(doc(db, "userProfiles", user.uid));
-        if (snap.exists()) setIsTeacher(snap.data().role === 'Teacher');
-      }
-    };
-    checkRole();
-  }, [user, db]);
+  // Teachers in the same institution (for filtering)
+  const teachersQuery = useMemoFirebase(() => {
+    if (!db || !profile?.institutionId || !isStudent) return null;
+    return query(
+      collection(db, "userProfiles"),
+      where("role", "==", "Teacher"),
+      where("institutionId", "==", profile.institutionId)
+    );
+  }, [db, profile?.institutionId, isStudent]);
+  const { data: institutionalTeachers } = useCollection(teachersQuery);
 
   const subjectsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -57,14 +68,38 @@ export default function CurriculumPage() {
   const { data: subjects, isLoading: isSubjectsLoading } = useCollection(subjectsQuery);
 
   const materialsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return query(collection(db, "materials"), orderBy("uploadDate", "desc"));
-  }, [db, user]);
+    if (!db || !user || !profile) return null;
+    
+    // Base query: only see materials from own institution (if student) or all (if teacher)
+    if (isStudent && profile.institutionId) {
+      return query(
+        collection(db, "materials"),
+        where("institutionId", "==", profile.institutionId),
+        orderBy("uploadDate", "desc")
+      );
+    } else if (isTeacher) {
+      return query(
+        collection(db, "materials"),
+        orderBy("uploadDate", "desc")
+      );
+    }
+    return null;
+  }, [db, user, profile, isStudent, isTeacher]);
   const { data: allMaterials, isLoading: isMaterialsLoading } = useCollection(materialsQuery);
 
-  const filteredSubjects = subjects?.filter(subject => 
-    subject.name.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  const filteredMaterials = allMaterials?.filter(m => {
+    if (selectedTeacherId !== "all" && m.teacherId !== selectedTeacherId) return false;
+    return true;
+  }) || [];
+
+  const filteredSubjects = subjects?.filter(subject => {
+    const matchesSearch = subject.name.toLowerCase().includes(search.toLowerCase());
+    if (!matchesSearch) return false;
+
+    // Only show subjects that have materials after applying the teacher filter
+    const hasMaterials = filteredMaterials.some(m => m.subjectId === subject.id);
+    return hasMaterials || isTeacher; // Teachers see all subjects they might want to add to
+  }) || [];
 
   const handleAddCourse = () => {
     if (!db || !newCourseName.trim()) return;
@@ -101,7 +136,8 @@ export default function CurriculumPage() {
         type: newResource.type,
         subjectId: selectedSubject.id,
         teacherId: user.uid,
-        author: user.email?.split('@')[0] || "Teacher",
+        institutionId: profile?.institutionId || null,
+        author: `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || user.email?.split('@')[0],
         uploadDate: new Date().toISOString()
       });
 
@@ -126,39 +162,60 @@ export default function CurriculumPage() {
           <p className="text-muted-foreground text-sm">{t('manageCurriculum')}</p>
         </div>
 
-        {isTeacher && (
-          <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm h-9">
-                <Plus className="h-4 w-4" />
-                {t('create')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{t('addNewResource')}</DialogTitle>
-                <DialogDescription>{t('subjectsDescription')}</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">{t('resourceTitle')}</Label>
-                  <Input 
-                    id="name"
-                    placeholder="e.g. Organic Chemistry"
-                    value={newCourseName} 
-                    onChange={(e) => setNewCourseName(e.target.value)} 
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddCourse} className="bg-accent text-accent-foreground rounded-xl px-6">
-                  {t('save')}
+        <div className="flex items-center gap-2">
+          {isStudent && profile?.institutionId && institutionalTeachers && institutionalTeachers.length > 0 && (
+            <div className="flex items-center gap-2 mr-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={selectedTeacherId} onValueChange={setSelectedTeacherId}>
+                <SelectTrigger className="w-[180px] h-9 rounded-full bg-card border-none shadow-sm text-xs">
+                  <SelectValue placeholder={t('filterByTeacher')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('allTeachers')}</SelectItem>
+                  {institutionalTeachers.map(teacher => (
+                    <SelectItem key={teacher.id} value={teacher.id}>
+                      {teacher.firstName} {teacher.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {isTeacher && (
+            <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm h-9">
+                  <Plus className="h-4 w-4" />
+                  {t('create')}
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{t('addNewResource')}</DialogTitle>
+                  <DialogDescription>{t('subjectsDescription')}</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">{t('resourceTitle')}</Label>
+                    <Input 
+                      id="name"
+                      placeholder="e.g. Organic Chemistry"
+                      value={newCourseName} 
+                      onChange={(e) => setNewCourseName(e.target.value)} 
+                      className="rounded-xl"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleAddCourse} className="bg-accent text-accent-foreground rounded-xl px-6">
+                    {t('save')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="relative">
@@ -171,7 +228,7 @@ export default function CurriculumPage() {
         />
       </div>
 
-      {isSubjectsLoading ? (
+      {isSubjectsLoading || isMaterialsLoading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </div>
@@ -208,7 +265,7 @@ export default function CurriculumPage() {
               <CardContent className="pb-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">
-                    {allMaterials?.filter(m => m.subjectId === subject.id).length || 0} {t('materials')}
+                    {filteredMaterials.filter(m => m.subjectId === subject.id).length} {t('materials')}
                   </span>
                   <Button 
                     variant="secondary" 
@@ -247,7 +304,7 @@ export default function CurriculumPage() {
             <div className="space-y-3">
               <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('resources')}</Label>
               <div className="space-y-2">
-                {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
+                {filteredMaterials.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
                   <div key={m.id} className="flex flex-col p-3 bg-muted/30 rounded-xl group transition-all hover:bg-muted/50 gap-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 overflow-hidden">
@@ -256,8 +313,13 @@ export default function CurriculumPage() {
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium truncate">{m.title}</span>
-                          <span className="text-[10px] text-muted-foreground line-clamp-1">
-                            {m.description}
+                          {m.description && (
+                            <span className="text-[10px] text-muted-foreground line-clamp-1">
+                              {m.description}
+                            </span>
+                          )}
+                          <span className="text-[9px] text-accent font-medium mt-0.5">
+                            {m.author} • {new Date(m.uploadDate).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -267,7 +329,7 @@ export default function CurriculumPage() {
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         </Button>
-                        {isTeacher && (
+                        {isTeacher && m.teacherId === user?.uid && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10">
@@ -294,7 +356,7 @@ export default function CurriculumPage() {
                     </div>
                   </div>
                 ))}
-                {(allMaterials?.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
+                {(filteredMaterials.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
                   <div className="text-center py-8 text-muted-foreground italic text-xs">
                     {t('noResourcesFound')}
                   </div>
