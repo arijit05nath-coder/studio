@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2 } from "lucide-react"
+import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -25,8 +25,10 @@ export default function FocusPage() {
   const [timerMode, setTimerMode] = useState<'pomodoro' | 'custom'>('pomodoro')
   const [customWorkMinutes, setCustomWorkMinutes] = useState(25)
   const [customBreakMinutes, setCustomBreakMinutes] = useState(5)
+  const [customSets, setCustomSets] = useState(1)
   
   const [sessionType, setSessionType] = useState<'work' | 'break'>('work')
+  const [currentSet, setCurrentSet] = useState(1)
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isActive, setIsActive] = useState(false)
   const [isStrict, setIsStrict] = useState(false)
@@ -99,10 +101,28 @@ export default function FocusPage() {
 
   const handleSessionComplete = () => {
     saveSession('Completed');
-    if (sessionType === 'work') {
-      setSessionType('break')
+    
+    if (timerMode === 'pomodoro') {
+      if (sessionType === 'work') {
+        setSessionType('break')
+      } else {
+        setSessionType('work')
+      }
     } else {
-      setSessionType('work')
+      // Custom mode with sets
+      if (sessionType === 'work') {
+        setSessionType('break')
+      } else {
+        // Break finished, increment set
+        if (currentSet < customSets) {
+          setCurrentSet(prev => prev + 1);
+          setSessionType('work');
+          setIsActive(true); // Automatically start next work session if sets remain
+        } else {
+          // All sets finished
+          resetTimer();
+        }
+      }
     }
   }
 
@@ -119,9 +139,11 @@ export default function FocusPage() {
       saveSession('Abandoned');
     }
     setIsActive(false)
+    setSessionType('work')
+    setCurrentSet(1)
     const mins = timerMode === 'pomodoro'
-      ? (sessionType === 'work' ? 25 : 5)
-      : (sessionType === 'work' ? customWorkMinutes : customBreakMinutes);
+      ? 25
+      : customWorkMinutes;
     setTimeLeft(mins * 60)
     startTimeRef.current = null;
   }
@@ -176,15 +198,20 @@ export default function FocusPage() {
               sessionType === 'work' ? "bg-primary/20" : "bg-accent/20"
             )}>
               <div className="flex justify-center mb-4">
-                <Tabs value={timerMode} onValueChange={(v) => setTimerMode(v as any)} className="w-auto">
+                <Tabs value={timerMode} onValueChange={(v) => { setTimerMode(v as any); resetTimer(); }} className="w-auto">
                   <TabsList className="grid w-48 grid-cols-2 rounded-full h-8 p-1">
                     <TabsTrigger value="pomodoro" className="rounded-full text-xs" disabled={isActive}>{t('pomodoro')}</TabsTrigger>
                     <TabsTrigger value="custom" className="rounded-full text-xs" disabled={isActive}>{t('custom')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
-              <div className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-2">
+              <div className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-2 flex items-center justify-center gap-2">
                 {sessionType === 'work' ? t('todaysFocus') : t('rewards')}
+                {timerMode === 'custom' && customSets > 1 && (
+                  <Badge variant="outline" className="ml-2 bg-background/50 border-accent/20">
+                    {t('set')} {currentSet}/{customSets}
+                  </Badge>
+                )}
               </div>
               <div className="text-7xl font-mono font-bold text-accent-foreground">
                 {formatTime(timeLeft)}
@@ -247,6 +274,20 @@ export default function FocusPage() {
                     max={60} 
                     step={1} 
                     onValueChange={([val]) => setCustomBreakMinutes(val)}
+                    disabled={isActive}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="flex items-center gap-1"><Hash className="h-3 w-3" /> {t('numSets')}</span>
+                    <span>{customSets}</span>
+                  </div>
+                  <Slider 
+                    value={[customSets]} 
+                    min={1} 
+                    max={10} 
+                    step={1} 
+                    onValueChange={([val]) => setCustomSets(val)}
                     disabled={isActive}
                   />
                 </div>

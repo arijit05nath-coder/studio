@@ -192,7 +192,9 @@ export const translations = {
     noResourcesFound: "No resources uploaded for this subject yet.",
     delete: "Delete",
     filterByTeacher: "Filter by Teacher",
-    allTeachers: "All Teachers"
+    allTeachers: "All Teachers",
+    numSets: "Number of Sets",
+    set: "Set"
   },
   hi: {
     appName: "StudyNest",
@@ -386,7 +388,9 @@ export const translations = {
     noResourcesFound: "इस विषय के लिए अभी तक कोई संसाधन अपलोड नहीं किया गया है।",
     delete: "मिटाएँ",
     filterByTeacher: "शिक्षक द्वारा फ़िल्टर करें",
-    allTeachers: "सभी शिक्षक"
+    allTeachers: "सभी शिक्षक",
+    numSets: "सेट की संख्या",
+    set: "सेट"
   },
   bn: {
     appName: "StudyNest",
@@ -552,7 +556,7 @@ export const translations = {
     studentProgressDesc: "আপনার ছাত্রদের ব্যস্ততা এবং পারফরম্যান্স ট্র্যাক করুন।",
     manageCurriculum: "বিষয় এবং অন্বেষণ উপকরণ পরিচালনা करें।",
     teacherDashboardDesc: "রিয়েল-টাইমে ক্লাসের ক্রিয়াকলাপ পর্যবেক্ষণ করুন।",
-    aiCoachDesc: "ব্যক্তিগত রোডম্যাপ এবং বিশেষজ্ঞ অ্যাসাইনমেন্ট প্রতিক্রিয়া।",
+    aiCoachDesc: "ব্যক্তিগত রোডമ্যাপ এবং বিশেষজ্ঞ অ্যাসাইনমেন্ট প্রতিক্রিয়া।",
     statusCompleted: "সম্পন্ন",
     statusInterrupted: "বিঘ্নিত",
     statusAbandoned: "পরিত্যক্ত",
@@ -580,7 +584,9 @@ export const translations = {
     noResourcesFound: "এই বিষয়ের জন্য এখনো কোনো রিসোর্স আপলোড করা হয়নি।",
     delete: "মুছে ফেলুন",
     filterByTeacher: "শিক্ষক দ্বারা ফিল্টার করুন",
-    allTeachers: "সমস্ত শিক্ষক"
+    allTeachers: "সমস্ত শিক্ষক",
+    numSets: "সেট সংখ্যা",
+    set: "সেট"
   },
   ta: {
     appName: "StudyNest",
@@ -759,7 +765,7 @@ export const translations = {
     resourceTitle: "தலைப்பு",
     resourceLink: "ஆதார இணைப்பு",
     resourceDescription: "விளக்கம்",
-    resourceDescriptionPlaceholder: "இந்த ஆதாரம் எதைப் பற்றியது என்பதைச் சுருக்கமாக விளக்குங்கள்...",
+    resourceDescriptionPlaceholder: "இந்த ஆதாரம் எதைப் பற்றியது என்பதைச் சுരുக்கமாக விளக்குங்கள்...",
     addLink: "இணைப்பைச் சேர்",
     close: "மூடு",
     deleteSubjectTitle: "பாடத்தை நீக்கவா?",
@@ -774,7 +780,9 @@ export const translations = {
     noResourcesFound: "இந்த பாடத்திற்கு இன்னும் ஆதாரங்கள் எதுவும் பதிவேற்றப்படவில்லை.",
     delete: "நீக்கு",
     filterByTeacher: "ஆசிரியர் மூலம் வடிகட்டவும்",
-    allTeachers: "அனைத்து ஆசிரியர்கள்"
+    allTeachers: "அனைத்து ஆசிரியர்கள்",
+    numSets: "செட்களின் எண்ணிக்கை",
+    set: "செட்"
   },
   ml: {
     appName: "StudyNest",
@@ -968,6 +976,8 @@ export const translations = {
     noResourcesFound: "ഈ വിഷയത്തിനായി ഇതുവരെ വിഭവങ്ങളൊന്നും അപ്‌ലോഡ് ചെയ്തിട്ടില്ല.",
     delete: "നീക്കം ചെയ്യുക",
     filterByTeacher: "അധ്യാപകൻ ഉപയോഗിച്ച് ഫിൽട്ടർ ചെയ്യുക",
-    allTeachers: "എല്ലാ അധ്യാപകർക്കും"
+    allTeachers: "എല്ലാ അധ്യാപകർക്കും",
+    numSets: "സെറ്റുകളുടെ എണ്ണം",
+    set: "സെറ്റ്"
   }
 };
