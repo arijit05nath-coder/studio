@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
@@ -248,47 +248,46 @@ export default function FocusPage() {
                   {t('timerSettings')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span>{t('focusDuration')}</span>
-                    <span>{customWorkMinutes} {t('minutes')}</span>
-                  </div>
-                  <Slider 
-                    value={[customWorkMinutes]} 
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="work-mins" className="text-xs font-medium">{t('focusDuration')} ({t('minutes')})</Label>
+                  <Input 
+                    id="work-mins"
+                    type="number"
+                    value={customWorkMinutes} 
                     min={1} 
                     max={120} 
-                    step={1} 
-                    onValueChange={([val]) => setCustomWorkMinutes(val)}
+                    onChange={(e) => setCustomWorkMinutes(parseInt(e.target.value) || 1)}
                     disabled={isActive}
+                    className="rounded-xl"
                   />
                 </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span>{t('breakDuration')}</span>
-                    <span>{customBreakMinutes} {t('minutes')}</span>
-                  </div>
-                  <Slider 
-                    value={[customBreakMinutes]} 
+                <div className="space-y-2">
+                  <Label htmlFor="break-mins" className="text-xs font-medium">{t('breakDuration')} ({t('minutes')})</Label>
+                  <Input 
+                    id="break-mins"
+                    type="number"
+                    value={customBreakMinutes} 
                     min={1} 
                     max={60} 
-                    step={1} 
-                    onValueChange={([val]) => setCustomBreakMinutes(val)}
+                    onChange={(e) => setCustomBreakMinutes(parseInt(e.target.value) || 1)}
                     disabled={isActive}
+                    className="rounded-xl"
                   />
                 </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span className="flex items-center gap-1"><Hash className="h-3 w-3" /> {t('numSets')}</span>
-                    <span>{customSets}</span>
-                  </div>
-                  <Slider 
-                    value={[customSets]} 
+                <div className="space-y-2">
+                  <Label htmlFor="sets" className="text-xs font-medium flex items-center gap-1">
+                    <Hash className="h-3 w-3" /> {t('numSets')}
+                  </Label>
+                  <Input 
+                    id="sets"
+                    type="number"
+                    value={customSets} 
                     min={1} 
                     max={10} 
-                    step={1} 
-                    onValueChange={([val]) => setCustomSets(val)}
+                    onChange={(e) => setCustomSets(parseInt(e.target.value) || 1)}
                     disabled={isActive}
+                    className="rounded-xl"
                   />
                 </div>
               </CardContent>
