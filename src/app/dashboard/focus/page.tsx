@@ -58,7 +58,7 @@ export default function FocusPage() {
         : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes);
       setTimeLeft(mins * 60);
     }
-  }, [timerMode, customWorkHours, customWorkMinutes, customBreakMinutes, sessionType, isActive, totalWorkMinutes]);
+  }, [timerMode, totalWorkMinutes, customBreakMinutes, sessionType, isActive]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -66,8 +66,7 @@ export default function FocusPage() {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1)
       }, 1000)
-    } else if (timeLeft === 0) {
-      setIsActive(false)
+    } else if (isActive && timeLeft === 0) {
       handleSessionComplete()
     } else {
       if (timerRef.current) clearInterval(timerRef.current)
@@ -75,7 +74,7 @@ export default function FocusPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [isActive, timeLeft])
+  }, [isActive, timeLeft, timerMode, sessionType, currentSet])
 
   const saveSession = (status: 'Completed' | 'Interrupted' | 'Abandoned') => {
     if (!user || !db || !startTimeRef.current) return;
@@ -89,7 +88,7 @@ export default function FocusPage() {
       studentId: user.uid,
       type: timerMode === 'pomodoro' ? (sessionType === 'work' ? 'Pomodoro' : 'Break') : (sessionType === 'work' ? 'Custom Focus' : 'Custom Break'),
       plannedDurationMinutes: plannedDuration,
-      actualDurationMinutes: actualDuration,
+      actualDurationMinutes: Math.max(0, actualDuration),
       startTime: startTimeRef.current.toISOString(),
       endTime: new Date().toISOString(),
       status,
@@ -108,24 +107,24 @@ export default function FocusPage() {
     if (timerMode === 'pomodoro') {
       if (sessionType === 'work') {
         setSessionType('break');
-        setIsActive(true); // Automatically start break
+        setTimeLeft(5 * 60);
+        setIsActive(true); 
       } else {
         setSessionType('work');
-        // Pomodoro usually waits for user to start work, but we can stay consistent
+        setIsActive(false);
       }
     } else {
-      // Custom mode with sets
       if (sessionType === 'work') {
         setSessionType('break');
-        setIsActive(true); // Automatically start break
+        setTimeLeft(customBreakMinutes * 60);
+        setIsActive(true);
       } else {
-        // Break finished, increment set
         if (currentSet < customSets) {
           setCurrentSet(prev => prev + 1);
           setSessionType('work');
-          setIsActive(true); // Automatically start next work session if sets remain
+          setTimeLeft(totalWorkMinutes * 60);
+          setIsActive(true);
         } else {
-          // All sets finished
           resetTimer();
         }
       }
@@ -133,8 +132,8 @@ export default function FocusPage() {
   }
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
+    const mins = Math.floor(Math.max(0, seconds) / 60)
+    const secs = Math.max(0, seconds) % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
@@ -147,10 +146,6 @@ export default function FocusPage() {
     setIsActive(false)
     setSessionType('work')
     setCurrentSet(1)
-    const mins = timerMode === 'pomodoro'
-      ? 25
-      : totalWorkMinutes;
-    setTimeLeft(mins * 60)
     startTimeRef.current = null;
   }
 
@@ -164,11 +159,23 @@ export default function FocusPage() {
     <div className="space-y-8 relative">
       {isStrict && isActive && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
-          <ShieldAlert className="h-16 w-16 text-destructive mb-6 animate-pulse fill-destructive/20" />
-          <h2 className="text-4xl font-bold mb-4">{t('strictFocusActive')}</h2>
-          <p className="text-xl text-muted-foreground mb-12 max-w-md">
-            {t('stayFocused')}
-          </p>
+          {sessionType === 'work' ? (
+            <>
+              <ShieldAlert className="h-16 w-16 text-destructive mb-6 animate-pulse fill-destructive/20" />
+              <h2 className="text-4xl font-bold mb-4">{t('strictFocusActive')}</h2>
+              <p className="text-xl text-muted-foreground mb-12 max-w-md">
+                {t('stayFocused')}
+              </p>
+            </>
+          ) : (
+            <>
+              <Clock className="h-16 w-16 text-accent mb-6 animate-bounce fill-accent/20" />
+              <h2 className="text-4xl font-bold mb-4">{t('breakTime')}</h2>
+              <p className="text-xl text-muted-foreground mb-12 max-w-md">
+                Take a deep breath. You've earned it!
+              </p>
+            </>
+          )}
           <div className="text-8xl font-mono font-bold text-accent-foreground mb-12 tracking-tighter">
             {formatTime(timeLeft)}
           </div>
