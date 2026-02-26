@@ -107,14 +107,17 @@ export default function FocusPage() {
     
     if (timerMode === 'pomodoro') {
       if (sessionType === 'work') {
-        setSessionType('break')
+        setSessionType('break');
+        setIsActive(true); // Automatically start break
       } else {
-        setSessionType('work')
+        setSessionType('work');
+        // Pomodoro usually waits for user to start work, but we can stay consistent
       }
     } else {
       // Custom mode with sets
       if (sessionType === 'work') {
-        setSessionType('break')
+        setSessionType('break');
+        setIsActive(true); // Automatically start break
       } else {
         // Break finished, increment set
         if (currentSet < customSets) {
@@ -209,7 +212,7 @@ export default function FocusPage() {
                 </Tabs>
               </div>
               <div className="text-sm font-medium uppercase tracking-widest text-muted-foreground mb-2 flex items-center justify-center gap-2">
-                {sessionType === 'work' ? t('todaysFocus') : t('rewards')}
+                {sessionType === 'work' ? t('todaysFocus') : t('breakTime')}
                 {timerMode === 'custom' && customSets > 1 && (
                   <Badge variant="outline" className="ml-2 bg-background/50 border-accent/20">
                     {t('set')} {currentSet}/{customSets}

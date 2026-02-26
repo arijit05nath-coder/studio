@@ -196,7 +196,8 @@ export const translations = {
     numSets: "Number of Sets",
     set: "Set",
     hours: "Hours",
-    minutes: "Minutes"
+    minutes: "Minutes",
+    breakTime: "Break Time"
   },
   hi: {
     appName: "StudyNest",
@@ -394,7 +395,8 @@ export const translations = {
     numSets: "सेट की संख्या",
     set: "सेट",
     hours: "घंटे",
-    minutes: "मिनट"
+    minutes: "मिनट",
+    breakTime: "ब्रेक का समय"
   },
   bn: {
     appName: "StudyNest",
@@ -592,7 +594,8 @@ export const translations = {
     numSets: "সেট সংখ্যা",
     set: "সেট",
     hours: "ঘণ্টা",
-    minutes: "মিনিট"
+    minutes: "মিনিট",
+    breakTime: "বিরতির সময়"
   },
   ta: {
     appName: "StudyNest",
@@ -790,7 +793,8 @@ export const translations = {
     numSets: "செட்களின் எண்ணிக்கை",
     set: "செட்",
     hours: "மணிநேரம்",
-    minutes: "நிமிடங்கள்"
+    minutes: "நிமிடங்கள்",
+    breakTime: "ஓய்வு நேரம்"
   },
   ml: {
     appName: "StudyNest",
@@ -988,6 +992,7 @@ export const translations = {
     numSets: "സെറ്റുകളുടെ എണ്ണം",
     set: "സെറ്റ്",
     hours: "മണിക്കൂർ",
-    minutes: "മിനിറ്റ്"
+    minutes: "മിനിറ്റ്",
+    breakTime: "വിശ്രമ സമയം"
   }
 };
