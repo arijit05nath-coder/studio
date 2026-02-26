@@ -51,6 +51,7 @@ export default function FocusPage() {
 
   const totalWorkMinutes = (customWorkHours * 60) + customWorkMinutes;
 
+  // Initialize time when settings change, but ONLY if timer is not active (paused/reset)
   useEffect(() => {
     if (!isActive) {
       const mins = timerMode === 'pomodoro' 
@@ -58,8 +59,9 @@ export default function FocusPage() {
         : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes);
       setTimeLeft(mins * 60);
     }
-  }, [timerMode, totalWorkMinutes, customBreakMinutes, sessionType, isActive]);
+  }, [timerMode, totalWorkMinutes, customBreakMinutes, sessionType]);
 
+  // Main ticker logic
   useEffect(() => {
     if (isActive && timeLeft > 0) {
       if (!startTimeRef.current) startTimeRef.current = new Date();
@@ -67,6 +69,7 @@ export default function FocusPage() {
         setTimeLeft((prev) => prev - 1)
       }, 1000)
     } else if (isActive && timeLeft === 0) {
+      if (timerRef.current) clearInterval(timerRef.current)
       handleSessionComplete()
     } else {
       if (timerRef.current) clearInterval(timerRef.current)
@@ -74,7 +77,7 @@ export default function FocusPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [isActive, timeLeft, timerMode, sessionType, currentSet])
+  }, [isActive, timeLeft])
 
   const saveSession = (status: 'Completed' | 'Interrupted' | 'Abandoned') => {
     if (!user || !db || !startTimeRef.current) return;
@@ -147,13 +150,15 @@ export default function FocusPage() {
     setSessionType('work')
     setCurrentSet(1)
     startTimeRef.current = null;
+    const mins = timerMode === 'pomodoro' ? 25 : totalWorkMinutes;
+    setTimeLeft(mins * 60);
   }
 
-  const totalSeconds = timerMode === 'pomodoro'
+  const totalSecondsForMode = timerMode === 'pomodoro'
     ? (sessionType === 'work' ? 25 : 5) * 60
     : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes) * 60;
     
-  const progress = (timeLeft / totalSeconds) * 100
+  const progress = (timeLeft / totalSecondsForMode) * 100
 
   return (
     <div className="space-y-8 relative">
