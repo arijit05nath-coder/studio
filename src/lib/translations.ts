@@ -190,7 +190,9 @@ export const translations = {
     noSubjectsFound: "No subjects found.",
     subjectResourcesDesc: "Educational resources for this subject.",
     noResourcesFound: "No resources uploaded for this subject yet.",
-    delete: "Delete"
+    delete: "Delete",
+    filterByTeacher: "Filter by Teacher",
+    allTeachers: "All Teachers"
   },
   hi: {
     appName: "StudyNest",
@@ -382,7 +384,9 @@ export const translations = {
     noSubjectsFound: "कोई विषय नहीं मिला।",
     subjectResourcesDesc: "इस विषय के लिए शैक्षिक संसाधन।",
     noResourcesFound: "इस विषय के लिए अभी तक कोई संसाधन अपलोड नहीं किया गया है।",
-    delete: "मिटाएँ"
+    delete: "मिटाएँ",
+    filterByTeacher: "शिक्षक द्वारा फ़िल्टर करें",
+    allTeachers: "सभी शिक्षक"
   },
   bn: {
     appName: "StudyNest",
@@ -546,7 +550,7 @@ export const translations = {
     currentProgress: "বর্তমান অগ্রগতি",
     focusModeDesc: "কাস্টম টাইমার এবং কঠোর ট্র্যাকিংয়ের মাধ্যমে আপনার উত্পাদনশীলতা বৃদ্ধি করুন।",
     studentProgressDesc: "আপনার ছাত্রদের ব্যস্ততা এবং পারফরম্যান্স ট্র্যাক করুন।",
-    manageCurriculum: "বিষয় এবং অন্বেষণ উপকরণ পরিচালনা করুন।",
+    manageCurriculum: "বিষয় এবং অন্বেষণ উপকরণ পরিচালনা करें।",
     teacherDashboardDesc: "রিয়েল-টাইমে ক্লাসের ক্রিয়াকলাপ পর্যবেক্ষণ করুন।",
     aiCoachDesc: "ব্যক্তিগত রোডম্যাপ এবং বিশেষজ্ঞ অ্যাসাইনমেন্ট প্রতিক্রিয়া।",
     statusCompleted: "সম্পন্ন",
@@ -574,7 +578,9 @@ export const translations = {
     noSubjectsFound: "কোনো বিষয় পাওয়া যায়নি।",
     subjectResourcesDesc: "এই বিষয়ের জন্য শিক্ষামূলক সংস্থান।",
     noResourcesFound: "এই বিষয়ের জন্য এখনো কোনো রিসোর্স আপলোড করা হয়নি।",
-    delete: "মুছে ফেলুন"
+    delete: "মুছে ফেলুন",
+    filterByTeacher: "শিক্ষক দ্বারা ফিল্টার করুন",
+    allTeachers: "সমস্ত শিক্ষক"
   },
   ta: {
     appName: "StudyNest",
@@ -766,7 +772,9 @@ export const translations = {
     noSubjectsFound: "பாடங்கள் எதுவும் காணப்படவில்லை.",
     subjectResourcesDesc: "இந்த பாடத்திற்கான கல்வி ஆதாரங்கள்.",
     noResourcesFound: "இந்த பாடத்திற்கு இன்னும் ஆதாரங்கள் எதுவும் பதிவேற்றப்படவில்லை.",
-    delete: "நீக்கு"
+    delete: "நீக்கு",
+    filterByTeacher: "ஆசிரியர் மூலம் வடிகட்டவும்",
+    allTeachers: "அனைத்து ஆசிரியர்கள்"
   },
   ml: {
     appName: "StudyNest",
@@ -958,6 +966,8 @@ export const translations = {
     noSubjectsFound: "വിഷയങ്ങൾ ഒന്നും കണ്ടെത്തിയില്ല.",
     subjectResourcesDesc: "ഈ വിഷയത്തിനായുള്ള വിദ്യാഭ്യാസ വിഭവങ്ങൾ.",
     noResourcesFound: "ഈ വിഷയത്തിനായി ഇതുവരെ വിഭവങ്ങളൊന്നും അപ്‌ലോഡ് ചെയ്തിട്ടില്ല.",
-    delete: "നീക്കം ചെയ്യുക"
+    delete: "നീക്കം ചെയ്യുക",
+    filterByTeacher: "അധ്യാപകൻ ഉപയോഗിച്ച് ഫിൽട്ടർ ചെയ്യുക",
+    allTeachers: "എല്ലാ അധ്യാപകർക്കും"
   }
 };

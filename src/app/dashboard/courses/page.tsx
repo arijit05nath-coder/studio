@@ -1,16 +1,17 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useDoc } from "@/firebase"
 import { collection, query, orderBy, doc } from "firebase/firestore"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText } from "lucide-react"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, User } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,7 @@ export default function CurriculumPage() {
   const { toast } = useToast()
   const { t, language } = useI18n()
   const [search, setSearch] = useState("")
+  const [selectedTeacherId, setSelectedTeacherId] = useState("all")
   
   const profileRef = useMemoFirebase(() => {
     if (!user || !db) return null;
@@ -59,9 +61,35 @@ export default function CurriculumPage() {
   }, [db, user]);
   const { data: allMaterials, isLoading: isMaterialsLoading } = useCollection(materialsQuery);
 
-  const filteredSubjects = subjects?.filter(subject => {
-    return subject.name.toLowerCase().includes(search.toLowerCase());
-  }) || [];
+  // Derive unique teachers from materials
+  const teachers = useMemo(() => {
+    if (!allMaterials) return [];
+    const map = new Map();
+    allMaterials.forEach(m => {
+      if (m.teacherId && m.author) {
+        map.set(m.teacherId, m.author);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [allMaterials]);
+
+  const filteredSubjects = useMemo(() => {
+    let list = subjects || [];
+    
+    // Filter by search
+    if (search) {
+      list = list.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
+    }
+
+    // Filter by teacher (if student and teacher selected)
+    if (!isTeacher && selectedTeacherId !== "all") {
+      list = list.filter(subject => {
+        return allMaterials?.some(m => m.subjectId === subject.id && m.teacherId === selectedTeacherId);
+      });
+    }
+
+    return list;
+  }, [subjects, search, selectedTeacherId, isTeacher, allMaterials]);
 
   const handleAddCourse = () => {
     if (!db || !newCourseName.trim()) return;
@@ -115,6 +143,15 @@ export default function CurriculumPage() {
     }
   }
 
+  const materialsForSelectedSubject = useMemo(() => {
+    if (!selectedSubject || !allMaterials) return [];
+    let list = allMaterials.filter(m => m.subjectId === selectedSubject.id);
+    if (!isTeacher && selectedTeacherId !== "all") {
+      list = list.filter(m => m.teacherId === selectedTeacherId);
+    }
+    return list;
+  }, [selectedSubject, allMaterials, isTeacher, selectedTeacherId]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -158,14 +195,37 @@ export default function CurriculumPage() {
         )}
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input 
-          className="pl-10 rounded-full bg-card border-none shadow-sm h-10" 
-          placeholder={t('searchMaterials')} 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            className="pl-10 rounded-full bg-card border-none shadow-sm h-10" 
+            placeholder={t('searchMaterials')} 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {!isTeacher && (
+          <div className="w-full md:w-64">
+            <Select value={selectedTeacherId} onValueChange={setSelectedTeacherId}>
+              <SelectTrigger className="rounded-full bg-card border-none shadow-sm h-10 px-4">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder={t('filterByTeacher')} />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allTeachers')}</SelectItem>
+                {teachers.map((teacher) => (
+                  <SelectItem key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {isSubjectsLoading || isMaterialsLoading ? (
@@ -205,7 +265,11 @@ export default function CurriculumPage() {
               <CardContent className="pb-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">
-                    {allMaterials?.filter(m => m.subjectId === subject.id).length} {t('materials')}
+                    {allMaterials?.filter(m => {
+                      const matchSub = m.subjectId === subject.id;
+                      const matchTeacher = isTeacher || selectedTeacherId === "all" || m.teacherId === selectedTeacherId;
+                      return matchSub && matchTeacher;
+                    }).length} {t('materials')}
                   </span>
                   <Button 
                     variant="secondary" 
@@ -244,7 +308,7 @@ export default function CurriculumPage() {
             <div className="space-y-3">
               <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('resources')}</Label>
               <div className="space-y-2">
-                {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
+                {materialsForSelectedSubject.map((m) => (
                   <div key={m.id} className="flex flex-col p-3 bg-muted/30 rounded-xl group transition-all hover:bg-muted/50 gap-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 overflow-hidden">
@@ -296,7 +360,7 @@ export default function CurriculumPage() {
                     </div>
                   </div>
                 ))}
-                {(!allMaterials || allMaterials.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
+                {materialsForSelectedSubject.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground italic text-xs">
                     {t('noResourcesFound')}
                   </div>
