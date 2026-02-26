@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash } from "lucide-react"
+import { Play, Pause, RotateCcw, ShieldCheck, ShieldAlert, Loader2, Timer, Settings2, Hash, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -23,6 +23,7 @@ export default function FocusPage() {
   const { t } = useI18n()
   
   const [timerMode, setTimerMode] = useState<'pomodoro' | 'custom'>('pomodoro')
+  const [customWorkHours, setCustomWorkHours] = useState(0)
   const [customWorkMinutes, setCustomWorkMinutes] = useState(25)
   const [customBreakMinutes, setCustomBreakMinutes] = useState(5)
   const [customSets, setCustomSets] = useState(1)
@@ -48,14 +49,16 @@ export default function FocusPage() {
 
   const { data: sessions, isLoading: sessionsLoading } = useCollection(sessionsQuery);
 
+  const totalWorkMinutes = (customWorkHours * 60) + customWorkMinutes;
+
   useEffect(() => {
     if (!isActive) {
       const mins = timerMode === 'pomodoro' 
         ? (sessionType === 'work' ? 25 : 5) 
-        : (sessionType === 'work' ? customWorkMinutes : customBreakMinutes);
+        : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes);
       setTimeLeft(mins * 60);
     }
-  }, [timerMode, customWorkMinutes, customBreakMinutes, sessionType, isActive]);
+  }, [timerMode, customWorkHours, customWorkMinutes, customBreakMinutes, sessionType, isActive, totalWorkMinutes]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -80,7 +83,7 @@ export default function FocusPage() {
     const actualDuration = Math.floor((new Date().getTime() - startTimeRef.current.getTime()) / 60000);
     const plannedDuration = timerMode === 'pomodoro'
       ? (sessionType === 'work' ? 25 : 5)
-      : (sessionType === 'work' ? customWorkMinutes : customBreakMinutes);
+      : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes);
 
     addDocumentNonBlocking(collection(db, "userProfiles", user.uid, "focusSessions"), {
       studentId: user.uid,
@@ -143,14 +146,14 @@ export default function FocusPage() {
     setCurrentSet(1)
     const mins = timerMode === 'pomodoro'
       ? 25
-      : customWorkMinutes;
+      : totalWorkMinutes;
     setTimeLeft(mins * 60)
     startTimeRef.current = null;
   }
 
   const totalSeconds = timerMode === 'pomodoro'
     ? (sessionType === 'work' ? 25 : 5) * 60
-    : (sessionType === 'work' ? customWorkMinutes : customBreakMinutes) * 60;
+    : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes) * 60;
     
   const progress = (timeLeft / totalSeconds) * 100
 
@@ -249,19 +252,40 @@ export default function FocusPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="work-mins" className="text-xs font-medium">{t('focusDuration')} ({t('minutes')})</Label>
-                  <Input 
-                    id="work-mins"
-                    type="number"
-                    value={customWorkMinutes} 
-                    min={1} 
-                    max={120} 
-                    onChange={(e) => setCustomWorkMinutes(parseInt(e.target.value) || 1)}
-                    disabled={isActive}
-                    className="rounded-xl"
-                  />
+                <div className="space-y-3">
+                  <Label className="text-xs font-bold flex items-center gap-2">
+                    <Clock className="h-3 w-3 text-accent" /> {t('focusDuration')}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="work-hours" className="text-[10px] text-muted-foreground uppercase">{t('hours')}</Label>
+                      <Input 
+                        id="work-hours"
+                        type="number"
+                        value={customWorkHours} 
+                        min={0} 
+                        max={24} 
+                        onChange={(e) => setCustomWorkHours(parseInt(e.target.value) || 0)}
+                        disabled={isActive}
+                        className="rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="work-mins" className="text-[10px] text-muted-foreground uppercase">{t('minutes')}</Label>
+                      <Input 
+                        id="work-mins"
+                        type="number"
+                        value={customWorkMinutes} 
+                        min={0} 
+                        max={59} 
+                        onChange={(e) => setCustomWorkMinutes(parseInt(e.target.value) || 0)}
+                        disabled={isActive}
+                        className="rounded-xl"
+                      />
+                    </div>
+                  </div>
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="break-mins" className="text-xs font-medium">{t('breakDuration')} ({t('minutes')})</Label>
                   <Input 
@@ -275,6 +299,7 @@ export default function FocusPage() {
                     className="rounded-xl"
                   />
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="sets" className="text-xs font-medium flex items-center gap-1">
                     <Hash className="h-3 w-3" /> {t('numSets')}

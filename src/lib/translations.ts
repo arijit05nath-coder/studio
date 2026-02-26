@@ -194,7 +194,9 @@ export const translations = {
     filterByTeacher: "Filter by Teacher",
     allTeachers: "All Teachers",
     numSets: "Number of Sets",
-    set: "Set"
+    set: "Set",
+    hours: "Hours",
+    minutes: "Minutes"
   },
   hi: {
     appName: "StudyNest",
@@ -390,7 +392,9 @@ export const translations = {
     filterByTeacher: "शिक्षक द्वारा फ़िल्टर करें",
     allTeachers: "सभी शिक्षक",
     numSets: "सेट की संख्या",
-    set: "सेट"
+    set: "सेट",
+    hours: "घंटे",
+    minutes: "मिनट"
   },
   bn: {
     appName: "StudyNest",
@@ -586,7 +590,9 @@ export const translations = {
     filterByTeacher: "শিক্ষক দ্বারা ফিল্টার করুন",
     allTeachers: "সমস্ত শিক্ষক",
     numSets: "সেট সংখ্যা",
-    set: "সেট"
+    set: "সেট",
+    hours: "ঘণ্টা",
+    minutes: "মিনিট"
   },
   ta: {
     appName: "StudyNest",
@@ -765,7 +771,7 @@ export const translations = {
     resourceTitle: "தலைப்பு",
     resourceLink: "ஆதார இணைப்பு",
     resourceDescription: "விளக்கம்",
-    resourceDescriptionPlaceholder: "இந்த ஆதாரம் எதைப் பற்றியது என்பதைச் சுരുக்கமாக விளக்குங்கள்...",
+    resourceDescriptionPlaceholder: "இந்த ஆதாரம் எதைப் பற்றியது என்பதைச் சுருக்கமாக விளக்குங்கள்...",
     addLink: "இணைப்பைச் சேர்",
     close: "மூடு",
     deleteSubjectTitle: "பாடத்தை நீக்கவா?",
@@ -782,7 +788,9 @@ export const translations = {
     filterByTeacher: "ஆசிரியர் மூலம் வடிகட்டவும்",
     allTeachers: "அனைத்து ஆசிரியர்கள்",
     numSets: "செட்களின் எண்ணிக்கை",
-    set: "செட்"
+    set: "செட்",
+    hours: "மணிநேரம்",
+    minutes: "நிமிடங்கள்"
   },
   ml: {
     appName: "StudyNest",
@@ -978,6 +986,8 @@ export const translations = {
     filterByTeacher: "അധ്യാപകൻ ഉപയോഗിച്ച് ഫിൽട്ടർ ചെയ്യുക",
     allTeachers: "എല്ലാ അധ്യാപകർക്കും",
     numSets: "സെറ്റുകളുടെ എണ്ണം",
-    set: "സെറ്റ്"
+    set: "സെറ്റ്",
+    hours: "മണിക്കൂർ",
+    minutes: "മിനിറ്റ്"
   }
 };
