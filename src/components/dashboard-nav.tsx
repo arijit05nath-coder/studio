@@ -26,8 +26,7 @@ import { useAuth, useUser, useFirestore, updateDocumentNonBlocking } from "@/fir
 import { signOut } from "firebase/auth"
 import { doc } from "firebase/firestore"
 import { useI18n } from "@/lib/i18n-store"
-import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import { motion } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -143,7 +142,6 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      {/* Desktop Vertical Pill Nav - Frosted Glass Effect */}
       <nav className="hidden md:flex flex-col items-center gap-3 p-2 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-[2rem] fixed left-5 top-1/2 -translate-y-1/2 z-50 py-6 min-w-[60px]">
         <div className="mb-4">
           <Link href={role === 'Teacher' ? "/dashboard/teacher" : "/dashboard/student"}>
@@ -260,7 +258,6 @@ export function DashboardNav({ role, profile }: DashboardNavProps) {
         </div>
       </nav>
 
-      {/* Mobile Bottom Pill Nav - Frosted Glass Effect */}
       <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm h-14 bg-card/40 backdrop-blur-xl border border-border/50 shadow-2xl rounded-full flex items-center justify-around px-4">
         {filteredItems.map((item) => (
           <Link 

@@ -12,10 +12,9 @@ import {
   Clock, 
   Target, 
   TrendingUp,
-  User as UserIcon,
   Sparkles
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,7 +35,6 @@ export default function StudentProgressPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
 
-  // Fetch all students - Only proceed if teacher is signed in
   const studentsQuery = useMemoFirebase(() => {
     if (!db || !user || isUserLoading) return null;
     return query(collection(db, "userProfiles"), where("role", "==", "Student"));
@@ -44,7 +42,6 @@ export default function StudentProgressPage() {
 
   const { data: students, isLoading: studentsLoading } = useCollection(studentsQuery);
 
-  // Fetch data for selected student
   const sessionsQuery = useMemoFirebase(() => {
     if (!db || !selectedStudent || !user || isUserLoading) return null;
     return query(
@@ -132,7 +129,6 @@ export default function StudentProgressPage() {
         )}
       </div>
 
-      {/* Student Detail Dialog */}
       <Dialog open={!!selectedStudent} onOpenChange={(open) => !open && setSelectedStudent(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
@@ -151,7 +147,6 @@ export default function StudentProgressPage() {
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <Card className="bg-muted/30 border-none">
                 <CardContent className="p-4 flex flex-col items-center justify-center text-center">
@@ -176,7 +171,6 @@ export default function StudentProgressPage() {
               </Card>
             </div>
 
-            {/* Latest Study Plan */}
             <div className="space-y-3">
               <h4 className="font-bold flex items-center gap-2 text-foreground">
                 <Sparkles className="h-4 w-4 text-accent" />
@@ -208,7 +202,6 @@ export default function StudentProgressPage() {
               )}
             </div>
 
-            {/* Session History */}
             <div className="space-y-3">
               <h4 className="font-bold flex items-center gap-2 text-foreground">
                 <Clock className="h-4 w-4 text-muted-foreground" />

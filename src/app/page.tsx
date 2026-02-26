@@ -7,7 +7,7 @@ import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff, Languages, Sun, 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from "@/firebase"
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth"
@@ -122,13 +122,10 @@ export default function LandingPage() {
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        // Redirect handled by useEffect
         toast({ title: t('welcomeBack') });
       }
     } catch (error: any) {
       let errorMessage = error.message;
-      
-      // Provide generic message for common login errors
       if (!isSignUp && (
         error.code === 'auth/invalid-credential' || 
         error.code === 'auth/user-not-found' || 

@@ -1,17 +1,16 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useDoc } from "@/firebase"
-import { collection, query, orderBy, doc, where, getDocs } from "firebase/firestore"
-import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText, Filter } from "lucide-react"
+import { collection, query, orderBy, doc } from "firebase/firestore"
+import { Search, Plus, ExternalLink, Trash2, Loader2, Book, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +31,6 @@ export default function CurriculumPage() {
   const { toast } = useToast()
   const { t, language } = useI18n()
   const [search, setSearch] = useState("")
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>("all")
   
   const profileRef = useMemoFirebase(() => {
     if (!user || !db) return null;
@@ -41,7 +39,6 @@ export default function CurriculumPage() {
   const { data: profile } = useDoc(profileRef);
 
   const isTeacher = profile?.role === 'Teacher';
-  const isStudent = profile?.role === 'Student';
 
   const [newCourseName, setNewCourseName] = useState("")
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false)
@@ -50,17 +47,6 @@ export default function CurriculumPage() {
   const [newResource, setNewResource] = useState({ title: "", type: "Link", linkUrl: "", description: "" })
   const [isAddingResource, setIsAddingResource] = useState(false)
 
-  // Teachers in the same institution (for filtering)
-  const teachersQuery = useMemoFirebase(() => {
-    if (!db || !profile?.institutionId || !isStudent) return null;
-    return query(
-      collection(db, "userProfiles"),
-      where("role", "==", "Teacher"),
-      where("institutionId", "==", profile.institutionId)
-    );
-  }, [db, profile?.institutionId, isStudent]);
-  const { data: institutionalTeachers } = useCollection(teachersQuery);
-
   const subjectsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collection(db, "subjects"), orderBy("name", "asc"));
@@ -68,37 +54,13 @@ export default function CurriculumPage() {
   const { data: subjects, isLoading: isSubjectsLoading } = useCollection(subjectsQuery);
 
   const materialsQuery = useMemoFirebase(() => {
-    if (!db || !user || !profile) return null;
-    
-    // Base query: only see materials from own institution (if student) or all (if teacher)
-    if (isStudent && profile.institutionId) {
-      return query(
-        collection(db, "materials"),
-        where("institutionId", "==", profile.institutionId),
-        orderBy("uploadDate", "desc")
-      );
-    } else if (isTeacher) {
-      return query(
-        collection(db, "materials"),
-        orderBy("uploadDate", "desc")
-      );
-    }
-    return null;
-  }, [db, user, profile, isStudent, isTeacher]);
+    if (!db || !user) return null;
+    return query(collection(db, "materials"), orderBy("uploadDate", "desc"));
+  }, [db, user]);
   const { data: allMaterials, isLoading: isMaterialsLoading } = useCollection(materialsQuery);
 
-  const filteredMaterials = allMaterials?.filter(m => {
-    if (selectedTeacherId !== "all" && m.teacherId !== selectedTeacherId) return false;
-    return true;
-  }) || [];
-
   const filteredSubjects = subjects?.filter(subject => {
-    const matchesSearch = subject.name.toLowerCase().includes(search.toLowerCase());
-    if (!matchesSearch) return false;
-
-    // Only show subjects that have materials after applying the teacher filter
-    const hasMaterials = filteredMaterials.some(m => m.subjectId === subject.id);
-    return hasMaterials || isTeacher; // Teachers see all subjects they might want to add to
+    return subject.name.toLowerCase().includes(search.toLowerCase());
   }) || [];
 
   const handleAddCourse = () => {
@@ -136,7 +98,6 @@ export default function CurriculumPage() {
         type: newResource.type,
         subjectId: selectedSubject.id,
         teacherId: user.uid,
-        institutionId: profile?.institutionId || null,
         author: `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || user.email?.split('@')[0],
         uploadDate: new Date().toISOString()
       });
@@ -162,60 +123,39 @@ export default function CurriculumPage() {
           <p className="text-muted-foreground text-sm">{t('manageCurriculum')}</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {isStudent && profile?.institutionId && institutionalTeachers && institutionalTeachers.length > 0 && (
-            <div className="flex items-center gap-2 mr-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={selectedTeacherId} onValueChange={setSelectedTeacherId}>
-                <SelectTrigger className="w-[180px] h-9 rounded-full bg-card border-none shadow-sm text-xs">
-                  <SelectValue placeholder={t('filterByTeacher')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('allTeachers')}</SelectItem>
-                  {institutionalTeachers.map(teacher => (
-                    <SelectItem key={teacher.id} value={teacher.id}>
-                      {teacher.firstName} {teacher.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {isTeacher && (
-            <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm h-9">
-                  <Plus className="h-4 w-4" />
-                  {t('create')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>{t('addNewResource')}</DialogTitle>
-                  <DialogDescription>{t('subjectsDescription')}</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">{t('resourceTitle')}</Label>
-                    <Input 
-                      id="name"
-                      placeholder="e.g. Organic Chemistry"
-                      value={newCourseName} 
-                      onChange={(e) => setNewCourseName(e.target.value)} 
-                      className="rounded-xl"
-                    />
-                  </div>
+        {isTeacher && (
+          <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/80 rounded-full gap-2 shadow-sm h-9">
+                <Plus className="h-4 w-4" />
+                {t('create')}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{t('addNewResource')}</DialogTitle>
+                <DialogDescription>{t('subjectsDescription')}</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">{t('resourceTitle')}</Label>
+                  <Input 
+                    id="name"
+                    placeholder="e.g. Organic Chemistry"
+                    value={newCourseName} 
+                    onChange={(e) => setNewCourseName(e.target.value)} 
+                    className="rounded-xl"
+                  />
                 </div>
-                <DialogFooter>
-                  <Button onClick={handleAddCourse} className="bg-accent text-accent-foreground rounded-xl px-6">
-                    {t('save')}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddCourse} className="bg-accent text-accent-foreground rounded-xl px-6">
+                  {t('save')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <div className="relative">
@@ -265,7 +205,7 @@ export default function CurriculumPage() {
               <CardContent className="pb-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">
-                    {filteredMaterials.filter(m => m.subjectId === subject.id).length} {t('materials')}
+                    {allMaterials?.filter(m => m.subjectId === subject.id).length} {t('materials')}
                   </span>
                   <Button 
                     variant="secondary" 
@@ -304,7 +244,7 @@ export default function CurriculumPage() {
             <div className="space-y-3">
               <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('resources')}</Label>
               <div className="space-y-2">
-                {filteredMaterials.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
+                {allMaterials?.filter(m => m.subjectId === selectedSubject?.id).map((m) => (
                   <div key={m.id} className="flex flex-col p-3 bg-muted/30 rounded-xl group transition-all hover:bg-muted/50 gap-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 overflow-hidden">
@@ -356,7 +296,7 @@ export default function CurriculumPage() {
                     </div>
                   </div>
                 ))}
-                {(filteredMaterials.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
+                {(!allMaterials || allMaterials.filter(m => m.subjectId === selectedSubject?.id).length === 0) && (
                   <div className="text-center py-8 text-muted-foreground italic text-xs">
                     {t('noResourcesFound')}
                   </div>

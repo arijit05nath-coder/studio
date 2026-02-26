@@ -19,16 +19,13 @@ service cloud.firestore {
     }
 
     match /userProfiles/{userId} {
-      // Basic profile reading allowed for everyone signed in (to show names in groups/leaderboards)
       allow get: if isSignedIn();
-      // Teachers can list students, students can only list themselves
       allow list: if isSignedIn() && (request.auth.uid == userId || isTeacher());
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
 
       match /focusSessions/{focusSessionId} {
-        // Students can read focus sessions of others to see weekly totals on the leaderboard
         allow get, list: if isSignedIn(); 
         allow create, update, delete: if isOwner(userId);
       }
@@ -56,10 +53,8 @@ service cloud.firestore {
     }
 
     match /studyGroups/{groupId} {
-      // Optimized helper to check if user is member or teacher of the group
       function canAccessGroup() {
         let group = get(/databases/$(database)/documents/studyGroups/$(groupId)).data;
-        // Check local membership/ownership first as it's more direct
         return (request.auth.uid in group.memberIds) || 
                (request.auth.uid == group.teacherId) || 
                isTeacher();
@@ -67,7 +62,6 @@ service cloud.firestore {
 
       allow read: if isSignedIn();
       allow create: if isSignedIn();
-      // Allow update for joining (adding self to memberIds)
       allow update: if isSignedIn(); 
       allow delete: if isSignedIn() && (isTeacher() || (request.auth.uid == resource.data.teacherId));
 
