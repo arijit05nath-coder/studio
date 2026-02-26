@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase"
-import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal, LogOut, Trash2, AlertTriangle, Info } from "lucide-react"
+import { Users, Plus, MessageSquare, Send, Loader2, Trophy, Hash, Copy, Check, LogIn, Clock, Medal, LogOut, Trash2, AlertTriangle, Info, Settings2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -184,6 +184,30 @@ export default function GroupsPage() {
     }
   }
 
+  const handleLeaveGroup = async () => {
+    if (!user || !db || !selectedGroupId) return;
+    try {
+      await updateDoc(doc(db, "studyGroups", selectedGroupId), {
+        memberIds: arrayRemove(user.uid)
+      });
+      setSelectedGroupId(null);
+      toast({ title: "Left group", description: "You are no longer a member of this group." });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!user || !db || !selectedGroupId) return;
+    try {
+      deleteDocumentNonBlocking(doc(db, "studyGroups", selectedGroupId));
+      setSelectedGroupId(null);
+      toast({ title: "Group deleted", description: "The study group has been permanently removed." });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
+  };
+
   const copyGroupId = () => {
     if (selectedGroupId) {
       navigator.clipboard.writeText(selectedGroupId);
@@ -197,6 +221,8 @@ export default function GroupsPage() {
     { id: "chat", label: t('chat'), icon: MessageSquare },
     { id: "leaderboard", label: t('leaderboard'), icon: Medal },
   ]
+
+  const isCreator = selectedGroup?.teacherId === user?.uid;
 
   return (
     <div className="space-y-8">
@@ -328,7 +354,7 @@ export default function GroupsPage() {
                       {selectedGroup.description}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-6">
                     <div className="flex flex-col items-end">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('groupId')}</span>
                       <div className="flex items-center gap-1">
@@ -337,6 +363,60 @@ export default function GroupsPage() {
                           {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                         </Button>
                       </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 border-l pl-6">
+                      {isCreator ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-full text-destructive hover:bg-destructive/10 border-destructive/30">
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-destructive" />
+                                {t('deleteGroup')}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t('deleteGroupConfirm')}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleDeleteGroup} className="bg-destructive text-destructive-foreground">
+                                {t('delete')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-full text-muted-foreground hover:bg-accent/10">
+                              <LogOut className="h-5 w-5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="flex items-center gap-2">
+                                <Info className="h-5 w-5 text-accent" />
+                                {t('leaveGroup')}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t('leaveGroupConfirm')}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleLeaveGroup} className="bg-accent text-accent-foreground">
+                                {t('leaveGroup')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
                   </div>
                 </CardHeader>

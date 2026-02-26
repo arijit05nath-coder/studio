@@ -131,7 +131,9 @@ export const translations = {
     groupId: "Group ID",
     copyId: "Copy ID",
     deleteGroup: "Delete Study Group?",
+    deleteGroupConfirm: "Are you sure you want to delete this group? This will remove all members and chat history permanently.",
     leaveGroup: "Leave Study Group?",
+    leaveGroupConfirm: "Are you sure you want to leave this group? You will need the Group ID to join again.",
     weeklyRankings: "Weekly Focus Rankings",
     startConversation: "Start the conversation!",
     typeMessage: "Type a message...",
@@ -204,7 +206,10 @@ export const translations = {
     segments: "Segments",
     deleteSessionTitle: "Delete session history?",
     deleteSessionConfirm: "This will permanently remove this study block from your logs.",
-    sessionDeleted: "Session deleted"
+    sessionDeleted: "Session deleted",
+    selectGroupPrompt: "Select a group to start collaborating",
+    thisWeek: "this week",
+    scholar: "Scholar"
   },
   hi: {
     appName: "StudyNest",
@@ -337,7 +342,9 @@ export const translations = {
     groupId: "समूह आईडी",
     copyId: "आईडी कॉपी करें",
     deleteGroup: "अध्ययन समूह हटाएं?",
+    deleteGroupConfirm: "क्या आप वाकई इस समूह को हटाना चाहते हैं? यह सभी सदस्यों और चैट इतिहास को स्थायी रूप से हटा देगा।",
     leaveGroup: "अध्ययन समूह छोड़ें?",
+    leaveGroupConfirm: "क्या आप वाकई इस समूह को छोड़ना चाहते हैं? दोबारा शामिल होने के लिए आपको समूह आईडी की आवश्यकता होगी।",
     weeklyRankings: "साप्ताहिक रैंकिंग",
     startConversation: "बातचीत शुरू करें!",
     typeMessage: "संदेश टाइप करें...",
@@ -410,14 +417,17 @@ export const translations = {
     segments: "खंड",
     deleteSessionTitle: "सत्र इतिहास हटाएं?",
     deleteSessionConfirm: "यह आपके लॉग से इस अध्ययन ब्लॉक को स्थायी रूप से हटा देगा।",
-    sessionDeleted: "सत्र हटा दिया गया"
+    sessionDeleted: "सत्र हटा दिया गया",
+    selectGroupPrompt: "सहयोग शुरू करने के लिए एक समूह चुनें",
+    thisWeek: "इस सप्ताह",
+    scholar: "विद्वान"
   },
   bn: {
     appName: "StudyNest",
     tagline: "AI-চালিত ফোকাসের সাথে আপনার শেখার অভিজ্ঞতা উন্নত করুন।",
     login: "লগ ইন করুন",
     signup: "সাইন আপ করুন",
-    email: "ইমেল",
+    email: "イমেল",
     password: "পাসওয়ার্ড",
     firstName: "প্রথম নাম",
     lastName: "শেষ নাম",
@@ -543,7 +553,9 @@ export const translations = {
     groupId: "গ্রুপ আইডি",
     copyId: "আইডি কপি করুন",
     deleteGroup: "মুছে ফেলবেন?",
+    deleteGroupConfirm: "আপনি কি নিশ্চিত যে আপনি এই গ্রুপটি মুছে ফেলতে চান? এটি স্থায়ীভাবে সমস্ত সদস্য এবং চ্যাট ইতিহাস সরিয়ে দেবে।",
     leaveGroup: "ছেড়ে যাবেন?",
+    leaveGroupConfirm: "আপনি কি নিশ্চিত যে আপনি এই গ্রুপটি ছেড়ে যেতে চান? আপনাকে আবার যোগ দিতে গ্রুপ আইডি প্রয়োজন হবে।",
     weeklyRankings: "সাপ্তাহিক র‍্যাঙ্কিং",
     startConversation: "কথোপকথন শুরু করুন!",
     typeMessage: "মেসেজ লিখুন...",
@@ -616,7 +628,10 @@ export const translations = {
     segments: "অংশ",
     deleteSessionTitle: "সেশন ইতিহাস মুছুন?",
     deleteSessionConfirm: "এটি আপনার লগ থেকে এই অধ্যয়ন ব্লকটি স্থায়ীভাবে সরিয়ে দেবে।",
-    sessionDeleted: "সেশন মুছে ফেলা হয়েছে"
+    sessionDeleted: "সেশন মুছে ফেলা হয়েছে",
+    selectGroupPrompt: "সহযোগিতা শুরু করার জন্য একটি গ্রুপ নির্বাচন করুন",
+    thisWeek: "এই সপ্তাহে",
+    scholar: "শিক্ষার্থী"
   },
   ta: {
     appName: "StudyNest",
@@ -749,7 +764,9 @@ export const translations = {
     groupId: "குழு ஐடி",
     copyId: "ஐடியை நகலெடு",
     deleteGroup: "குழுவை நீக்கவா?",
+    deleteGroupConfirm: "இந்தக் குழுவை நீக்க விரும்புகிறீர்கள் என்பதில் உறுதியாக இருக்கிறீர்களா? இது அனைத்து உறுப்பினர்களையும் அரட்டை வரலாற்றையும் நிரந்தரமாக அகற்றும்.",
     leaveGroup: "குழுவிலிருந்து விலகவா?",
+    leaveGroupConfirm: "இந்தக் குழுவிலிருந்து விலக விரும்புகிறீர்கள் என்பதில் உறுதியாக இருக்கிறீர்களா? மீண்டும் சேர உங்களுக்கு குழு ஐடி தேவைப்படும்.",
     weeklyRankings: "வாராந்திர தரவரிசை",
     startConversation: "உரையாடலைத் தொடங்குங்கள்!",
     typeMessage: "செய்தியைத் தட்டச்சு செய்க...",
@@ -774,7 +791,7 @@ export const translations = {
     todaysSessions: "இன்றைய அமர்வுகள்",
     noSessionsToday: "இன்று எந்த அமர்வுகளும் பதிவு செய்யப்படவில்லை.",
     welcomeMessage: "வருக, {name}!",
-    dailyGoalDesc: "உங்கள் இலக்கிற்கு எதிரான முன்னேற்றத்தைக் கண்காணிக்கவும்.",
+    dailyGoalDesc: "உங்கள் இலக்கிற்கு எதிரான முன்னேற்றத்தைக் கண்காணியுங்கள்.",
     howToLevelUp: "நிலையை உயர்த்துவது எப்படி:",
     levelUpRules: "அமர்வுகளை முடிக்கவும், இலக்குகளை அடையவும், தொடர்ச்சியைப் பேணவும்.",
     currentProgress: "தற்போதைய முன்னேற்றம்",
@@ -822,7 +839,10 @@ export const translations = {
     segments: "பிரிவுகள்",
     deleteSessionTitle: "அமர்வு வரலாற்றை நீக்கவா?",
     deleteSessionConfirm: "இது உங்கள் பதிவுகளிலிருந்து இந்த ஆய்வுத் தொகுதியை நிரந்தரமாக அகற்றும்.",
-    sessionDeleted: "அமர்வு நீக்கப்பட்டது"
+    sessionDeleted: "அமர்வு நீக்கப்பட்டது",
+    selectGroupPrompt: "ஒத்துழைக்க ஒரு குழுவைத் தேர்ந்தெடுக்கவும்",
+    thisWeek: "இந்த வாரம்",
+    scholar: "அறிஞர்"
   },
   ml: {
     appName: "StudyNest",
@@ -896,7 +916,7 @@ export const translations = {
     readyToLevelUp: "അടുത്ത ഘട്ടത്തിലേക്ക് തയ്യാറാണോ?",
     readyToLevelUpDesc: "നിങ്ങളുടെ പഠന രീതി അനുസരിച്ച് ഞാൻ ഒരു പ്ലാൻ തയ്യാറാക്കും.",
     whatFocusingOn: "നമ്മൾ എന്തിലാണ് ശ്രദ്ധ കേന്ദ്രീകരിക്കുന്നത്?",
-    subjectsDescription: "നിങ്ങളുടെ വിഷയങ്ങളും പ്രയാസമുള്ള ഭാഗങ്ങളും തിരഞ്ഞെടുക്കുക.",
+    subjectsDescription: "നിങ്ങളുടെ विषयोंങ്ങളും പ്രയാസമുള്ള ഭാഗങ്ങളും തിരഞ്ഞെടുക്കുക.",
     addOtherSubjects: "മറ്റ് വിഷയങ്ങൾ ചേർക്കുക",
     subjectsLabel: "വിഷയങ്ങൾ",
     topicsLabel: "പ്രത്യേക വിഷയങ്ങൾ",
@@ -955,7 +975,9 @@ export const translations = {
     groupId: "ഗ്രൂപ്പ് ഐഡി",
     copyId: "ഐഡി കോപ്പി ചെയ്യുക",
     deleteGroup: "ഗ്രൂപ്പ് ഒഴിവാക്കണോ?",
+    deleteGroupConfirm: "ഈ ഗ്രൂപ്പ് ഇല്ലാതാക്കാൻ നിങ്ങൾ ഉറപ്പാണോ? ഇത് എല്ലാ അംഗങ്ങളെയും ചാറ്റ് ചരിത്രത്തെയും ശാശ്വതമായി നീക്കം ചെയ്യും.",
     leaveGroup: "ഗ്രൂപ്പിൽ നിന്ന് മാറണോ?",
+    leaveGroupConfirm: "ഈ ഗ്രൂപ്പ് വിട്ടുപോകാൻ നിങ്ങൾ ഉറപ്പാണോ? വീണ്ടും ചേരുന്നതിന് നിങ്ങൾക്ക് ഗ്രൂപ്പ് ഐഡി ആവശ്യമാണ്.",
     weeklyRankings: "പ്രതിവാര റാങ്കിംഗ്",
     startConversation: "സംഭാഷണം തുടങ്ങാം!",
     typeMessage: "സന്ദേശം ടൈപ്പ് ചെയ്യുക...",
@@ -1028,6 +1050,9 @@ export const translations = {
     segments: "ഭാഗങ്ങൾ",
     deleteSessionTitle: "സെഷൻ ചരിത്രം ഇല്ലാതാക്കണോ?",
     deleteSessionConfirm: "ഇത് നിങ്ങളുടെ ലോഗുകളിൽ നിന്ന് ഈ പഠന ബ്ലോക്കിനെ ശാശ്വതമായി നീക്കം ചെയ്യും.",
-    sessionDeleted: "സെഷൻ ഇല്ലാതാക്കി"
+    sessionDeleted: "സെഷൻ ഇല്ലാതാക്കി",
+    selectGroupPrompt: "സഹകരിക്കാൻ ഒരു ഗ്രൂപ്പ് തിരഞ്ഞെടുക്കുക",
+    thisWeek: "ഈ ആഴ്ച",
+    scholar: "അറിഞ്ഞവൻ"
   }
 };
