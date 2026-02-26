@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, Book, Clock, Trophy, Loader2, Settings2, Target, Calendar, ChevronRight, Lightbulb, TrendingUp, Info, GraduationCap } from "lucide-react"
+import { Sparkles, Book, Clock, Trophy, Loader2, Settings2, Target, Calendar, ChevronRight, Lightbulb, TrendingUp, Info, GraduationCap, Zap } from "lucide-react"
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking } from "@/firebase"
 import { collection, query, where, doc, orderBy, limit } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
@@ -134,7 +134,7 @@ export default function StudentDashboard() {
   const stats = [
     { title: t('todayFocus'), value: todayTimeFormatted, icon: Clock, color: "text-blue-500" },
     { title: t('curriculum'), value: subjects?.length || 0, icon: Book, color: "text-purple-500" },
-    { title: t('focusScore'), value: profile?.focusScore || 0, icon: Sparkles, color: "text-accent-foreground" },
+    { title: t('focusScore'), value: profile?.focusScore || 0, icon: Zap, color: "text-accent-foreground" },
     { title: t('totalSessions'), value: todaySessions?.length || 0, icon: Trophy, color: "text-yellow-500" },
   ]
 
