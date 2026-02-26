@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { updateEmail } from "firebase/auth"
 import { doc as firestoreDoc } from "firebase/firestore"
-import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera, Upload, Trash2 } from "lucide-react"
+import { User, Mail, Sparkles, Loader2, Save, Moon, Sun, Trees, Coffee, GraduationCap, Camera, Upload, Trash2, MoonStar } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,7 +20,7 @@ import { useI18n } from "@/lib/i18n-store"
 const THEMES = [
   { id: 'default', name: 'Default Light', icon: Sun, class: '' },
   { id: 'dark', name: 'Standard Dark', icon: Moon, class: 'dark' },
-  { id: 'midnight', name: 'Midnight Scholar', icon: Sparkles, class: 'theme-midnight' },
+  { id: 'midnight', name: 'Midnight Scholar', icon: MoonStar, class: 'theme-midnight' },
   { id: 'forest', name: 'Forest Library', icon: Trees, class: 'theme-forest' },
   { id: 'sunrise', name: 'Sunrise Focus', icon: Coffee, class: 'theme-sunrise' },
 ]

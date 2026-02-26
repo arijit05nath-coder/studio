@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff, Languages, Sun, Moon, Trees, Coffee, Palette } from "lucide-react"
+import { Sparkles, GraduationCap, School, Loader2, Eye, EyeOff, Languages, Sun, Moon, Trees, Coffee, Palette, MoonStar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,7 +33,7 @@ const languages = [
 const THEMES = [
   { id: 'default', name: 'Light', icon: Sun, class: '' },
   { id: 'dark', name: 'Dark', icon: Moon, class: 'dark' },
-  { id: 'midnight', name: 'Midnight', icon: Sparkles, class: 'theme-midnight' },
+  { id: 'midnight', name: 'Midnight', icon: MoonStar, class: 'theme-midnight' },
   { id: 'forest', name: 'Forest', icon: Trees, class: 'theme-forest' },
   { id: 'sunrise', name: 'Sunrise', icon: Coffee, class: 'theme-sunrise' },
 ]

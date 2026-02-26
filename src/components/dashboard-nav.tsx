@@ -19,7 +19,8 @@ import {
   Coffee,
   Trophy,
   Languages,
-  BrainCircuit
+  BrainCircuit,
+  MoonStar
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth, useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase"
@@ -52,7 +53,7 @@ interface DashboardNavProps {
 const THEMES = [
   { id: 'default', name: 'Light', icon: Sun },
   { id: 'dark', name: 'Dark', icon: Moon },
-  { id: 'midnight', name: 'Midnight', icon: Sparkles },
+  { id: 'midnight', name: 'Midnight', icon: MoonStar },
   { id: 'forest', name: 'Forest', icon: Trees },
   { id: 'sunrise', name: 'Sunrise', icon: Coffee },
 ]
