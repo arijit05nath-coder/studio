@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -107,7 +106,7 @@ export default function FocusPage() {
         : (sessionType === 'work' ? totalWorkMinutes : customBreakMinutes);
       setTimeLeft(mins * 60);
     }
-  }, [timerMode, totalWorkHours, totalWorkMinutes, customBreakMinutes, sessionType, isActive]);
+  }, [timerMode, customWorkHours, customWorkMinutes, totalWorkMinutes, customBreakMinutes, sessionType, isActive]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
