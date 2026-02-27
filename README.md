@@ -1,45 +1,187 @@
+# 🎓 StudyNest
 
-# StudyNest 🎓
+### AI-Powered Smart Learning & Classroom Optimization Platform
 
-StudyNest is an AI-powered academic platform designed to optimize learning for students and provide powerful management tools for teachers. It combines productivity tracking with generative AI to create a personalized educational experience.
-
-## 🚀 Core Features
-
-### 🌍 Multilingual Support
-- **Full Localization**: StudyNest supports multiple languages including **English, Hindi, Bengali, Tamil, and Malayalam**.
-- **Seamless Switching**: Users can change their preferred language directly from the dashboard navigation or landing page.
-
-### For Students
-- **AI Study Coach**: 
-  - **Personalized Planner**: Generates custom study roadmaps based on self-assessments, learning styles, and real focus data.
-  - **Assignment Analysis**: Provides deep, rubric-based feedback on written work to help improve academic performance.
-- **Focus Mode**: 
-  - **Custom Timers**: Pomodoro and custom focus/break cycles.
-  - **Strict Mode**: A dedicated focus environment that locks out distractions and logs interruptions.
-- **Scholar Level System**: Gamified progression where students earn XP and levels (e.g., Novice Scholar to Elite Polymath) based on study consistency and focus hours.
-- **Study Groups**: Coordinate with peers in real-time and compete on the weekly leaderboard.
-
-### For Teachers
-- **Classroom Overview**: Monitor total student engagement and shared resource usage.
-- **Student Roster**: Track individual student performance, focus trends, and their latest AI-generated study plans.
-- **Curriculum Management**: Organize subjects and upload educational materials (PDFs, Videos, Notes).
+> Personalized AI study planning + teacher analytics + gamified productivity — all in one platform.
 
 ---
 
-## 🛠️ Technology Stack
+# 🚨 Problem Statement
 
-- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand) (for Auth and i18n)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [ShadCN UI](https://ui.shadcn.com/)
-- **Database & Auth**: [Firebase](https://firebase.google.com/) (Firestore & Firebase Authentication)
-- **AI Engine**: [Genkit](https://js.sigmacomputing.com/genkit/) powered by Google Gemini 2.5 Flash
+Students struggle with:
+
+* Poor time management
+* Lack of personalized study guidance
+* Low engagement and consistency
+
+Teachers struggle with:
+
+* Monitoring student productivity
+* Measuring real engagement
+* Managing digital classrooms efficiently
+
+Existing tools solve fragments of the problem — not the ecosystem.
 
 ---
 
-## 🏗️ Getting Started
+# 💡 Our Solution
 
-1. **Initialize Firebase**: Configure your environment variables in `.env`.
-2. **Run the App**: `npm install && npm run dev`
-3. **Multilingual Settings**: Use the globe icon in the navigation to switch languages.
+**StudyNest** is an AI-driven learning ecosystem that:
 
-Built with ❤️ using Firebase Studio.
+* Generates adaptive study plans
+* Tracks productivity in real time
+* Gamifies consistency
+* Enables teacher-driven classroom monitoring
+* Provides actionable analytics
+
+It works for both **independent learners** and **teacher-connected classrooms**.
+
+---
+
+# 🔥 Key Features
+
+## 🤖 AI Study Coach
+
+* Personalized study plan generation
+* Performance-aware recommendations
+* Adaptive scheduling logic
+* Built using Genkit + Google Gemini
+
+## 🎯 Focus Mode
+
+* Pomodoro-based study sessions
+* Distraction logging
+* Productivity scoring
+* Study streak tracking
+
+## 🏆 Scholar Level Gamification
+
+* XP-based leveling system
+* Achievement badges
+* Consistency rewards
+
+## 👩‍🏫 Teacher Dashboard
+
+* Classroom overview
+* Student performance tracking
+* Content upload (PDFs, notes, resources)
+* Engagement analytics
+
+---
+
+# 🏗️ System Architecture
+
+Frontend (Next.js)
+        ↓
+Firebase Authentication (Role-based)
+        ↓
+Firestore Database
+        ↓
+AI Layer (Genkit + Gemini 2.5 Flash)
+
+
+### Core Design Principles
+
+* Role-based access control
+* Modular AI service layer
+* Real-time data sync
+* Scalable cloud backend
+
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+* Next.js (App Router)
+* TypeScript
+* Tailwind CSS
+* ShadCN UI
+
+## Backend
+
+* Firebase Authentication
+* Firestore (NoSQL real-time DB)
+
+## AI Layer
+
+* Genkit
+* Google Gemini 2.5 Flash
+
+## Visualization
+
+* Recharts
+* Lucide Icons
+
+---
+
+# 🧠 What Makes It Innovative?
+
+✔ AI-driven adaptive planning instead of static schedules
+✔ Gamified productivity tied to real study behavior
+✔ Real-time analytics for teachers
+✔ Scalable SaaS-ready architecture
+✔ Modular AI layer for future expansion
+
+---
+
+# 📊 Scalability & Future Scope
+
+* Predictive performance analytics
+* AI-based assignment evaluation
+* Institution-level dashboards
+* Mobile app deployment
+* Multi-language support
+* AI study habit detection
+
+---
+
+# 🏆 Hackathon Value Proposition
+
+| Criteria             | How StudyNest Addresses It                     |
+| -------------------- | ---------------------------------------------- |
+| Innovation           | AI-powered adaptive learning                   |
+| Technical Complexity | Role-based cloud architecture + AI integration |
+| Impact               | Improves productivity & classroom transparency |
+| Scalability          | Firebase + modular AI backend                  |
+| Feasibility          | Fully functional MVP                           |
+
+---
+
+# 🎯 Target Users
+
+* High school & college students
+* Coaching centers
+* Online tutors
+* Self-learners
+
+---
+
+# 🌐 Live Demo
+
+🚀 **The application is live and deployed on Vercel.**
+
+👉 **Access StudyNest here:**
+`https://studynest-beta.vercel.app`
+
+---
+
+# 🧪 Test Credentials
+
+Student Login:
+Email:student@gmail.com
+Password:Student@StudyNest
+
+Teacher Login:
+Email:teacher@gmail.com
+Password:Teacher@StudyNest
+
+---
+
+# 🚀 Deployment Architecture
+
+* **Hosting:** Vercel
+* **Authentication & Database:** Firebase
+* **AI Runtime:** Genkit + Google Gemini
+
+---
