@@ -427,7 +427,7 @@ export const translations = {
     tagline: "AI-চালিত ফোকাসের সাথে আপনার শেখার অভিজ্ঞতা উন্নত করুন।",
     login: "লগ ইন করুন",
     signup: "সাইন আপ করুন",
-    email: "イমেল",
+    email: "ইমেল",
     password: "পাসওয়ার্ড",
     firstName: "প্রথম নাম",
     lastName: "শেষ নাম",
